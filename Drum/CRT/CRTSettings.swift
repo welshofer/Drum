@@ -8,16 +8,16 @@ import Foundation
 struct CRTSettings: Codable, Sendable, Equatable {
     var enabled = true
     var phosphor: Phosphor = .p3Amber
-    var barrelX: Float = 0.03
-    var barrelY: Float = 0.03
+    var barrelX: Float = 0.02
+    var barrelY: Float = 0.02
     var wobble: Float = 0.0015
-    var scanlines: Float = 0.20
-    var grille: Float = 0.06
-    var vignette: Float = 0.35
+    var scanlines: Float = 0.15
+    var grille: Float = 0.04
+    var vignette: Float = 0.25
     /// Gain applied in the mask pass so the phosphor reads bright through the
     /// scanlines and grille. Above 1 the core of a glyph clips toward white,
     /// which is what a hot phosphor looks like.
-    var brightness: Float = 1.25
+    var brightness: Float = 1.45
     /// `backingScaleFactor` of the screen the window is on. Scanline period
     /// is in device pixels, so the shader needs this. Set by `ScreenPinning`.
     var scale: Float = 1
@@ -27,8 +27,8 @@ struct CRTSettings: Codable, Sendable, Equatable {
     /// Tuning for the 32:9 panel per spec §4: less horizontal curvature.
     static let ribbon: CRTSettings = {
         var s = CRTSettings()
-        s.barrelX = 0.02
-        s.barrelY = 0.04
+        s.barrelX = 0.015
+        s.barrelY = 0.03
         return s
     }()
 

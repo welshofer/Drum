@@ -115,7 +115,7 @@ final class AppState {
 struct SettingsStore {
     /// `crt` is versioned: bump it when defaults change on purpose so users
     /// pick up the new tuning instead of their persisted copy of the old one.
-    enum Key: String { case crt = "crt.v2", preset, font, fontSize }
+    enum Key: String { case crt = "crt.v3", preset, font, fontSize }
 
     let defaults: UserDefaults
 

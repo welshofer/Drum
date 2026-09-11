@@ -6,12 +6,12 @@ struct CRTSettingsTests {
     @Test func defaultsAreTheTunedValues() {
         let s = CRTSettings()
         #expect(s.phosphor == .p3Amber)
-        #expect(s.barrelX == 0.03 && s.barrelY == 0.03)
+        #expect(s.barrelX == 0.02 && s.barrelY == 0.02)
         #expect(s.wobble == 0.0015)
-        #expect(s.scanlines == 0.20)
-        #expect(s.grille == 0.06)
-        #expect(s.vignette == 0.35)
-        #expect(s.brightness == 1.25)
+        #expect(s.scanlines == 0.15)
+        #expect(s.grille == 0.04)
+        #expect(s.vignette == 0.25)
+        #expect(s.brightness == 1.45)
         #expect(s.scale == 1)
         #expect(s.animated)
     }
