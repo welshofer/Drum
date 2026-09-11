@@ -5,7 +5,7 @@ import SwiftUI
 ///
 /// It never creates the terminal; it parents the session's long-lived view
 /// inside a host view SwiftUI owns, and re-parents it if SwiftUI rebuilt the
-/// host. The theme is re-applied only when it actually changed.
+/// host. The theme is re-applied only for the parts that actually changed.
 ///
 /// The host is invisible (`alphaValue = 0`): what you see is `TerminalMirror`'s
 /// image drawn through the CRT chain. This view exists for input — it is the
@@ -18,16 +18,16 @@ struct TerminalView: NSViewRepresentable {
     func makeNSView(context: Context) -> TerminalHostView {
         let host = TerminalHostView()
         host.attach(session.view)
-        theme.apply(to: session.view)
-        host.appliedTheme = theme
+        theme.apply(to: session.view, previous: session.appliedTheme)
+        session.appliedTheme = theme
         return host
     }
 
     func updateNSView(_ host: TerminalHostView, context: Context) {
         host.attach(session.view)
-        if host.appliedTheme != theme {
-            theme.apply(to: session.view)
-            host.appliedTheme = theme
+        if session.appliedTheme != theme {
+            theme.apply(to: session.view, previous: session.appliedTheme)
+            session.appliedTheme = theme
             session.mirror.markDirty()
         }
     }
@@ -35,8 +35,6 @@ struct TerminalView: NSViewRepresentable {
 
 /// Plain container so the terminal NSView can move between hosts intact.
 final class TerminalHostView: NSView {
-    var appliedTheme: TerminalTheme?
-
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         wantsLayer = true

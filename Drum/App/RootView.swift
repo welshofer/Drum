@@ -64,6 +64,9 @@ struct PictureStage: View {
             .overlay(alignment: .topLeading) {
                 if let image = mirror.image {
                     Image(decorative: image, scale: mirror.scale)
+                        .overlay(alignment: .topLeading) {
+                            CaretOverlay(caret: mirror.caret, phosphor: state.crt.phosphor)
+                        }
                         .overlay { GlowOverlay(session: state.terminal, phosphor: state.crt.phosphor) }
                         .padding(CRTStage.inset)
                 }

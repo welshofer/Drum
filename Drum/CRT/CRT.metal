@@ -42,15 +42,23 @@ using namespace metal;
     return base + tint * lum * half(strength);
 }
 
-// Scanlines + aperture grille + vignette + brightness gain (.colorEffect).
+// Monochrome tube: scanlines + aperture grille + vignette + brightness gain,
+// with every input colour reduced to a brightness and painted in the phosphor
+// (.colorEffect). A P3 tube had no colour, so 24-bit and 256-colour escapes
+// from applications cannot leak colour onto the screen. Brightness is a blend
+// of normalised luminance (tube-like) and the brightest channel (readable),
+// so saturated blues do not vanish.
 [[stitchable]] half4 crtMask(float2 position, half4 color, float4 bounds,
                              float scale, float lineStrength,
                              float grilleStrength, float vignette,
-                             float brightness)
+                             float brightness, half4 phosphor)
 {
     float2 size = bounds.zw;
+
+    // Scanlines: 2 device-pixel period, dark on odd rows. Sampled per device
+    // row (not with a cosine — pixel-centred positions sit on its zeros).
     float py   = position.y * scale;
-    float line = 0.5 + 0.5 * cos(py * M_PI_F);          // 2-px period
+    float line = step(0.5, fract(py * 0.5));
     half l     = half(1.0 - lineStrength * line);
 
     int col = int(position.x * scale) % 3;
@@ -62,7 +70,12 @@ using namespace metal;
     float2 d  = uv * (1.0 - uv);
     half v    = half(pow(clamp(d.x * d.y * 16.0, 0.0, 1.0), vignette));
 
-    return half4(color.rgb * l * grille * v * half(brightness), color.a);
+    const half3 w = half3(0.299h, 0.587h, 0.114h);
+    half lum  = dot(color.rgb, w) / max(dot(phosphor.rgb, w), 0.05h);
+    half peak = max(color.r, max(color.g, color.b));
+    half b    = mix(lum, peak, 0.6h);
+
+    return half4(phosphor.rgb * b * l * grille * v * half(brightness), color.a);
 }
 
 // Flyback line for power-on (.colorEffect on a black overlay).

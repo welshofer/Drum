@@ -7,6 +7,12 @@ struct CRTEffect: ViewModifier {
     let settings: CRTSettings
     let time: TimeInterval
 
+    /// The wobble's sine runs at 1.7 rad/s. `time` is wrapped at a whole
+    /// number of its periods before the narrowing to `Float`: the raw
+    /// reference-date offset (~8e8 s) has a `Float` ULP of 64 s, which would
+    /// freeze the wobble entirely. Wrapped, precision is ~3e-5 s.
+    static let timePeriod: TimeInterval = 100 * 2 * .pi / 1.7
+
     func body(content: Content) -> some View {
         content
             .layerEffect(
@@ -24,7 +30,8 @@ struct CRTEffect: ViewModifier {
                     .float(settings.scanlines),
                     .float(settings.grille),
                     .float(settings.vignette),
-                    .float(settings.brightness)),
+                    .float(settings.brightness),
+                    .color(settings.phosphor.swiftUIColor)),
                 isEnabled: settings.enabled)
             .distortionEffect(
                 DrumBundle.shaders.crtBarrel(
@@ -32,7 +39,7 @@ struct CRTEffect: ViewModifier {
                     .float(settings.barrelX),
                     .float(settings.barrelY),
                     .float(settings.animated ? settings.wobble : 0),
-                    .float(Float(time))),
+                    .float(Float(time.truncatingRemainder(dividingBy: Self.timePeriod)))),
                 maxSampleOffset: CGSize(width: 160, height: 60),
                 isEnabled: settings.enabled)
             .clipShape(RoundedRectangle(cornerRadius: settings.bezelCornerRadius, style: .continuous))

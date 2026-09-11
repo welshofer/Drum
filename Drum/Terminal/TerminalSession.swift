@@ -5,7 +5,7 @@ import SwiftTerm
 /// Owns the one SwiftTerm view, the shell inside it, and the mirror of it.
 ///
 /// The view is created once and handed to SwiftUI by `TerminalView`; SwiftUI
-/// may tear its host down and rebuild it (power cycle, pin/unpin) but the
+/// may tear its host down and rebuild it (power cycle) but the
 /// `LocalProcessTerminalView` and its PTY live here and survive that.
 ///
 /// This is the one place the SwiftTerm delegate API lands. Its callbacks are
@@ -17,12 +17,19 @@ final class TerminalSession {
 
     private(set) var title = "Drum"
     private(set) var isRunning = false
+    /// What `TerminalTheme.apply` last applied; lives here, not in the host
+    /// view, because the host may be rebuilt while the terminal survives.
+    @ObservationIgnored var appliedTheme: TerminalTheme?
     /// Rows whose contents just changed, with arrival time — feeds `GlowOverlay`.
     private(set) var flashes: [Int: Date] = [:]
 
     static let flashDuration: TimeInterval = 0.08
+    /// A shell that keeps dying is not restarted forever.
+    static let maxRestarts = 5
+    static let restartWindow: TimeInterval = 60
 
     @ObservationIgnored private var cleanup: Task<Void, Never>?
+    @ObservationIgnored private var restarts: [Date] = []
 
     init() {
         view = DrumTerminalView(frame: NSRect(x: 0, y: 0, width: 800, height: 300))
@@ -30,6 +37,9 @@ final class TerminalSession {
         view.processDelegate = self
         view.optionAsMetaKey = true
         view.allowMouseReporting = true
+        // Without this SwiftTerm never calls `rangeChanged`, and nothing
+        // downstream (mirror refresh on output, glow) would ever fire.
+        view.notifyUpdateChanges = true
     }
 
     // MARK: Shell
@@ -43,28 +53,33 @@ final class TerminalSession {
         return ProcessInfo.processInfo.environment["SHELL"] ?? "/bin/zsh"
     }
 
+    /// The whole inherited environment (SSH agent, locale, TMPDIR and all),
+    /// with the terminal's own identity on top.
+    static func environment(shell: String) -> [String] {
+        var env = ProcessInfo.processInfo.environment
+        env["TERM"] = "xterm-256color"
+        env["COLORTERM"] = "truecolor"
+        env["SHELL"] = shell
+        env["TERM_PROGRAM"] = "Drum"
+        env["TERM_PROGRAM_VERSION"] = "0.1.0"
+        if env["LANG"] == nil { env["LANG"] = "en_US.UTF-8" }
+        return env.map { "\($0.key)=\($0.value)" }
+    }
+
     func startIfNeeded() {
         guard !isRunning else { return }
         isRunning = true
         let shell = Self.loginShell
-        var env = Terminal.getEnvironmentVariables(termName: "xterm-256color", trueColor: true)
-        env.append("SHELL=\(shell)")
-        env.append("TERM_PROGRAM=Drum")
-        env.append("TERM_PROGRAM_VERSION=0.1.0")
-        if let path = ProcessInfo.processInfo.environment["PATH"] {
-            env.append("PATH=\(path)")
-        }
         view.startProcess(executable: shell,
                           args: ["-l"],
-                          environment: env,
+                          environment: Self.environment(shell: shell),
                           execName: "-" + (shell as NSString).lastPathComponent,
                           currentDirectory: NSHomeDirectory())
     }
 
-    // MARK: Change tracking (glow + mirror)
+    // MARK: Change tracking (glow)
 
     func noteChanged(rows: ClosedRange<Int>) {
-        mirror.markDirty()
         let now = Date()
         for row in rows {
             flashes[row] = now
@@ -99,47 +114,21 @@ extension TerminalSession: @MainActor LocalProcessTerminalViewDelegate {
 
     func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}
 
-    /// The shell went away (exit, ⌃D). Say so on the tube and start a fresh one.
+    /// The shell went away (exit, ⌃D). Say so on the tube and start a fresh
+    /// one, unless it keeps dying, in which case stop and say that instead.
     func processTerminated(source: SwiftTerm.TerminalView, exitCode: Int32?) {
         isRunning = false
-        let code = exitCode.map(String.init) ?? "signal"
-        view.feed(text: "\r\n\u{1B}[2m[shell exited: \(code)] restarting…\u{1B}[0m\r\n")
+        let status = exitCode.map { "status \($0)" } ?? "signal"
+        let now = Date()
+        restarts = restarts.filter { now.timeIntervalSince($0) < Self.restartWindow } + [now]
+        guard restarts.count <= Self.maxRestarts else {
+            view.feed(text: "\r\n\u{1B}[1m[shell exited (\(status)) \(Self.maxRestarts) times in a minute; not restarting. ⌘R to try again]\u{1B}[0m\r\n")
+            return
+        }
+        view.feed(text: "\r\n\u{1B}[2m[shell exited (\(status))] restarting…\u{1B}[0m\r\n")
         Task { @MainActor [weak self] in
             try? await Task.sleep(for: .milliseconds(600))
             self?.startIfNeeded()
         }
-    }
-}
-
-/// SwiftTerm's view with small additions: it starts the shell and the mirror
-/// the first time it lands in a window, takes focus so the first click types,
-/// and reports changed rows for the glow and the mirror.
-final class DrumTerminalView: LocalProcessTerminalView {
-    weak var session: TerminalSession?
-
-    override func viewDidMoveToWindow() {
-        super.viewDidMoveToWindow()
-        guard let window else {
-            session?.mirror.stop()
-            return
-        }
-        session?.startIfNeeded()
-        session?.mirror.start(view: self)
-        window.makeFirstResponder(self)
-    }
-
-    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
-
-    override func rangeChanged(source: SwiftTerm.TerminalView, startY: Int, endY: Int) {
-        super.rangeChanged(source: source, startY: startY, endY: endY)
-        guard startY <= endY else { return }
-        session?.noteChanged(rows: startY...endY)
-    }
-
-    /// Height of one text row in points, derived from public API only.
-    var rowHeight: CGFloat {
-        let rows = Int(getWindowSize().ws_row)
-        guard rows > 0 else { return 0 }
-        return getOptimalFrameSize().height / CGFloat(rows)
     }
 }

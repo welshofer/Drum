@@ -291,3 +291,13 @@ Constraints: Swift 6 strict concurrency, zero warnings, no MVVM, no DispatchQueu
 
 Gates: §8. Report against the gate, not the task list.
 ```
+
+---
+
+## Amendments — 2026-09-10 (after first run)
+
+- **§1, §3, §7 — screen pinning is out.** Drum is one ordinary resizable window (`Window` scene, standard title bar); the user maximises it on whichever display they like. No borderless mode, no screen picker, no `ScreenPinning.swift`.
+- **§3 — title bar.** Standard, dark. Not hidden.
+- **§5 — the rasterisation risk is real.** SwiftUI's shader modifiers do not host AppKit views. The chain is applied to a mirrored bitmap of the terminal (`TerminalMirror`, `PictureStage`); the real SwiftTerm view stays outside the chain for input. See `docs/phase-1-findings.md`.
+- **§4 — shaders take `float4 bounds`**, because `.boundingRect` is a float4. `crtMask` also takes `brightness` and the phosphor colour and renders every input colour monochrome in the phosphor.
+- **§2 — window.** `DrumApp.swift` is `Window` + `Settings`; there is no `ScreenPinning.swift`.

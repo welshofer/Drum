@@ -2,8 +2,9 @@ import AppKit
 import SwiftTerm
 
 /// Font and colours for the tube. A P3 tube had no colour, so the whole ANSI
-/// palette is remapped onto brightness steps of the one phosphor; bloom then
-/// tints the glow. Equatable so the representable only re-applies on change.
+/// palette is remapped onto brightness steps of the one phosphor; the mask
+/// shader then paints everything in the phosphor anyway, and bloom tints the
+/// glow. Equatable so the representable only re-applies on change.
 struct TerminalTheme: Equatable {
     let font: NSFont
     let phosphor: Phosphor
@@ -47,15 +48,22 @@ struct TerminalTheme: Equatable {
         }
     }
 
+    /// Applies only what changed. Setting `font` makes SwiftTerm soft-reset the
+    /// terminal (DECSTR) and drop the selection, so it is touched only when
+    /// the face or size actually differs; colour changes never reset anything.
     @MainActor
-    func apply(to view: SwiftTerm.TerminalView) {
-        view.font = font
-        view.nativeForegroundColor = foreground
-        view.nativeBackgroundColor = background
-        view.caretColor = foreground
-        view.caretTextColor = .black
-        view.selectedTextBackgroundColor = phosphor.nsColor(brightness: 0.45)
-        view.selectedTextForegroundColor = .black
-        view.installColors(palette)
+    func apply(to view: SwiftTerm.TerminalView, previous: TerminalTheme?) {
+        if previous?.font != font {
+            view.font = font
+        }
+        if previous?.phosphor != phosphor {
+            view.nativeForegroundColor = foreground
+            view.nativeBackgroundColor = background
+            view.caretColor = foreground
+            view.caretTextColor = .black
+            view.selectedTextBackgroundColor = phosphor.nsColor(brightness: 0.45)
+            view.selectedTextForegroundColor = .black
+            view.installColors(palette)
+        }
     }
 }

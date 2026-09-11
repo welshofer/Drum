@@ -26,12 +26,32 @@ So the chain alone is the cause; the custom `Transition` is fine.
 ## Resolution: mirror the terminal
 
 `TerminalMirror` captures the terminal view with `cacheDisplay(in:to:)` at the
-window's backing scale whenever SwiftTerm reports changed rows (and every
-~250 ms for caret blink, selection, and the overlay scroller). `PictureStage`
-draws that `CGImage` through the CRT chain. The real terminal stays in the
-window as `InputStage`, outside the chain, with `alphaValue = 0`, and remains
-first responder: keys, copy/paste, and mouse selection go to SwiftTerm as
-before. The two stages share the same insets so they line up.
+window's backing scale whenever SwiftTerm reports changed rows via
+`rangeChanged` (which only fires with `notifyUpdateChanges = true` — the
+first cut forgot that and refreshed only on the fallback tick), every tick
+while a mouse button is down (selection), and every ~100 ms otherwise (the
+overlay scroller). SwiftTerm draws its caret through a layer delegate that
+`cacheDisplay` never invokes, so the mirror publishes the caret's geometry
+(from `caretFrame`, `hasFocus`, and the cursor-style hooks) and blink phase,
+and `CaretOverlay` draws it in SwiftUI — a blink never costs a terminal
+redraw. Captures alternate between two reusable bitmaps so the image SwiftUI
+holds is never the one being drawn into, and are skipped while the window is
+hidden, miniaturised, or fully occluded. `PictureStage` draws the `CGImage`
+through the CRT chain. The real terminal stays in the window as `InputStage`,
+outside the chain, with `alphaValue = 0`, and remains first responder: keys,
+copy/paste, and mouse selection go to SwiftTerm as before. The two stages
+share the same insets so they line up.
+
+An adversarial review (26 agents, four lenses, one skeptic per finding) of the
+first cut confirmed 12 distinct defects, all fixed the same day: the
+`notifyUpdateChanges` gate, the missing caret, theme changes re-assigning the
+font (which soft-resets the terminal), a `Float` conversion that froze the
+wobble (64 s ULP on a reference-date offset), scanlines sampled on the zeros
+of their cosine, quit cancelling system log-out, colour leaking through
+24-bit escapes (now every input colour is painted in the phosphor by the mask
+shader), the glow as an opaque bar (now a masked second copy of the picture,
+glyphs only), selection lag, a restart loop without a cap, a truncated child
+environment, and per-capture bitmap allocation.
 
 Verified with the same harness: terminal hosted, shell running, first
 responder `DrumTerminalView`, mirror captured (2688 × 708 px at 2× for a

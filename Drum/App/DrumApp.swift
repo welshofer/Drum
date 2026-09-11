@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 @main
@@ -44,14 +45,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         true
     }
 
-    /// Quit plays the 300 ms power-off before the process goes away.
-    ///
-    /// Cancels the first request, runs the transition, then asks to terminate
+    /// ⌘Q plays the 300 ms power-off before the process goes away: the first
+    /// request is cancelled, the transition runs, then terminate is asked
     /// again with `quitArmed` set. (`.terminateLater` is not used: AppKit then
-    /// waits in a run-loop mode that never services the main-actor task that
-    /// would send the reply, and the app hangs on quit.)
+    /// waits in a run-loop mode that never services the main-actor task.)
+    ///
+    /// A quit that comes from loginwindow (log out, restart, shut down) is
+    /// answered at once: refusing it even briefly aborts the whole logout.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        if quitArmed || !state.isPoweredOn { return .terminateNow }
+        if quitArmed || !state.isPoweredOn || Self.isSystemQuit { return .terminateNow }
         quitArmed = true
         state.powerOff()
         Task { @MainActor in
@@ -59,5 +61,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             sender.terminate(nil)
         }
         return .terminateCancel
+    }
+
+    /// loginwindow's quit Apple event carries `kAEQuitReason`; ⌘Q and our own
+    /// re-terminate carry no Apple event at all.
+    private static var isSystemQuit: Bool {
+        guard let event = NSAppleEventManager.shared().currentAppleEvent else { return false }
+        let key = AEKeyword(kAEQuitReason)
+        guard let reason = (event.attributeDescriptor(forKeyword: key)
+                            ?? event.paramDescriptor(forKeyword: key))?.enumCodeValue
+        else { return false }
+        return [OSType(kAEQuitAll), OSType(kAEShutDown), OSType(kAERestart),
+                OSType(kAELogOut), OSType(kAEReallyLogOut)].contains(reason)
     }
 }
