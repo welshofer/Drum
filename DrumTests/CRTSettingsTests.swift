@@ -3,16 +3,26 @@ import Foundation
 @testable import Drum
 
 struct CRTSettingsTests {
-    @Test func defaultsMatchSpec() {
+    @Test func defaultsAreTheTunedValues() {
         let s = CRTSettings()
         #expect(s.phosphor == .p3Amber)
-        #expect(s.barrelX == 0.05 && s.barrelY == 0.05)
+        #expect(s.barrelX == 0.03 && s.barrelY == 0.03)
         #expect(s.wobble == 0.0015)
-        #expect(s.scanlines == 0.28)
-        #expect(s.grille == 0.08)
+        #expect(s.scanlines == 0.20)
+        #expect(s.grille == 0.06)
         #expect(s.vignette == 0.35)
+        #expect(s.brightness == 1.25)
         #expect(s.scale == 1)
         #expect(s.animated)
+    }
+
+    @Test func decodingToleratesMissingKeys() throws {
+        let json = #"{"barrelX":0.09,"scanlines":0.1}"#.data(using: .utf8)!
+        let s = try JSONDecoder().decode(CRTSettings.self, from: json)
+        #expect(s.barrelX == 0.09)
+        #expect(s.scanlines == 0.1)
+        #expect(s.brightness == CRTSettings().brightness)
+        #expect(s.phosphor == .p3Amber)
     }
 
     @Test func ribbonTuningCurvesLessHorizontally() {

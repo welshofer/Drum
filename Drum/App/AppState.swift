@@ -119,7 +119,9 @@ final class AppState {
 /// Tiny typed façade over `UserDefaults` with JSON for the composite values.
 /// Only ever touched from `AppState` on the main actor.
 struct SettingsStore {
-    enum Key: String { case crt, preset, font, fontSize, pinnedScreen }
+    /// `crt` is versioned: bump it when defaults change on purpose so users
+    /// pick up the new tuning instead of their persisted copy of the old one.
+    enum Key: String { case crt = "crt.v2", preset, font, fontSize, pinnedScreen }
 
     let defaults: UserDefaults
 

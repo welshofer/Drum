@@ -42,10 +42,11 @@ using namespace metal;
     return base + tint * lum * half(strength);
 }
 
-// Scanlines + aperture grille + vignette (.colorEffect).
+// Scanlines + aperture grille + vignette + brightness gain (.colorEffect).
 [[stitchable]] half4 crtMask(float2 position, half4 color, float4 bounds,
                              float scale, float lineStrength,
-                             float grilleStrength, float vignette)
+                             float grilleStrength, float vignette,
+                             float brightness)
 {
     float2 size = bounds.zw;
     float py   = position.y * scale;
@@ -61,7 +62,7 @@ using namespace metal;
     float2 d  = uv * (1.0 - uv);
     half v    = half(pow(clamp(d.x * d.y * 16.0, 0.0, 1.0), vignette));
 
-    return half4(color.rgb * l * grille * v, color.a);
+    return half4(color.rgb * l * grille * v * half(brightness), color.a);
 }
 
 // Flyback line for power-on (.colorEffect on a black overlay).

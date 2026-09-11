@@ -62,6 +62,7 @@ struct CRTSlidersView: View {
     @Binding var crt: CRTSettings
 
     var body: some View {
+        LabeledSlider("Brightness", value: $crt.brightness, in: 0.5...2, format: "%.2f×")
         LabeledSlider("Curvature X", value: $crt.barrelX, in: 0...0.15, format: "%.3f")
         LabeledSlider("Curvature Y", value: $crt.barrelY, in: 0...0.15, format: "%.3f")
         LabeledSlider("Sync wobble", value: $crt.wobble, in: 0...0.01, format: "%.4f")

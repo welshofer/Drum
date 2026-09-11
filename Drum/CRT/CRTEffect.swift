@@ -23,7 +23,8 @@ struct CRTEffect: ViewModifier {
                     .float(settings.scale),
                     .float(settings.scanlines),
                     .float(settings.grille),
-                    .float(settings.vignette)),
+                    .float(settings.vignette),
+                    .float(settings.brightness)),
                 isEnabled: settings.enabled)
             .distortionEffect(
                 DrumBundle.shaders.crtBarrel(

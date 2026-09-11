@@ -26,11 +26,12 @@ struct TerminalTheme: Equatable {
         return NSFont.monospacedSystemFont(ofSize: size, weight: .regular)
     }
 
-    /// Brightness for the 16 ANSI slots. Black stays visible (it is drawn on a
-    /// black tube), hues become distinct greys, bright variants step up.
+    /// Brightness for the 16 ANSI slots. Coloured output (prompts, Claude
+    /// Code's UI) is most of what is on screen, so the floor is high: hues
+    /// stay readable, black stays visible on a black tube, bright steps up.
     static let ansiBrightness: [Double] = [
-        0.30, 0.55, 0.72, 0.84, 0.48, 0.62, 0.68, 0.92,   // normal 0–7
-        0.42, 0.68, 0.84, 0.94, 0.58, 0.74, 0.80, 1.00,   // bright 8–15
+        0.42, 0.82, 0.88, 0.94, 0.78, 0.84, 0.90, 0.96,   // normal 0–7
+        0.52, 0.92, 0.96, 1.00, 0.88, 0.94, 0.98, 1.00,   // bright 8–15
     ]
 
     var foreground: NSColor { phosphor.nsColor }
