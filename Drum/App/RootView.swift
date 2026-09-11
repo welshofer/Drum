@@ -12,8 +12,9 @@ struct RootView: View {
                     .transition(PowerOnTransition.asymmetric(tint: state.crt.phosphor.swiftUIColor))
             }
         }
-        .ignoresSafeArea()
         .background(Color.black)
+        .navigationTitle(state.terminal.title)
+        .task { state.powerOn() }
     }
 }
 
@@ -23,12 +24,21 @@ struct RootView: View {
 /// because SwiftUI's shader modifiers cannot host AppKit views (Phase 1 finding).
 struct CRTStage: View {
     @Environment(AppState.self) private var state
+    @Environment(\.displayScale) private var displayScale
+
+    /// The persisted settings with the live backing scale: scanline period is
+    /// in device pixels, and the window can move between 1× and 2× displays.
+    private var settings: CRTSettings {
+        var s = state.crt
+        s.scale = Float(displayScale)
+        return s
+    }
 
     var body: some View {
         ZStack {
             TimelineView(.animation(minimumInterval: 1 / 60, paused: !state.crt.animated)) { context in
                 PictureStage()
-                    .crt(state.crt, time: context.date.timeIntervalSinceReferenceDate)
+                    .crt(settings, time: context.date.timeIntervalSinceReferenceDate)
             }
             InputStage()
         }

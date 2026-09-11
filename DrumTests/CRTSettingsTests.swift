@@ -56,6 +56,6 @@ struct CRTSettingsTests {
         store.save(24.0, for: .fontSize)
         #expect(store.load(PhosphorPreset.self, for: .preset) == .green)
         #expect(store.load(Double.self, for: .fontSize) == 24.0)
-        #expect(store.load(String?.self, for: .pinnedScreen) == nil)
+        #expect(store.load(TerminalFontChoice.self, for: .font) == nil)
     }
 }

@@ -41,12 +41,6 @@ final class AppState {
     var preset: PhosphorPreset { didSet { store.save(preset, for: .preset) } }
     var font: TerminalFontChoice { didSet { store.save(font, for: .font) } }
     var fontSize: Double { didSet { store.save(fontSize, for: .fontSize) } }
-    var pinnedScreenName: String? { didSet { store.save(pinnedScreenName, for: .pinnedScreen) } }
-
-    /// Screens currently attached, by `localizedName`. Kept fresh by `ScreenPinning`.
-    var availableScreenNames: [String] = []
-    /// Whether the window is currently pinned borderless to a screen.
-    var isPinned = false
 
     /// Drives the power-on/off transition on the root view.
     private(set) var isPoweredOn = false
@@ -65,7 +59,6 @@ final class AppState {
         let font = store.load(TerminalFontChoice.self, for: .font) ?? .glassTTY
         self.font = font
         fontSize = store.load(Double.self, for: .fontSize) ?? font.defaultSize
-        pinnedScreenName = store.load(String?.self, for: .pinnedScreen) ?? nil
     }
 
     // MARK: Phosphor
@@ -96,6 +89,7 @@ final class AppState {
     // MARK: Power
 
     func powerOn() {
+        guard !isPoweredOn else { return }
         withAnimation { isPoweredOn = true }
     }
 
@@ -121,7 +115,7 @@ final class AppState {
 struct SettingsStore {
     /// `crt` is versioned: bump it when defaults change on purpose so users
     /// pick up the new tuning instead of their persisted copy of the old one.
-    enum Key: String { case crt = "crt.v2", preset, font, fontSize, pinnedScreen }
+    enum Key: String { case crt = "crt.v2", preset, font, fontSize }
 
     let defaults: UserDefaults
 

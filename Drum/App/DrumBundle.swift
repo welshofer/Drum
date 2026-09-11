@@ -39,7 +39,7 @@ enum DrumBundle {
     /// the §5 question (does SwiftUI host the SwiftTerm view under a layer
     /// effect?) without screen-recording permission.
     @MainActor
-    static func armSnapshots(window: NSWindow, state: AppState) {
+    static func armSnapshots(state: AppState) {
         #if SWIFT_PACKAGE
         let env = ProcessInfo.processInfo.environment
         guard let dir = env["DRUM_SNAPSHOT_DIR"] else { return }
@@ -49,6 +49,10 @@ enum DrumBundle {
         }
         Task { @MainActor in
             try? await Task.sleep(for: .seconds(3))
+            guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil }) else {
+                NSApp.terminate(nil)
+                return
+            }
             WindowSnapshot.write(window, note: Self.stateNote(state), to: "\(dir)/snapshot-1")
             window.setContentSize(NSSize(width: 1400, height: 394))
             try? await Task.sleep(for: .seconds(2))

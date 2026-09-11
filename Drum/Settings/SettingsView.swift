@@ -36,24 +36,10 @@ struct SettingsView: View {
                 }
                 LabeledSlider("Size", value: $state.fontSize, in: 8...48, format: "%.0f pt")
             }
-
-            Section("Display") {
-                Picker("Pin to display", selection: $state.pinnedScreenName) {
-                    Text("None (normal window)").tag(String?.none)
-                    ForEach(state.availableScreenNames, id: \.self) { name in
-                        Text(name).tag(String?.some(name))
-                    }
-                }
-                Text(state.isPinned
-                     ? "Pinned. Borderless, joins all Spaces. Choose None to release."
-                     : "Pick the 2560×720 panel to run borderless on it.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
         }
         .formStyle(.grouped)
         .frame(width: 460)
-        .frame(minHeight: 620)
+        .frame(minHeight: 560)
     }
 }
 
@@ -70,11 +56,6 @@ struct CRTSlidersView: View {
         LabeledSlider("Aperture grille", value: $crt.grille, in: 0...0.3, format: "%.2f")
         LabeledSlider("Vignette", value: $crt.vignette, in: 0...1.5, format: "%.2f")
         LabeledSlider("Bezel radius", value: $crt.bezelCornerRadius, in: 0...120, format: "%.0f pt")
-        HStack {
-            Text("Pixel scale")
-            Spacer()
-            Text(String(format: "%.0f×", crt.scale)).foregroundStyle(.secondary).monospacedDigit()
-        }
         Button("Reset tube to defaults") {
             let phosphor = crt.phosphor
             crt = CRTSettings()
@@ -100,7 +81,7 @@ struct LabeledSlider<V: BinaryFloatingPoint>: View where V.Stride: BinaryFloatin
 
     var body: some View {
         HStack {
-            Slider(value: $value, in: range) { Text(title) }
+            Slider(value: $value, in: range, label: { Text(title) })
             Text(String(format: format, Double(value)))
                 .monospacedDigit()
                 .foregroundStyle(.secondary)

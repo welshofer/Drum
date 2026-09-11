@@ -1,6 +1,6 @@
 # Drum — invariants
 
-- macOS 26 only. Swift 6, strict concurrency, zero warnings. SwiftUI; AppKit only where SwiftUI has no API (SwiftTerm wrapper, window pinning, NSScreen).
+- macOS 26 only. Swift 6, strict concurrency, zero warnings. SwiftUI; AppKit only where SwiftUI has no API (SwiftTerm wrapper).
 - No MVVM. `@Observable` + `@Environment`. No `ObservableObject`, no `@StateObject`.
 - No `DispatchQueue`, no completion handlers, except inside the SwiftTerm representable where the library's delegate API requires it — isolate it there.
 - SwiftTerm is the terminal engine. Never write a VT parser.
@@ -9,13 +9,15 @@
 - Views < 200 lines. Extract.
 - Bundled fonts have their license in CREDITS.md before commit.
 - Always return whole files when editing source.
+- One ordinary resizable window (`Window` scene). No screen pinning, no borderless mode; the user maximises it on whatever display they like.
 
 ## Learned the hard way (see docs/phase-1-findings.md)
 
 - SwiftUI's shader modifiers cannot host an AppKit view: anything under `.crt()` that is an `NSViewRepresentable` vanishes from the window. The chain wraps `PictureStage` (an `Image` of `TerminalMirror`'s capture); the real SwiftTerm view is `InputStage`, outside the chain, invisible, first responder. Never move it back under the chain.
-- `NSHostingView.sizingOptions` stays `[]`; the picture must never propose its own size upward or the window grows without bound.
+- The picture must never propose its own size upward (it is drawn in an `overlay` of a flexible `Color.black`) or the window would grow to fit it and the next capture would be bigger again.
 - `.boundingRect` reaches a shader as `float4 (x, y, w, h)`, so every shader takes `float4 bounds` and uses `bounds.zw`.
 - Quit uses cancel → power-off → terminate again; `.terminateLater` hangs with a main-actor `Task`.
+- Backing scale for the scanline period comes from `@Environment(\.displayScale)` at render time, never from persisted settings.
 
 ## Build
 

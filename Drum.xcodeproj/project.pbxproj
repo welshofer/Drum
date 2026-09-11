@@ -12,7 +12,6 @@
 		29C931A58EFC16687F38F9B9 /* TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1C43E7C928ED4D70DA96E9 /* TerminalView.swift */; };
 		2C971B3CDE213588DF521F62 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 747DF943371BBD3E7CCFC748 /* AppState.swift */; };
 		446C0F63D4A976932B39CE1A /* CRTSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */; };
-		4F073F20A2875A288CA36109 /* ScreenPinning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D3FF767493AC8A216095265 /* ScreenPinning.swift */; };
 		5C496ED8AEC10DFE41340582 /* GlowOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FACE56781368683A16578A /* GlowOverlay.swift */; };
 		5CF456B050321D25EAA0DD77 /* TerminalTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB727BA4B95527ACB94E8A6A /* TerminalTheme.swift */; };
 		5FE30B17EBFC511ED7B1ECF0 /* TerminalMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FB24532029BB0647127F80 /* TerminalMirror.swift */; };
@@ -26,7 +25,6 @@
 		E7A4FC89F8A02BB076128F25 /* DrumApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887F477326D6B440E24544FD /* DrumApp.swift */; };
 		EB352D7D4EA5D20673951529 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = 44B043D74DF45B0F38B4DBE6 /* Fonts */; };
 		EF62DC3AB9D50B9FDF767F16 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 2992DF22287357EF56926EBA /* SwiftTerm */; };
-		F61CBFCB3D001E01B3E7CEE5 /* DrumWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77638249EB2152E233A949D5 /* DrumWindow.swift */; };
 		FB2662B190BA6931C84A0F5C /* TerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F9318F68A3E30A8C403C0E4 /* TerminalSession.swift */; };
 /* End PBXBuildFile section */
 
@@ -41,7 +39,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		2D3FF767493AC8A216095265 /* ScreenPinning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenPinning.swift; sourceTree = "<group>"; };
 		304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalThemeTests.swift; sourceTree = "<group>"; };
 		31ACC088B79255497356FE35 /* PowerOnTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerOnTransition.swift; sourceTree = "<group>"; };
 		44B043D74DF45B0F38B4DBE6 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Drum/Resources/Fonts; sourceTree = SOURCE_ROOT; };
@@ -51,7 +48,6 @@
 		65745C7122D59DC4E912004B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6F44209C7A12A5E2F6F974DE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		747DF943371BBD3E7CCFC748 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
-		77638249EB2152E233A949D5 /* DrumWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumWindow.swift; sourceTree = "<group>"; };
 		887F477326D6B440E24544FD /* DrumApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumApp.swift; sourceTree = "<group>"; };
 		97FACE56781368683A16578A /* GlowOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlowOverlay.swift; sourceTree = "<group>"; };
 		9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTSettings.swift; sourceTree = "<group>"; };
@@ -105,9 +101,7 @@
 				747DF943371BBD3E7CCFC748 /* AppState.swift */,
 				887F477326D6B440E24544FD /* DrumApp.swift */,
 				BB48E4A9F1A05F3CF70E0239 /* DrumBundle.swift */,
-				77638249EB2152E233A949D5 /* DrumWindow.swift */,
 				6F44209C7A12A5E2F6F974DE /* RootView.swift */,
-				2D3FF767493AC8A216095265 /* ScreenPinning.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -285,12 +279,10 @@
 				B2897CE7B0196DDF55B8FB06 /* CRTSettings.swift in Sources */,
 				E7A4FC89F8A02BB076128F25 /* DrumApp.swift in Sources */,
 				A65A11D567B2AA6168CCD036 /* DrumBundle.swift in Sources */,
-				F61CBFCB3D001E01B3E7CEE5 /* DrumWindow.swift in Sources */,
 				5C496ED8AEC10DFE41340582 /* GlowOverlay.swift in Sources */,
 				73046398286848B78A81A230 /* Phosphor.swift in Sources */,
 				22D0C6DEA485D4BB681C3433 /* PowerOnTransition.swift in Sources */,
 				82DBD2066DCB5D6CD4C44C2E /* RootView.swift in Sources */,
-				4F073F20A2875A288CA36109 /* ScreenPinning.swift in Sources */,
 				9A6FB943B167EAFAC0AB1203 /* SettingsView.swift in Sources */,
 				5FE30B17EBFC511ED7B1ECF0 /* TerminalMirror.swift in Sources */,
 				FB2662B190BA6931C84A0F5C /* TerminalSession.swift in Sources */,

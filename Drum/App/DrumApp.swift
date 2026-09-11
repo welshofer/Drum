@@ -5,50 +5,44 @@ struct DrumApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
     var body: some Scene {
-        Settings {
-            SettingsView()
+        // One ordinary window: title bar, resizable, zoomable, full screen if
+        // you like. Maximise it on whichever display you are using.
+        Window("Drum", id: "terminal") {
+            RootView()
                 .environment(delegate.state)
+                .preferredColorScheme(.dark)
         }
+        .defaultSize(width: 1280, height: 400)
+        .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .newItem) {}
             CommandMenu("Tube") {
                 Button("Power Cycle") { delegate.state.cyclePower() }
                     .keyboardShortcut("r", modifiers: .command)
-                Button("Identify Display") { delegate.windowController?.flash() }
-                Divider()
-                Button("Show Terminal") { delegate.windowController?.show() }
-                    .keyboardShortcut("0", modifiers: .command)
             }
+        }
+
+        Settings {
+            SettingsView()
+                .environment(delegate.state)
         }
     }
 }
 
-/// Owns `AppState` and the terminal window. The window is AppKit-owned so it
-/// can be pinned borderless and still take keystrokes (see `DrumWindow`).
+/// Owns `AppState`; handles launch prep and the power-off on quit.
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let state = AppState()
-    private(set) var windowController: DrumWindowController?
+    private var quitArmed = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         DrumBundle.prepareForLaunch()
-        let controller = DrumWindowController(state: state)
-        windowController = controller
-        controller.show()
-        state.powerOn()
-        DrumBundle.armSnapshots(window: controller.window, state: state)
-    }
-
-    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
-        windowController?.show()
-        return false
+        DrumBundle.armSnapshots(state: state)
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         true
     }
-
-    private var quitArmed = false
 
     /// Quit plays the 300 ms power-off before the process goes away.
     ///

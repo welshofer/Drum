@@ -92,9 +92,9 @@ extension TerminalSession: @MainActor LocalProcessTerminalViewDelegate {
         mirror.markDirty()
     }
 
+    /// Shown by `RootView` via `navigationTitle`.
     func setTerminalTitle(source: LocalProcessTerminalView, title: String) {
         self.title = title.isEmpty ? "Drum" : title
-        source.window?.title = self.title
     }
 
     func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}

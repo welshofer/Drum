@@ -52,10 +52,12 @@ Consequences worth knowing:
   AppKit waits in a run-loop mode that does not service the task. Quit now
   cancels the first request, plays the 300 ms power-off, and terminates on a
   second request.
-- **Window size feedback loop.** `NSHostingView` reported the mirrored picture
-  as intrinsic content size, the window grew to fit, and the next capture was
-  larger. `sizingOptions = []` on the hosting view, and the picture no longer
-  proposes a fixed frame.
+- **Window size feedback loop.** The mirrored picture was proposed as content
+  size, the window grew to fit, and the next capture was larger. The picture
+  now lives in an `overlay` of a flexible black stage and never proposes a size.
+- **Screen pinning removed.** The borderless pin-to-display mode (and the
+  AppKit-owned window it needed) was dropped at the user's request; Drum is one
+  ordinary `Window` scene the user maximises on whichever display they like.
 - **`.boundingRect` is a `float4`.** The spec's shaders declare `float2 size`;
   SwiftUI passes `(x, y, width, height)`. All four shaders take `float4 bounds`
   and use `bounds.zw`.
