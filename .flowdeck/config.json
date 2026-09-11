@@ -1,0 +1,11 @@
+{
+  "version" : 1,
+  "xcodebuild" : {
+    "args" : [
+      "-skipPackagePluginValidation"
+    ],
+    "env" : {
+
+    }
+  }
+}

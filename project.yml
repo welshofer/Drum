@@ -79,5 +79,6 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.welshofer.DrumTests
+        GENERATE_INFOPLIST_FILE: YES
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Drum.app/Contents/MacOS/Drum"
         BUNDLE_LOADER: "$(TEST_HOST)"
