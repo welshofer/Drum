@@ -30,11 +30,27 @@ struct Phosphor: Codable, Sendable, Equatable {
         return NSColor(srgbRed: CGFloat(red) * b, green: CGFloat(green) * b, blue: CGFloat(blue) * b, alpha: 1)
     }
 
-    /// Replace the tint, keeping the bloom numbers.
+    /// Replace the tint, keeping the bloom numbers. `Color.Resolved` is
+    /// extended-range sRGB, so a saturated pick can come back below 0 or above
+    /// 1; everything downstream (16-bit palette, NSColor) needs `0...1`.
     mutating func setColor(_ resolved: Color.Resolved) {
-        red = resolved.red
-        green = resolved.green
-        blue = resolved.blue
+        red = Self.unit(resolved.red)
+        green = Self.unit(resolved.green)
+        blue = Self.unit(resolved.blue)
+    }
+
+    static func unit(_ value: Float) -> Float {
+        value.isFinite ? min(max(value, 0), 1) : 0
+    }
+
+    /// The phosphor with every component forced into `0...1`, for values that
+    /// were persisted before clamping existed.
+    var clamped: Phosphor {
+        var p = self
+        p.red = Self.unit(red)
+        p.green = Self.unit(green)
+        p.blue = Self.unit(blue)
+        return p
     }
 }
 

@@ -39,12 +39,16 @@ struct TerminalTheme: Equatable {
     var background: NSColor { .black }
 
     /// The 16 ANSI colours as SwiftTerm colours (16-bit components).
+    /// Components are clamped before the integer conversion: `UInt16(_:)`
+    /// traps on anything outside `0...65535`, and a custom phosphor can carry
+    /// extended-range values.
     var palette: [SwiftTerm.Color] {
-        Self.ansiBrightness.map { b in
-            SwiftTerm.Color(
-                red: UInt16(min(1, Double(phosphor.red) * b) * 65535),
-                green: UInt16(min(1, Double(phosphor.green) * b) * 65535),
-                blue: UInt16(min(1, Double(phosphor.blue) * b) * 65535))
+        let p = phosphor.clamped
+        func channel(_ value: Float, _ b: Double) -> UInt16 {
+            UInt16(min(max(Double(value) * b, 0), 1) * 65535)
+        }
+        return Self.ansiBrightness.map { b in
+            SwiftTerm.Color(red: channel(p.red, b), green: channel(p.green, b), blue: channel(p.blue, b))
         }
     }
 

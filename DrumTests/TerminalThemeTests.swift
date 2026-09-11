@@ -14,6 +14,19 @@ struct TerminalThemeTests {
         }
     }
 
+    @Test func extendedRangePhosphorDoesNotTrap() {
+        // ColorPicker → Color.resolve can return components outside 0...1.
+        var p = Phosphor.p3Amber
+        p.setColor(.init(red: 1.08, green: -0.02, blue: 0.5))
+        #expect(p.red == 1 && p.green == 0 && p.blue == 0.5)
+        var raw = Phosphor.p3Amber
+        raw.red = 1.3
+        raw.blue = -0.4
+        let theme = TerminalTheme(font: .monospacedSystemFont(ofSize: 14, weight: .regular), phosphor: raw)
+        #expect(theme.palette.count == 16)
+        #expect(theme.palette.allSatisfy { $0.blue == 0 })
+    }
+
     @Test func brightVariantsAreBrighter() {
         for i in 0..<8 {
             #expect(TerminalTheme.ansiBrightness[i + 8] > TerminalTheme.ansiBrightness[i])
