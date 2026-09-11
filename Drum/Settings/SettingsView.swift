@@ -1,0 +1,109 @@
+import SwiftUI
+
+/// Live settings, no Apply button. Everything writes straight into `AppState`.
+struct SettingsView: View {
+    @Environment(AppState.self) private var state
+
+    var body: some View {
+        @Bindable var state = state
+        Form {
+            Section("Phosphor") {
+                Picker("Preset", selection: Binding(
+                    get: { state.preset },
+                    set: { state.select($0) })) {
+                    ForEach(PhosphorPreset.allCases) { preset in
+                        Text(preset.title).tag(preset)
+                    }
+                }
+                ColorPicker("Custom colour", selection: $state.customColor, supportsOpacity: false)
+                LabeledSlider("Bloom radius", value: $state.crt.phosphor.bloomRadius, in: 0...8, format: "%.1f pt")
+                LabeledSlider("Bloom strength", value: $state.crt.phosphor.bloomStrength, in: 0...2, format: "%.2f")
+            }
+
+            Section("Tube") {
+                Toggle("CRT effect", isOn: $state.crt.enabled)
+                Toggle("Animated (sync wobble, 60 fps)", isOn: $state.crt.animated)
+                CRTSlidersView(crt: $state.crt)
+            }
+
+            Section("Font") {
+                Picker("Face", selection: Binding(
+                    get: { state.font },
+                    set: { state.select($0) })) {
+                    ForEach(TerminalFontChoice.allCases) { font in
+                        Text(font.title).tag(font)
+                    }
+                }
+                LabeledSlider("Size", value: $state.fontSize, in: 8...48, format: "%.0f pt")
+            }
+
+            Section("Display") {
+                Picker("Pin to display", selection: $state.pinnedScreenName) {
+                    Text("None (normal window)").tag(String?.none)
+                    ForEach(state.availableScreenNames, id: \.self) { name in
+                        Text(name).tag(String?.some(name))
+                    }
+                }
+                Text(state.isPinned
+                     ? "Pinned. Borderless, joins all Spaces. Choose None to release."
+                     : "Pick the 2560×720 panel to run borderless on it.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .frame(width: 460)
+        .frame(minHeight: 620)
+    }
+}
+
+/// The per-uniform sliders, extracted to keep `SettingsView` short.
+struct CRTSlidersView: View {
+    @Binding var crt: CRTSettings
+
+    var body: some View {
+        LabeledSlider("Curvature X", value: $crt.barrelX, in: 0...0.15, format: "%.3f")
+        LabeledSlider("Curvature Y", value: $crt.barrelY, in: 0...0.15, format: "%.3f")
+        LabeledSlider("Sync wobble", value: $crt.wobble, in: 0...0.01, format: "%.4f")
+        LabeledSlider("Scanlines", value: $crt.scanlines, in: 0...0.5, format: "%.2f")
+        LabeledSlider("Aperture grille", value: $crt.grille, in: 0...0.3, format: "%.2f")
+        LabeledSlider("Vignette", value: $crt.vignette, in: 0...1.5, format: "%.2f")
+        LabeledSlider("Bezel radius", value: $crt.bezelCornerRadius, in: 0...120, format: "%.0f pt")
+        HStack {
+            Text("Pixel scale")
+            Spacer()
+            Text(String(format: "%.0f×", crt.scale)).foregroundStyle(.secondary).monospacedDigit()
+        }
+        Button("Reset tube to defaults") {
+            let phosphor = crt.phosphor
+            crt = CRTSettings()
+            crt.phosphor = phosphor
+        }
+    }
+}
+
+/// Slider with a trailing numeric readout. Generic over the float type so the
+/// `Float` uniforms and the `CGFloat`/`Double` sizes share one control.
+struct LabeledSlider<V: BinaryFloatingPoint>: View where V.Stride: BinaryFloatingPoint {
+    let title: String
+    @Binding var value: V
+    let range: ClosedRange<V>
+    let format: String
+
+    init(_ title: String, value: Binding<V>, in range: ClosedRange<V>, format: String) {
+        self.title = title
+        self._value = value
+        self.range = range
+        self.format = format
+    }
+
+    var body: some View {
+        HStack {
+            Slider(value: $value, in: range) { Text(title) }
+            Text(String(format: format, Double(value)))
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+                .frame(width: 72, alignment: .trailing)
+        }
+    }
+}

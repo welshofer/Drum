@@ -1,0 +1,574 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		06A9FC95B4E3A34B678AEA3A /* CRTEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDDCCF99C41855DDB1C3C04A /* CRTEffect.swift */; };
+		22D0C6DEA485D4BB681C3433 /* PowerOnTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31ACC088B79255497356FE35 /* PowerOnTransition.swift */; };
+		29C931A58EFC16687F38F9B9 /* TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1C43E7C928ED4D70DA96E9 /* TerminalView.swift */; };
+		2C971B3CDE213588DF521F62 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 747DF943371BBD3E7CCFC748 /* AppState.swift */; };
+		446C0F63D4A976932B39CE1A /* CRTSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */; };
+		4F073F20A2875A288CA36109 /* ScreenPinning.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D3FF767493AC8A216095265 /* ScreenPinning.swift */; };
+		5C496ED8AEC10DFE41340582 /* GlowOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FACE56781368683A16578A /* GlowOverlay.swift */; };
+		5CF456B050321D25EAA0DD77 /* TerminalTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB727BA4B95527ACB94E8A6A /* TerminalTheme.swift */; };
+		5FE30B17EBFC511ED7B1ECF0 /* TerminalMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FB24532029BB0647127F80 /* TerminalMirror.swift */; };
+		73046398286848B78A81A230 /* Phosphor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74F1102829627292C86D5A8 /* Phosphor.swift */; };
+		82DBD2066DCB5D6CD4C44C2E /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F44209C7A12A5E2F6F974DE /* RootView.swift */; };
+		9A6FB943B167EAFAC0AB1203 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65745C7122D59DC4E912004B /* SettingsView.swift */; };
+		A65A11D567B2AA6168CCD036 /* DrumBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB48E4A9F1A05F3CF70E0239 /* DrumBundle.swift */; };
+		B2897CE7B0196DDF55B8FB06 /* CRTSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */; };
+		B4151D451F9F2AACABF6B826 /* CRT.metal in Sources */ = {isa = PBXBuildFile; fileRef = E4CA29FC8047D53A3AE400D6 /* CRT.metal */; };
+		D1F44AC2CF9BCEE2F2A66483 /* TerminalThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */; };
+		E7A4FC89F8A02BB076128F25 /* DrumApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887F477326D6B440E24544FD /* DrumApp.swift */; };
+		EB352D7D4EA5D20673951529 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = 44B043D74DF45B0F38B4DBE6 /* Fonts */; };
+		EF62DC3AB9D50B9FDF767F16 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 2992DF22287357EF56926EBA /* SwiftTerm */; };
+		F61CBFCB3D001E01B3E7CEE5 /* DrumWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77638249EB2152E233A949D5 /* DrumWindow.swift */; };
+		FB2662B190BA6931C84A0F5C /* TerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F9318F68A3E30A8C403C0E4 /* TerminalSession.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		B49F21BFB8715CF4A7835428 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A8DA3116932F196ACFF23E6F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 37600639A0226672ABB701CB;
+			remoteInfo = Drum;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2D3FF767493AC8A216095265 /* ScreenPinning.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenPinning.swift; sourceTree = "<group>"; };
+		304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalThemeTests.swift; sourceTree = "<group>"; };
+		31ACC088B79255497356FE35 /* PowerOnTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerOnTransition.swift; sourceTree = "<group>"; };
+		44B043D74DF45B0F38B4DBE6 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Drum/Resources/Fonts; sourceTree = SOURCE_ROOT; };
+		4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTSettingsTests.swift; sourceTree = "<group>"; };
+		4F9318F68A3E30A8C403C0E4 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
+		603F1F5A4AE5F61C0616C348 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		65745C7122D59DC4E912004B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		6F44209C7A12A5E2F6F974DE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		747DF943371BBD3E7CCFC748 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		77638249EB2152E233A949D5 /* DrumWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumWindow.swift; sourceTree = "<group>"; };
+		887F477326D6B440E24544FD /* DrumApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumApp.swift; sourceTree = "<group>"; };
+		97FACE56781368683A16578A /* GlowOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlowOverlay.swift; sourceTree = "<group>"; };
+		9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTSettings.swift; sourceTree = "<group>"; };
+		A74F1102829627292C86D5A8 /* Phosphor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phosphor.swift; sourceTree = "<group>"; };
+		BB48E4A9F1A05F3CF70E0239 /* DrumBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumBundle.swift; sourceTree = "<group>"; };
+		BB727BA4B95527ACB94E8A6A /* TerminalTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTheme.swift; sourceTree = "<group>"; };
+		BDDCCF99C41855DDB1C3C04A /* CRTEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTEffect.swift; sourceTree = "<group>"; };
+		DB1C43E7C928ED4D70DA96E9 /* TerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalView.swift; sourceTree = "<group>"; };
+		E4CA29FC8047D53A3AE400D6 /* CRT.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = CRT.metal; sourceTree = "<group>"; };
+		F3EE1228978E7BFF6FA73793 /* DrumTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DrumTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F3FB24532029BB0647127F80 /* TerminalMirror.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalMirror.swift; sourceTree = "<group>"; };
+		FA83039C89B6D5C92D0E93DD /* Drum.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Drum.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		526BAEF248E5189CA27C50BB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EF62DC3AB9D50B9FDF767F16 /* SwiftTerm in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0AC0026B9A2734C31960598D /* CRT */ = {
+			isa = PBXGroup;
+			children = (
+				E4CA29FC8047D53A3AE400D6 /* CRT.metal */,
+				BDDCCF99C41855DDB1C3C04A /* CRTEffect.swift */,
+				9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */,
+				A74F1102829627292C86D5A8 /* Phosphor.swift */,
+				31ACC088B79255497356FE35 /* PowerOnTransition.swift */,
+			);
+			path = CRT;
+			sourceTree = "<group>";
+		};
+		1F9A8A5508AC77E44FDF7C90 = {
+			isa = PBXGroup;
+			children = (
+				D625C2DFA564B5C12F832960 /* Drum */,
+				C12E228BF6CA79D46F99D7F1 /* DrumTests */,
+				F398DC4A2838A14617A18648 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5533715003133982DA8678F2 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				747DF943371BBD3E7CCFC748 /* AppState.swift */,
+				887F477326D6B440E24544FD /* DrumApp.swift */,
+				BB48E4A9F1A05F3CF70E0239 /* DrumBundle.swift */,
+				77638249EB2152E233A949D5 /* DrumWindow.swift */,
+				6F44209C7A12A5E2F6F974DE /* RootView.swift */,
+				2D3FF767493AC8A216095265 /* ScreenPinning.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		74BE1E75AA2C0A9DC67D5951 /* Terminal */ = {
+			isa = PBXGroup;
+			children = (
+				97FACE56781368683A16578A /* GlowOverlay.swift */,
+				F3FB24532029BB0647127F80 /* TerminalMirror.swift */,
+				4F9318F68A3E30A8C403C0E4 /* TerminalSession.swift */,
+				BB727BA4B95527ACB94E8A6A /* TerminalTheme.swift */,
+				DB1C43E7C928ED4D70DA96E9 /* TerminalView.swift */,
+			);
+			path = Terminal;
+			sourceTree = "<group>";
+		};
+		ABCC7444728F544214B8F645 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				65745C7122D59DC4E912004B /* SettingsView.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		C12E228BF6CA79D46F99D7F1 /* DrumTests */ = {
+			isa = PBXGroup;
+			children = (
+				4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */,
+				304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */,
+			);
+			path = DrumTests;
+			sourceTree = "<group>";
+		};
+		D625C2DFA564B5C12F832960 /* Drum */ = {
+			isa = PBXGroup;
+			children = (
+				603F1F5A4AE5F61C0616C348 /* Info.plist */,
+				5533715003133982DA8678F2 /* App */,
+				0AC0026B9A2734C31960598D /* CRT */,
+				FC82E2273522489205355FB5 /* Resources */,
+				ABCC7444728F544214B8F645 /* Settings */,
+				74BE1E75AA2C0A9DC67D5951 /* Terminal */,
+			);
+			path = Drum;
+			sourceTree = "<group>";
+		};
+		F398DC4A2838A14617A18648 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FA83039C89B6D5C92D0E93DD /* Drum.app */,
+				F3EE1228978E7BFF6FA73793 /* DrumTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FC82E2273522489205355FB5 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				44B043D74DF45B0F38B4DBE6 /* Fonts */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		37600639A0226672ABB701CB /* Drum */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F66B04C5E72B89B32CDDA61F /* Build configuration list for PBXNativeTarget "Drum" */;
+			buildPhases = (
+				CF7BDA1E16408958E4D3B13C /* Sources */,
+				E5C496DA04B5813C5FEC7734 /* Resources */,
+				526BAEF248E5189CA27C50BB /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Drum;
+			packageProductDependencies = (
+				2992DF22287357EF56926EBA /* SwiftTerm */,
+			);
+			productName = Drum;
+			productReference = FA83039C89B6D5C92D0E93DD /* Drum.app */;
+			productType = "com.apple.product-type.application";
+		};
+		BFDECB24256CD2138CB8C744 /* DrumTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2916F5E16AE4E7F69A84235C /* Build configuration list for PBXNativeTarget "DrumTests" */;
+			buildPhases = (
+				B62D36F113184CE4213CE8B0 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				622D57AF12661F382196F84E /* PBXTargetDependency */,
+			);
+			name = DrumTests;
+			packageProductDependencies = (
+			);
+			productName = DrumTests;
+			productReference = F3EE1228978E7BFF6FA73793 /* DrumTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A8DA3116932F196ACFF23E6F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					37600639A0226672ABB701CB = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					BFDECB24256CD2138CB8C744 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 2EA94AC7ECE52F4AF79EC8F8 /* Build configuration list for PBXProject "Drum" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 1F9A8A5508AC77E44FDF7C90;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				C4230A8E3AE519FEE034F88F /* XCRemoteSwiftPackageReference "SwiftTerm" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F398DC4A2838A14617A18648 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				37600639A0226672ABB701CB /* Drum */,
+				BFDECB24256CD2138CB8C744 /* DrumTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E5C496DA04B5813C5FEC7734 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EB352D7D4EA5D20673951529 /* Fonts in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B62D36F113184CE4213CE8B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				446C0F63D4A976932B39CE1A /* CRTSettingsTests.swift in Sources */,
+				D1F44AC2CF9BCEE2F2A66483 /* TerminalThemeTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CF7BDA1E16408958E4D3B13C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2C971B3CDE213588DF521F62 /* AppState.swift in Sources */,
+				B4151D451F9F2AACABF6B826 /* CRT.metal in Sources */,
+				06A9FC95B4E3A34B678AEA3A /* CRTEffect.swift in Sources */,
+				B2897CE7B0196DDF55B8FB06 /* CRTSettings.swift in Sources */,
+				E7A4FC89F8A02BB076128F25 /* DrumApp.swift in Sources */,
+				A65A11D567B2AA6168CCD036 /* DrumBundle.swift in Sources */,
+				F61CBFCB3D001E01B3E7CEE5 /* DrumWindow.swift in Sources */,
+				5C496ED8AEC10DFE41340582 /* GlowOverlay.swift in Sources */,
+				73046398286848B78A81A230 /* Phosphor.swift in Sources */,
+				22D0C6DEA485D4BB681C3433 /* PowerOnTransition.swift in Sources */,
+				82DBD2066DCB5D6CD4C44C2E /* RootView.swift in Sources */,
+				4F073F20A2875A288CA36109 /* ScreenPinning.swift in Sources */,
+				9A6FB943B167EAFAC0AB1203 /* SettingsView.swift in Sources */,
+				5FE30B17EBFC511ED7B1ECF0 /* TerminalMirror.swift in Sources */,
+				FB2662B190BA6931C84A0F5C /* TerminalSession.swift in Sources */,
+				5CF456B050321D25EAA0DD77 /* TerminalTheme.swift in Sources */,
+				29C931A58EFC16687F38F9B9 /* TerminalView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		622D57AF12661F382196F84E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 37600639A0226672ABB701CB /* Drum */;
+			targetProxy = B49F21BFB8715CF4A7835428 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		5C004FCB570074F47B9B845F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				MTL_TREAT_WARNINGS_AS_ERRORS = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		609E08AEEF3A80E3A48EBB2F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.welshofer.DrumTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Drum.app/Contents/MacOS/Drum";
+			};
+			name = Release;
+		};
+		655BE6E4CAF66048CE25A044 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Drum/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.welshofer.Drum;
+				PRODUCT_NAME = Drum;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+			};
+			name = Debug;
+		};
+		9FE801061AE0D3E63DF4942B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Drum/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.welshofer.Drum;
+				PRODUCT_NAME = Drum;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+			};
+			name = Release;
+		};
+		A076DD76D9524A64F1358985 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				MTL_TREAT_WARNINGS_AS_ERRORS = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		C20EEE848D3B27A41FD01581 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.welshofer.DrumTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Drum.app/Contents/MacOS/Drum";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2916F5E16AE4E7F69A84235C /* Build configuration list for PBXNativeTarget "DrumTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C20EEE848D3B27A41FD01581 /* Debug */,
+				609E08AEEF3A80E3A48EBB2F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		2EA94AC7ECE52F4AF79EC8F8 /* Build configuration list for PBXProject "Drum" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5C004FCB570074F47B9B845F /* Debug */,
+				A076DD76D9524A64F1358985 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F66B04C5E72B89B32CDDA61F /* Build configuration list for PBXNativeTarget "Drum" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				655BE6E4CAF66048CE25A044 /* Debug */,
+				9FE801061AE0D3E63DF4942B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C4230A8E3AE519FEE034F88F /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.20.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2992DF22287357EF56926EBA /* SwiftTerm */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C4230A8E3AE519FEE034F88F /* XCRemoteSwiftPackageReference "SwiftTerm" */;
+			productName = SwiftTerm;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = A8DA3116932F196ACFF23E6F /* Project object */;
+}
