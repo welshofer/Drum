@@ -55,10 +55,7 @@ final class TerminalBitmapStore {
                     : $0.pixelsWide == width && $0.pixelsHigh == height
             } ?? false
             if !fits || scaleChanged {
-                let rect = CGRect(x: bounds.minX, y: bounds.minY,
-                                  width: CGFloat(capacityWidth) / scale,
-                                  height: CGFloat(capacityHeight) / scale)
-                slots[i].rep = view.bitmapImageRepForCachingDisplay(in: rect)
+                slots[i].rep = Self.makeBitmap(width: capacityWidth, height: capacityHeight, scale: scale)
                 slots[i].damage.removeAll(keepingCapacity: true)
                 slots[i].redrawAll = true
                 allocationCount += 1
@@ -101,6 +98,22 @@ final class TerminalBitmapStore {
         lastDrawnRects = drawRects
         index = next
         return image
+    }
+
+    /// AppKit's caching-display factory uses Generic RGB. SwiftUI then converts
+    /// every published frame on the CPU. Draw into sRGB from the start, in the
+    /// premultiplied RGBA format. Tag the empty buffer before drawing so AppKit
+    /// performs real color conversion, not retagging
+    /// already-rendered pixels (which would change their appearance).
+    private static func makeBitmap(width: Int, height: Int, scale: CGFloat) -> NSBitmapImageRep? {
+        guard let storage = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: width, pixelsHigh: height,
+                                             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true,
+                                             isPlanar: false, colorSpaceName: .deviceRGB,
+                                             bitmapFormat: [],
+                                             bytesPerRow: 0, bitsPerPixel: 32),
+              let rep = storage.retagging(with: .sRGB) else { return nil }
+        rep.size = CGSize(width: CGFloat(width) / scale, height: CGFloat(height) / scale)
+        return rep
     }
 
     /// Merge only when the bounding box costs no more than drawing separately.

@@ -121,6 +121,18 @@ struct TerminalBitmapStoreTests {
         #expect(store.lastDrawnRects == [view.bounds])
     }
 
+    @Test func sRGBCapturePreservesColoredAndTranslucentContent() throws {
+        let view = PatternView(scale: 2)
+        view.rows = [NSColor(srgbRed: 0.19, green: 0.68, blue: 0.43, alpha: 0.6),
+                     NSColor(srgbRed: 1, green: 0.69, blue: 0.16, alpha: 1),
+                     NSColor(displayP3Red: 0.35, green: 0.65, blue: 0.44, alpha: 0.6),
+                     NSColor(srgbRed: 0.8, green: 0.7, blue: 0.6, alpha: 0.25)]
+        let store = TerminalBitmapStore()
+        let image = try #require(store.capture(view, scale: 2, liveResize: false))
+        #expect(image.colorSpace?.name == CGColorSpace.sRGB)
+        #expect(CapturePixels.matches(image, try reference(view), tolerance: 1))
+    }
+
     private func reference(_ view: NSView) throws -> CGImage {
         let rep = try #require(view.bitmapImageRepForCachingDisplay(in: view.bounds))
         view.cacheDisplay(in: view.bounds, to: rep)
@@ -128,12 +140,7 @@ struct TerminalBitmapStoreTests {
     }
 
     private func pixels(_ image: CGImage) -> [UInt8] {
-        // Cropped images may retain the larger backing store's row stride.
-        let data = image.dataProvider!.data! as Data
-        let bytesPerPixel = image.bitsPerPixel / 8
-        return (0..<image.height).flatMap { row in
-            Array(data[(row * image.bytesPerRow)..<(row * image.bytesPerRow + image.width * bytesPerPixel)])
-        }
+        CapturePixels.rgba(image)
     }
 }
 

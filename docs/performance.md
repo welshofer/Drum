@@ -84,3 +84,7 @@ The trace did not contain usable `CAMetalDrawable` presented-handler events. The
 Local evidence is in `/tmp/drum-performance/`: `baseline-gpu.trace`, `baseline-gpu-intervals.xml`, `second-release-tests.log`, `second-debug-tests-final.log`, and `second-debug-build-final.log`. Raw Instruments traces can contain process metadata and should remain local.
 
 The completed 30.75-second follow-up trace (`second-rendering.trace`, with exported `second-signposts.xml`) confirms that the actual window resize emits paired `Terminal live resize` markers and that subsequent PTY output produces mirror captures. Only two captures and no input events fell within that recording, so it is verification of the resize hooks, not a useful latency or comparative GPU benchmark. A controlled typing/presentation recording is still required for those measurements.
+
+## Third pass — controlled comparison and image color space
+
+The earlier improvements were checkpointed in `10bb40e`. The new [repeatable benchmark and results](performance-benchmark.md) compare the actual rendering paths, include percentile/worst-case samples, and provide a recording-start handshake for Instruments. Profiling identified CPU image color conversion; drawing capture buffers directly in sRGB reduced CRT CPU usage by approximately 42% in typing and scrolling and 19% in the resize workload across three runs. Full bitmap capture remains a cost, and visible key latency/sustained 60 fps are not established by these results.

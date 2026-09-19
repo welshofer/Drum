@@ -156,10 +156,13 @@ final class TerminalMirror {
         let interval = Self.signposter.beginInterval("Terminal capture")
         defer { Self.signposter.endInterval("Terminal capture", interval) }
         let scale = window.backingScaleFactor
-        if let image = bitmaps.capture(view, scale: scale, liveResize: view.inLiveResize) {
+        let observer = view.timingObserver
+        let start = observer == nil ? 0 : CACurrentMediaTime()
+        if let image = bitmaps.capture(view, scale: scale, liveResize: isLiveResizing) {
             self.image = image
             if self.scale != scale { self.scale = scale }
             dirty = false
+            observer?.captured(start: start, end: CACurrentMediaTime(), drawnArea: bitmaps.lastDrawnArea)
         }
         updateCaret(from: view)
     }

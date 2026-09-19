@@ -198,7 +198,9 @@ struct TerminalRenderingTests {
         #expect(image.width == Int(ceil(view.bounds.width * window.backingScaleFactor)))
         let rep = try #require(view.bitmapImageRepForCachingDisplay(in: view.bounds))
         view.cacheDisplay(in: view.bounds, to: rep)
-        #expect(pixels(image) == pixels(try #require(rep.cgImage)))
+        // The Generic RGB reference takes an extra 8-bit color conversion;
+        // its rounding may differ from direct sRGB capture by one channel value.
+        #expect(CapturePixels.matches(image, try #require(rep.cgImage), tolerance: 1))
     }
 
     @Test func liveResizePolicyIsTemporaryAndRestoresAnimation() {
@@ -240,10 +242,6 @@ struct TerminalRenderingTests {
     }
 
     private func pixels(_ image: CGImage) -> [UInt8] {
-        let data = image.dataProvider!.data! as Data
-        let bytesPerPixel = image.bitsPerPixel / 8
-        return (0..<image.height).flatMap { row in
-            Array(data[(row * image.bytesPerRow)..<(row * image.bytesPerRow + image.width * bytesPerPixel)])
-        }
+        CapturePixels.rgba(image)
     }
 }

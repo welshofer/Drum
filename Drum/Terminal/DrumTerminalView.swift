@@ -1,5 +1,6 @@
 import AppKit
 import SwiftTerm
+import QuartzCore
 import os
 
 /// SwiftTerm owns input, parsing, and glyph-safe dirty rectangles. Forward
@@ -7,6 +8,7 @@ import os
 final class DrumTerminalView: LocalProcessTerminalView {
     private static let signposter = OSSignposter(subsystem: "com.welshofer.Drum", category: "Rendering")
     weak var session: TerminalSession?
+    weak var timingObserver: (any TerminalTimingObserver)?
     private(set) var cursorShown = true
     private(set) var cursorStyle: CursorStyle = .blinkBlock
 
@@ -30,7 +32,10 @@ final class DrumTerminalView: LocalProcessTerminalView {
 
     override func dataReceived(slice: ArraySlice<UInt8>) {
         Self.signposter.emitEvent("PTY output")
+        let observer = timingObserver
+        let start = observer == nil ? 0 : CACurrentMediaTime()
         super.dataReceived(slice: slice)
+        observer?.receivedOutput(start: start, end: CACurrentMediaTime())
     }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
@@ -46,8 +51,18 @@ final class DrumTerminalView: LocalProcessTerminalView {
 
     override func setFrameSize(_ newSize: NSSize) {
         guard newSize != frame.size else { return }
+        let observer = timingObserver
+        let start = observer == nil ? 0 : CACurrentMediaTime()
         super.setFrameSize(newSize)
         session?.mirror.markDirty()
+        observer?.resized(start: start, end: CACurrentMediaTime())
+    }
+
+    override func viewWillDraw() {
+        super.viewWillDraw()
+        if session?.mirror.isEnabled == false {
+            timingObserver?.nativeDrawStarted(at: CACurrentMediaTime())
+        }
     }
 
     override func viewDidChangeBackingProperties() {
