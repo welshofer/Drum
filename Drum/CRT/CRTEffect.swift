@@ -6,6 +6,14 @@ import SwiftUI
 struct CRTEffect: ViewModifier {
     let settings: CRTSettings
     let time: TimeInterval
+    let liveResize: Bool
+
+    private var bloom: Shader {
+        let function = liveResize ? DrumBundle.shaders.crtBloomFast : DrumBundle.shaders.crtBloom
+        return function(.float(settings.phosphor.bloomRadius),
+                        .float(settings.phosphor.bloomStrength),
+                        .color(settings.phosphor.swiftUIColor))
+    }
 
     /// The wobble's sine runs at 1.7 rad/s. `time` is wrapped at a whole
     /// number of its periods before the narrowing to `Float`: the raw
@@ -16,13 +24,10 @@ struct CRTEffect: ViewModifier {
     func body(content: Content) -> some View {
         content
             .layerEffect(
-                DrumBundle.shaders.crtBloom(
-                    .float(settings.phosphor.bloomRadius),
-                    .float(settings.phosphor.bloomStrength),
-                    .color(settings.phosphor.swiftUIColor)),
+                bloom,
                 maxSampleOffset: CGSize(width: settings.phosphor.bloomRadius,
                                         height: settings.phosphor.bloomRadius),
-                isEnabled: settings.enabled)
+                isEnabled: settings.enabled && settings.phosphor.bloomStrength != 0)
             .colorEffect(
                 DrumBundle.shaders.crtMask(
                     .boundingRect,
@@ -38,7 +43,7 @@ struct CRTEffect: ViewModifier {
                     .boundingRect,
                     .float(settings.barrelX),
                     .float(settings.barrelY),
-                    .float(settings.animated ? settings.wobble : 0),
+                    .float(settings.isWobbling ? settings.wobble : 0),
                     .float(Float(time.truncatingRemainder(dividingBy: Self.timePeriod)))),
                 maxSampleOffset: CGSize(width: 160, height: 60),
                 isEnabled: settings.enabled)
@@ -48,7 +53,7 @@ struct CRTEffect: ViewModifier {
 }
 
 extension View {
-    func crt(_ settings: CRTSettings, time: TimeInterval) -> some View {
-        modifier(CRTEffect(settings: settings, time: time))
+    func crt(_ settings: CRTSettings, time: TimeInterval, liveResize: Bool = false) -> some View {
+        modifier(CRTEffect(settings: settings, time: time, liveResize: liveResize))
     }
 }

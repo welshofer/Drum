@@ -1,31 +1,16 @@
 import AppKit
 import Observation
+import QuartzCore
 import SwiftTerm
+import os
 
-/// A bitmap copy of the terminal view, refreshed when the terminal changes.
-///
-/// Why this exists: on macOS 26, SwiftUI's shader modifiers (`layerEffect`,
-/// `colorEffect`, `distortionEffect`) do not rasterize AppKit views — a subtree
-/// under them loses its `NSViewRepresentable` content entirely (verified in
-/// Phase 1, see docs/phase-1-findings.md). So the CRT chain is applied to an
-/// `Image` of this mirror while the real `LocalProcessTerminalView` stays in
-/// the window, invisible, to own keyboard focus and mouse events.
-///
-/// Capture uses `cacheDisplay(in:to:)`, which draws the view hierarchy through
-/// its normal `draw(_:)` path at the window's backing scale, into one of two
-/// reusable bitmaps (ping-pong, so the image SwiftUI holds is never the one
-/// being drawn into). A 60 Hz main-actor loop captures when marked dirty,
-/// every tick while a mouse button is down (selection), and every ~500 ms
-/// otherwise for anything that does not mark dirty (the overlay scroller).
-///
-/// SwiftTerm draws its caret through a layer delegate that `cacheDisplay`
-/// never invokes, so the caret is not in the bitmap: the mirror publishes its
-/// geometry and blink phase as `caret` and `CaretOverlay` draws it in SwiftUI,
-/// which keeps the 2 Hz blink from costing a terminal redraw.
+/// The AppKit terminal stays outside the SwiftUI shader chain for input.
+/// This mirror redraws its invalidated regions into reusable bitmaps, at the
+/// display's cadence. Its clock sleeps entirely when no pixels need changing.
 @MainActor @Observable
 final class TerminalMirror {
     struct Caret: Equatable {
-        /// In the picture's coordinates: points, origin top-left.
+        /// Points, origin top-left, matching the published image.
         var rect: CGRect
         var style: CursorStyle
         var focused: Bool
@@ -36,96 +21,163 @@ final class TerminalMirror {
     private(set) var image: CGImage?
     private(set) var scale: CGFloat = 1
     private(set) var caret: Caret?
+    private(set) var isVisible = false
+    private(set) var isLiveResizing = false
+    @ObservationIgnored private(set) var isEnabled = true
 
+    @ObservationIgnored private weak var view: DrumTerminalView?
     @ObservationIgnored private var dirty = true
     @ObservationIgnored private(set) var isCapturing = false
-    @ObservationIgnored private var loop: Task<Void, Never>?
+    @ObservationIgnored private var clock: TerminalDisplayClock?
+    @ObservationIgnored private var windowObserver: TerminalWindowObserver?
     @ObservationIgnored private var blink: Task<Void, Never>?
-    @ObservationIgnored private var reps: [NSBitmapImageRep] = []
-    @ObservationIgnored private var repIndex = 0
+    @ObservationIgnored private let bitmaps = TerminalBitmapStore()
+    @ObservationIgnored private var scrollerDeadline: CFTimeInterval = 0
+    @ObservationIgnored private var nextScrollerRefresh: CFTimeInterval = 0
+    @ObservationIgnored private var resizeInterval: OSSignpostIntervalState?
+    private static let signposter = OSSignposter(subsystem: "com.welshofer.Drum", category: "Rendering")
+    var lastDrawnRect: CGRect { bitmaps.lastDrawnRect }
 
-    static let interval: Duration = .milliseconds(16)
-    static let forcedEveryTicks = 30
     static let blinkHalfPeriod: Duration = .milliseconds(250)
 
-    func markDirty() {
-        if !isCapturing { dirty = true }
+    isolated deinit { clock?.stop(); blink?.cancel() }
+
+    func setEnabled(_ enabled: Bool) {
+        guard isEnabled != enabled else { return }
+        isEnabled = enabled
+        scrollerDeadline = 0
+        if enabled { markDirty() }
+        refreshVisibility()
+        updateBlink()
     }
 
-    /// Cursor moved or changed without any text changing: no redraw needed.
-    func updateCaret(from view: DrumTerminalView) {
-        let frame = view.caretFrame
-        guard view.cursorShown, frame.width > 0, frame.height > 0, frame.intersects(view.bounds) else {
-            caret = nil
-            return
+    func setLiveResizing(_ resizing: Bool) {
+        guard isLiveResizing != resizing else { return }
+        isLiveResizing = resizing
+        if resizing {
+            resizeInterval = Self.signposter.beginInterval("Terminal live resize")
+        } else {
+            if let resizeInterval {
+                Self.signposter.endInterval("Terminal live resize", resizeInterval)
+            }
+            resizeInterval = nil
+            markDirty()
         }
-        let flipped = CGRect(x: frame.minX, y: view.bounds.height - frame.maxY,
-                             width: frame.width, height: frame.height)
-        caret = Caret(rect: flipped, style: view.cursorStyle, focused: view.hasFocus,
-                      blinks: view.cursorBlinks, on: caret?.on ?? true)
+    }
+
+    func markDirty(_ rect: CGRect? = nil) {
+        guard isEnabled, !isCapturing else { return }
+        bitmaps.invalidate(rect)
+        dirty = true
+        clock?.setPaused(!isVisible)
+    }
+
+    /// NSScroller's auto-hide animation invalidates its own layer, not its
+    /// parent. Sample just that strip briefly after scrolling, never at idle.
+    func noteScrollActivity() {
+        guard isEnabled else { return }
+        scrollerDeadline = CACurrentMediaTime() + 2
+        nextScrollerRefresh = 0
+        markDirty()
+    }
+
+    func updateCaret(from view: DrumTerminalView) {
+        guard isEnabled else { return }
+        let frame = view.caretFrame
+        var next: Caret?
+        if view.cursorShown, frame.width > 0, frame.height > 0, frame.intersects(view.bounds) {
+            let flipped = CGRect(x: frame.minX, y: view.bounds.height - frame.maxY,
+                                 width: frame.width, height: frame.height)
+            let blinking = view.hasFocus && view.cursorBlinks
+            next = Caret(rect: flipped, style: view.cursorStyle, focused: view.hasFocus,
+                         blinks: view.cursorBlinks, on: blinking ? caret?.on ?? true : true)
+        }
+        if caret != next { caret = next }
+        updateBlink()
     }
 
     func start(view: DrumTerminalView) {
-        guard loop == nil else { return }
-        dirty = true
-        loop = Task { @MainActor [weak self, weak view] in
-            var tick = 0
-            while !Task.isCancelled {
-                try? await Task.sleep(for: Self.interval)
-                guard let self, let view else { return }
-                tick &+= 1
-                let selecting = NSEvent.pressedMouseButtons != 0 && view.hasFocus
-                if dirty || selecting || tick % Self.forcedEveryTicks == 0 {
-                    capture(view)
-                }
-            }
-        }
-        blink = Task { @MainActor [weak self, weak view] in
-            while !Task.isCancelled {
-                try? await Task.sleep(for: Self.blinkHalfPeriod)
-                guard let self, let view else { return }
-                guard var caret else { continue }
-                let shouldBlink = caret.focused && caret.blinks && view.hasFocus
-                caret.on = shouldBlink ? !caret.on : true
-                caret.focused = view.hasFocus
-                if caret != self.caret { self.caret = caret }
-            }
-        }
+        stop()
+        guard let window = view.window else { return }
+        self.view = view
+        setLiveResizing(view.inLiveResize)
+        clock = TerminalDisplayClock(window: window, mirror: self)
+        windowObserver = TerminalWindowObserver(window: window, mirror: self)
+        refreshVisibility()
+        markDirty()
     }
 
     func stop() {
-        loop?.cancel()
-        loop = nil
+        setLiveResizing(false)
+        clock?.stop()
+        clock = nil
+        windowObserver = nil
         blink?.cancel()
         blink = nil
+        view = nil
+        isVisible = false
+        scrollerDeadline = 0
+    }
+
+    func refreshVisibility() {
+        guard let view, let window = view.window else { return }
+        let visible = window.isVisible && !window.isMiniaturized && window.occlusionState.contains(.visible)
+        if isVisible != visible {
+            isVisible = visible
+            if visible { markDirty() }
+        }
+        clock?.setPaused(!isEnabled || !visible || (!dirty && scrollerDeadline <= CACurrentMediaTime()))
+        updateCaret(from: view)
+    }
+
+    /// Called in common run-loop modes, including live resize and selection.
+    func refresh() {
+        guard isEnabled, isVisible, let view else { clock?.setPaused(true); return }
+        guard let window = view.window, window.isVisible, !window.isMiniaturized,
+              window.occlusionState.contains(.visible) else {
+            refreshVisibility()
+            return
+        }
+        let now = CACurrentMediaTime()
+        if scrollerDeadline > now, now >= nextScrollerRefresh {
+            for scroller in view.subviews.compactMap({ $0 as? NSScroller }) {
+                markDirty(scroller.frame)
+            }
+            nextScrollerRefresh = now + 1 / 30
+        }
+        if dirty { capture(view) }
+        clock?.setPaused(!dirty && scrollerDeadline <= now)
     }
 
     private func capture(_ view: DrumTerminalView) {
-        guard let window = view.window, window.isVisible, !window.isMiniaturized,
-              window.occlusionState.contains(.visible) else { return }
-        let bounds = view.bounds
-        guard bounds.width >= 1, bounds.height >= 1 else { return }
-        dirty = false
+        guard let window = view.window, view.bounds.width >= 1, view.bounds.height >= 1 else { return }
         isCapturing = true
         defer { isCapturing = false }
+        let interval = Self.signposter.beginInterval("Terminal capture")
+        defer { Self.signposter.endInterval("Terminal capture", interval) }
         let scale = window.backingScaleFactor
-        guard let rep = nextRep(for: bounds, scale: scale, view: view) else { return }
-        view.cacheDisplay(in: bounds, to: rep)
-        if let cg = rep.cgImage {
-            image = cg
-            self.scale = scale
+        if let image = bitmaps.capture(view, scale: scale, liveResize: view.inLiveResize) {
+            self.image = image
+            if self.scale != scale { self.scale = scale }
+            dirty = false
         }
         updateCaret(from: view)
     }
 
-    /// Two bitmaps of the current size, alternated per capture.
-    private func nextRep(for bounds: NSRect, scale: CGFloat, view: NSView) -> NSBitmapImageRep? {
-        let wanted = (Int(bounds.width * scale), Int(bounds.height * scale))
-        if reps.count != 2 || reps.contains(where: { ($0.pixelsWide, $0.pixelsHigh) != wanted }) {
-            reps = (0..<2).compactMap { _ in view.bitmapImageRepForCachingDisplay(in: bounds) }
-            guard reps.count == 2 else { return nil }
+    private func updateBlink() {
+        guard isEnabled, isVisible, let caret, caret.focused, caret.blinks else {
+            blink?.cancel()
+            blink = nil
+            return
         }
-        repIndex = (repIndex + 1) % 2
-        return reps[repIndex]
+        guard blink == nil else { return }
+        blink = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: Self.blinkHalfPeriod)
+                guard !Task.isCancelled, let self, var caret = self.caret else { return }
+                caret.on.toggle()
+                self.caret = caret
+            }
+        }
     }
 }

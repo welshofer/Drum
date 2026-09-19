@@ -19,10 +19,21 @@ struct CRTSettings: Codable, Sendable, Equatable {
     /// which is what a hot phosphor looks like.
     var brightness: Float = 1.45
     /// `backingScaleFactor` of the screen the window is on. Scanline period
-    /// is in device pixels, so the shader needs this. Set by `ScreenPinning`.
+    /// is in device pixels, so the shader needs this. Supplied by the view at render time.
     var scale: Float = 1
     var animated = true
     var bezelCornerRadius: CGFloat = 42
+
+    /// Only the sync wobble needs continuous animation.
+    var isWobbling: Bool { enabled && animated && wobble != 0 }
+
+    /// Transient rendering policy; never written back to the user's settings.
+    func forRendering(scale: Float, liveResize: Bool) -> Self {
+        var result = self
+        result.scale = scale
+        if liveResize { result.animated = false }
+        return result
+    }
 
     /// Tuning for the 32:9 panel per spec §4: less horizontal curvature.
     static let ribbon: CRTSettings = {

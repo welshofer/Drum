@@ -24,13 +24,14 @@ using namespace metal;
     return uv * size;
 }
 
-// Bloom / phosphor glow (.layerEffect). 16-tap ring, tinted, added on top.
-[[stitchable]] half4 crtBloom(float2 position, SwiftUI::Layer layer,
-                              float radius, float strength, half4 tint)
+// Two rings of phosphor glow. A compile-time tap count keeps both variants
+// free of per-pixel quality branches; the normal 33-sample appearance is intact.
+template<int taps>
+half4 bloom(float2 position, SwiftUI::Layer layer,
+            float radius, float strength, half4 tint)
 {
     half4 base = layer.sample(position);
     half4 acc  = half4(0.0);
-    const int taps = 16;
     for (int i = 0; i < taps; i++) {
         float a = float(i) * (2.0 * M_PI_F / float(taps));
         float2 off = float2(cos(a), sin(a)) * radius;
@@ -40,6 +41,19 @@ using namespace metal;
     acc /= half(taps) * 1.5h;
     half lum = dot(acc.rgb, half3(0.299h, 0.587h, 0.114h));
     return base + tint * lum * half(strength);
+}
+
+[[stitchable]] half4 crtBloom(float2 position, SwiftUI::Layer layer,
+                              float radius, float strength, half4 tint)
+{
+    return bloom<16>(position, layer, radius, strength, tint);
+}
+
+// Live resize uses 17 samples, returning to full quality as soon as the drag ends.
+[[stitchable]] half4 crtBloomFast(float2 position, SwiftUI::Layer layer,
+                                  float radius, float strength, half4 tint)
+{
+    return bloom<8>(position, layer, radius, strength, tint);
 }
 
 // Monochrome tube: scanlines + aperture grille + vignette + brightness gain,

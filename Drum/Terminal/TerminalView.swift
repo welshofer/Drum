@@ -7,16 +7,18 @@ import SwiftUI
 /// inside a host view SwiftUI owns, and re-parents it if SwiftUI rebuilt the
 /// host. The theme is re-applied only for the parts that actually changed.
 ///
-/// The host is invisible (`alphaValue = 0`): what you see is `TerminalMirror`'s
-/// image drawn through the CRT chain. This view exists for input — it is the
-/// window's first responder, so keys, copy/paste, and mouse selection work —
-/// and must sit outside the shader chain, which cannot host AppKit views.
+/// With CRT enabled the host is invisible and the mirror supplies the picture.
+/// With CRT disabled the same host draws directly, without bitmap capture.
+/// It always stays outside the shader chain and keeps input, selection and PTY
+/// state intact when the rendering mode changes.
 struct TerminalView: NSViewRepresentable {
     let session: TerminalSession
     let theme: TerminalTheme
+    let crtEnabled: Bool
 
     func makeNSView(context: Context) -> TerminalHostView {
         let host = TerminalHostView()
+        host.setCRTEnabled(crtEnabled, session: session)
         host.attach(session.view)
         theme.apply(to: session.view, previous: session.appliedTheme)
         session.appliedTheme = theme
@@ -24,6 +26,7 @@ struct TerminalView: NSViewRepresentable {
     }
 
     func updateNSView(_ host: TerminalHostView, context: Context) {
+        host.setCRTEnabled(crtEnabled, session: session)
         host.attach(session.view)
         if session.appliedTheme != theme {
             theme.apply(to: session.view, previous: session.appliedTheme)
@@ -46,6 +49,15 @@ final class TerminalHostView: NSView {
 
     override var isFlipped: Bool { true }
 
+    func setCRTEnabled(_ enabled: Bool, session: TerminalSession) {
+        session.setCRTEnabled(enabled)
+        let alpha: CGFloat = enabled ? 0 : 1
+        if alphaValue != alpha {
+            alphaValue = alpha
+            session.view.needsDisplay = true
+        }
+    }
+
     func attach(_ terminal: NSView) {
         guard terminal.superview !== self else { return }
         terminal.removeFromSuperview()
@@ -57,10 +69,4 @@ final class TerminalHostView: NSView {
         }
     }
 
-    override func layout() {
-        super.layout()
-        for view in subviews {
-            view.frame = bounds
-        }
-    }
 }

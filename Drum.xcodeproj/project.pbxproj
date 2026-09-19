@@ -9,19 +9,23 @@
 /* Begin PBXBuildFile section */
 		06A9FC95B4E3A34B678AEA3A /* CRTEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDDCCF99C41855DDB1C3C04A /* CRTEffect.swift */; };
 		08C706A246F806E29641B1F2 /* DrumTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F06DF22B4EBE6B9DB5555F6 /* DrumTerminalView.swift */; };
+		1B8F8BAD4458A646030159DF /* TerminalRenderingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6660E4857C7768B8B9B5087C /* TerminalRenderingTests.swift */; };
 		22D0C6DEA485D4BB681C3433 /* PowerOnTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31ACC088B79255497356FE35 /* PowerOnTransition.swift */; };
 		29C931A58EFC16687F38F9B9 /* TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1C43E7C928ED4D70DA96E9 /* TerminalView.swift */; };
 		2C971B3CDE213588DF521F62 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 747DF943371BBD3E7CCFC748 /* AppState.swift */; };
+		2E2F245B973819EC449A4620 /* TerminalBitmapStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19F68692303E291295286F84 /* TerminalBitmapStore.swift */; };
 		446C0F63D4A976932B39CE1A /* CRTSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */; };
 		5C496ED8AEC10DFE41340582 /* GlowOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FACE56781368683A16578A /* GlowOverlay.swift */; };
 		5CF456B050321D25EAA0DD77 /* TerminalTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB727BA4B95527ACB94E8A6A /* TerminalTheme.swift */; };
 		5FE30B17EBFC511ED7B1ECF0 /* TerminalMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FB24532029BB0647127F80 /* TerminalMirror.swift */; };
 		73046398286848B78A81A230 /* Phosphor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74F1102829627292C86D5A8 /* Phosphor.swift */; };
 		82DBD2066DCB5D6CD4C44C2E /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F44209C7A12A5E2F6F974DE /* RootView.swift */; };
+		8D1E247201E9C2A21F5F9510 /* TerminalBitmapStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B014EED89B83BF5298D62150 /* TerminalBitmapStoreTests.swift */; };
 		9A6FB943B167EAFAC0AB1203 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65745C7122D59DC4E912004B /* SettingsView.swift */; };
 		A65A11D567B2AA6168CCD036 /* DrumBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB48E4A9F1A05F3CF70E0239 /* DrumBundle.swift */; };
 		B2897CE7B0196DDF55B8FB06 /* CRTSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */; };
 		B4151D451F9F2AACABF6B826 /* CRT.metal in Sources */ = {isa = PBXBuildFile; fileRef = E4CA29FC8047D53A3AE400D6 /* CRT.metal */; };
+		BD677F6C1E849E541A0F67B0 /* TerminalDisplayClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8944107738B5D9CC9D0C141 /* TerminalDisplayClock.swift */; };
 		D1F44AC2CF9BCEE2F2A66483 /* TerminalThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */; };
 		E3A7E6237ACE6A13BC88F77D /* CaretOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D708C981AE7BC5A6E4DA308 /* CaretOverlay.swift */; };
 		E7A4FC89F8A02BB076128F25 /* DrumApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887F477326D6B440E24544FD /* DrumApp.swift */; };
@@ -41,6 +45,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		19F68692303E291295286F84 /* TerminalBitmapStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalBitmapStore.swift; sourceTree = "<group>"; };
 		2F06DF22B4EBE6B9DB5555F6 /* DrumTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumTerminalView.swift; sourceTree = "<group>"; };
 		304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalThemeTests.swift; sourceTree = "<group>"; };
 		31ACC088B79255497356FE35 /* PowerOnTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerOnTransition.swift; sourceTree = "<group>"; };
@@ -50,12 +55,15 @@
 		5D708C981AE7BC5A6E4DA308 /* CaretOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaretOverlay.swift; sourceTree = "<group>"; };
 		603F1F5A4AE5F61C0616C348 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		65745C7122D59DC4E912004B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		6660E4857C7768B8B9B5087C /* TerminalRenderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalRenderingTests.swift; sourceTree = "<group>"; };
 		6F44209C7A12A5E2F6F974DE /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		747DF943371BBD3E7CCFC748 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		887F477326D6B440E24544FD /* DrumApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumApp.swift; sourceTree = "<group>"; };
 		97FACE56781368683A16578A /* GlowOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlowOverlay.swift; sourceTree = "<group>"; };
 		9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTSettings.swift; sourceTree = "<group>"; };
 		A74F1102829627292C86D5A8 /* Phosphor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phosphor.swift; sourceTree = "<group>"; };
+		A8944107738B5D9CC9D0C141 /* TerminalDisplayClock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalDisplayClock.swift; sourceTree = "<group>"; };
+		B014EED89B83BF5298D62150 /* TerminalBitmapStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalBitmapStoreTests.swift; sourceTree = "<group>"; };
 		BB48E4A9F1A05F3CF70E0239 /* DrumBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumBundle.swift; sourceTree = "<group>"; };
 		BB727BA4B95527ACB94E8A6A /* TerminalTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTheme.swift; sourceTree = "<group>"; };
 		BDDCCF99C41855DDB1C3C04A /* CRTEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTEffect.swift; sourceTree = "<group>"; };
@@ -116,6 +124,8 @@
 				5D708C981AE7BC5A6E4DA308 /* CaretOverlay.swift */,
 				2F06DF22B4EBE6B9DB5555F6 /* DrumTerminalView.swift */,
 				97FACE56781368683A16578A /* GlowOverlay.swift */,
+				19F68692303E291295286F84 /* TerminalBitmapStore.swift */,
+				A8944107738B5D9CC9D0C141 /* TerminalDisplayClock.swift */,
 				F3FB24532029BB0647127F80 /* TerminalMirror.swift */,
 				4F9318F68A3E30A8C403C0E4 /* TerminalSession.swift */,
 				BB727BA4B95527ACB94E8A6A /* TerminalTheme.swift */,
@@ -136,6 +146,8 @@
 			isa = PBXGroup;
 			children = (
 				4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */,
+				B014EED89B83BF5298D62150 /* TerminalBitmapStoreTests.swift */,
+				6660E4857C7768B8B9B5087C /* TerminalRenderingTests.swift */,
 				304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */,
 			);
 			path = DrumTests;
@@ -271,6 +283,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				446C0F63D4A976932B39CE1A /* CRTSettingsTests.swift in Sources */,
+				8D1E247201E9C2A21F5F9510 /* TerminalBitmapStoreTests.swift in Sources */,
+				1B8F8BAD4458A646030159DF /* TerminalRenderingTests.swift in Sources */,
 				D1F44AC2CF9BCEE2F2A66483 /* TerminalThemeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -292,6 +306,8 @@
 				22D0C6DEA485D4BB681C3433 /* PowerOnTransition.swift in Sources */,
 				82DBD2066DCB5D6CD4C44C2E /* RootView.swift in Sources */,
 				9A6FB943B167EAFAC0AB1203 /* SettingsView.swift in Sources */,
+				2E2F245B973819EC449A4620 /* TerminalBitmapStore.swift in Sources */,
+				BD677F6C1E849E541A0F67B0 /* TerminalDisplayClock.swift in Sources */,
 				5FE30B17EBFC511ED7B1ECF0 /* TerminalMirror.swift in Sources */,
 				FB2662B190BA6931C84A0F5C /* TerminalSession.swift in Sources */,
 				5CF456B050321D25EAA0DD77 /* TerminalTheme.swift in Sources */,

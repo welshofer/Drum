@@ -79,19 +79,32 @@ final class TerminalSession {
 
     // MARK: Change tracking (glow)
 
-    func noteChanged(rows: ClosedRange<Int>) {
-        let now = Date()
-        for row in rows {
-            flashes[row] = now
+    func setCRTEnabled(_ enabled: Bool) {
+        mirror.setEnabled(enabled)
+        if !enabled {
+            cleanup?.cancel()
+            cleanup = nil
+            if !flashes.isEmpty { flashes.removeAll() }
         }
+    }
+
+    func noteChanged(rows: ClosedRange<Int>) {
+        guard mirror.isEnabled, mirror.isVisible, !mirror.isLiveResizing else { return }
+        let now = Date()
+        var updated = flashes
+        for row in rows {
+            updated[row] = now
+        }
+        flashes = updated
         scheduleCleanup()
     }
 
     private func scheduleCleanup() {
-        cleanup?.cancel()
+        guard cleanup == nil else { return }
         cleanup = Task { @MainActor [weak self] in
             try? await Task.sleep(for: .milliseconds(Int(Self.flashDuration * 1000) + 40))
             guard let self, !Task.isCancelled else { return }
+            cleanup = nil
             let cutoff = Date().addingTimeInterval(-Self.flashDuration)
             flashes = flashes.filter { $0.value > cutoff }
             if !flashes.isEmpty { scheduleCleanup() }
