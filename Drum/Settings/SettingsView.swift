@@ -2,6 +2,16 @@ import SwiftUI
 
 /// Live settings, no Apply button. Everything writes straight into `AppState`.
 struct SettingsView: View {
+    var body: some View {
+        TabView {
+            Tab("Appearance", systemImage: "display") { AppearanceSettingsView() }
+            Tab("Sound", systemImage: "speaker.wave.2") { SoundSettingsView() }
+        }
+        .frame(width: 500, height: 660)
+    }
+}
+
+private struct AppearanceSettingsView: View {
     @Environment(AppState.self) private var state
 
     var body: some View {
@@ -38,8 +48,6 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 460)
-        .frame(minHeight: 560)
     }
 }
 

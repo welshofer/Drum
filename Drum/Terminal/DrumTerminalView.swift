@@ -8,12 +8,18 @@ import os
 final class DrumTerminalView: LocalProcessTerminalView {
     private static let signposter = OSSignposter(subsystem: "com.welshofer.Drum", category: "Rendering")
     weak var session: TerminalSession?
+    var keyClicksEnabled = false {
+        didSet { if keyClicksEnabled != oldValue { updateKeyMonitor() } }
+    }
+    private var keyMonitor: Any?
+    weak var soundEvents: (any TerminalSoundEvents)?
     weak var timingObserver: (any TerminalTimingObserver)?
     private(set) var cursorShown = true
     private(set) var cursorStyle: CursorStyle = .blinkBlock
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
+        updateKeyMonitor()
         guard let window else {
             session?.mirror.stop()
             return
@@ -36,6 +42,33 @@ final class DrumTerminalView: LocalProcessTerminalView {
         let start = observer == nil ? 0 : CACurrentMediaTime()
         super.dataReceived(slice: slice)
         observer?.receivedOutput(start: start, end: CACurrentMediaTime())
+    }
+
+    /// Use SwiftTerm's parsed BEL event: an OSC terminator is not a bell.
+    override func bell(source: Terminal) {
+        soundEvents?.ringBell()
+    }
+
+    /// SwiftTerm's keyDown is not open. A local monitor observes, but never
+    /// consumes or changes, physical key events. It is absent while disabled.
+    private func updateKeyMonitor() {
+        if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
+        keyMonitor = nil
+        guard keyClicksEnabled, window != nil else { return }
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            self?.noteKeyDown(event)
+            return event
+        }
+    }
+
+    func noteKeyDown(_ event: NSEvent) {
+        guard keyClicksEnabled, let window, event.window === window,
+              window.firstResponder === self, !event.modifierFlags.contains(.command) else { return }
+        soundEvents?.clickKey()
+    }
+
+    isolated deinit {
+        if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
     }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }

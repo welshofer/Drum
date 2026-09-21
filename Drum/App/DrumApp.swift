@@ -37,8 +37,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var quitArmed = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        state.audio.setActive(NSApp.isActive)
         DrumBundle.prepareForLaunch()
         DrumBundle.armSnapshots(state: state)
+    }
+
+    func applicationDidBecomeActive(_ notification: Notification) {
+        state.audio.setActive(true)
+    }
+
+    func applicationWillResignActive(_ notification: Notification) {
+        state.audio.setActive(false)
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        state.audio.setPoweredOn(false)
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

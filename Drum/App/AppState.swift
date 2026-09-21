@@ -42,6 +42,15 @@ final class AppState {
     var font: TerminalFontChoice { didSet { store.save(font, for: .font) } }
     var fontSize: Double { didSet { store.save(fontSize, for: .fontSize) } }
 
+    var sound: SoundSettings {
+        didSet {
+            store.save(sound, for: .sound)
+            audio.configure(sound)
+            terminal.view.keyClicksEnabled = sound.keyClick.enabled && sound.gain(for: .keyClick) > 0
+        }
+    }
+    let audio: TerminalAudio
+
     /// Drives the power-on/off transition on the root view.
     private(set) var isPoweredOn = false
     /// Bumps to re-run the power-on transition (⌘R).
@@ -51,14 +60,19 @@ final class AppState {
 
     private let store: SettingsStore
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, audio: TerminalAudio = TerminalAudio()) {
+        self.audio = audio
         let store = SettingsStore(defaults: defaults)
         self.store = store
+        sound = store.load(SoundSettings.self, for: .sound) ?? SoundSettings()
         crt = store.load(CRTSettings.self, for: .crt) ?? CRTSettings()
         preset = store.load(PhosphorPreset.self, for: .preset) ?? .amber
         let font = store.load(TerminalFontChoice.self, for: .font) ?? .glassTTY
         self.font = font
         fontSize = store.load(Double.self, for: .fontSize) ?? font.defaultSize
+        audio.configure(sound)
+        terminal.view.soundEvents = audio
+        terminal.view.keyClicksEnabled = sound.keyClick.enabled && sound.gain(for: .keyClick) > 0
     }
 
     // MARK: Phosphor
@@ -91,9 +105,11 @@ final class AppState {
     func powerOn() {
         guard !isPoweredOn else { return }
         withAnimation { isPoweredOn = true }
+        audio.setPoweredOn(true)
     }
 
     func powerOff() {
+        audio.setPoweredOn(false)
         withAnimation { isPoweredOn = false }
     }
 
@@ -115,7 +131,7 @@ final class AppState {
 struct SettingsStore {
     /// `crt` is versioned: bump it when defaults change on purpose so users
     /// pick up the new tuning instead of their persisted copy of the old one.
-    enum Key: String { case crt = "crt.v3", preset, font, fontSize }
+    enum Key: String { case crt = "crt.v3", preset, font, fontSize, sound = "sound.v1" }
 
     let defaults: UserDefaults
 
