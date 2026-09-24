@@ -1,0 +1,26 @@
+[
+  {
+    "path": "/Users/welshofer/.claude/projects/-Users-welshofer-Developer-Drum/e43f9fdd-2984-441b-91bf-63e4fea4815b.jsonl",
+    "bytes": 1692057,
+    "lines": 153,
+    "start": "2026-09-11T02:41:03.885Z",
+    "end": "2026-09-11T02:43:22.126Z",
+    "current_audit": false
+  },
+  {
+    "path": "/Users/welshofer/.codex/sessions/2026/09/18/rollout-2026-09-18T12-03-54-01a0b5e7-6042-78a3-98bb-6d8e1dfc843d.jsonl",
+    "bytes": 11557036,
+    "lines": 1859,
+    "start": "2026-09-18T19:04:26.815Z",
+    "end": "2026-09-21T23:43:15.637Z",
+    "current_audit": false
+  },
+  {
+    "path": "/Users/welshofer/.codex/sessions/2026/09/24/rollout-2026-09-24T07-08-51-01a0d3bf-6862-7663-bdeb-88eeafa3857e.jsonl",
+    "bytes": 835767,
+    "lines": 46,
+    "start": "2026-09-24T14:08:55.202Z",
+    "end": "2026-09-24T14:09:46.972Z",
+    "current_audit": true
+  }
+]

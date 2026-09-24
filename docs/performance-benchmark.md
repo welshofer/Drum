@@ -10,17 +10,34 @@ It creates an isolated SwiftUI window, renders the actual `CRTStage`, and compar
 
 The workload covers idle, 48 input characters through SwiftTerm's text-input method and the PTY, 90 dashboard updates, 90 scroll operations, and 90 programmatic window resizes with the live-resize policy enabled. It uses temporary preferences, suppresses the login shell in its test window, and terminates its own PTY afterward. The application containing the tests is separate from any running user session.
 
-Outputs are `measurements.json` (all samples), `summary.md` (median, p95, maximum and counts), and `build-test.log` under the printed temporary directory. The benchmark is skipped during ordinary test runs. Run it on an otherwise idle machine for comparisons; tracing adds overhead.
+Outputs are `measurements.json` (all samples), `summary.md` (median, p95, maximum and counts), `manifest.json` and `build-test.log` under the printed directory. Ordinary runs default to the durable, Git-ignored `.benchmark-results/` folder; an explicit output directory is still supported. The benchmark is skipped during ordinary test runs. Run it on an otherwise idle machine for comparisons; tracing adds overhead.
 
 For a shorter diagnostic comparison:
 
 ```sh
 DRUM_BENCHMARK_REPETITIONS=1 \
 DRUM_BENCHMARK_MODES=native,crt,crt-no-bloom,crt-static \
-scripts/benchmark-performance.sh /tmp/drum-rendering-diagnostic
+scripts/benchmark-performance.sh .benchmark-results/diagnostic-1
 ```
 
 `crt-no-bloom` keeps wobble and the rest of the effects. `crt-static` disables wobble while retaining full bloom and normal output-driven redraws. These are benchmark settings, not new product preferences.
+
+## Retaining evidence
+
+The runner records a UTC start/end date, source commit and dirty boolean, a digest of build inputs (including uncommitted files), Xcode version/build, Release arm64 configuration, locked SwiftTerm revision, modes/repetitions and the sample-file SHA-256. It refuses to finalize if build inputs change during the run or workload groups are missing. `status: complete` means the measurement workload completed; it does not certify a zero-warning build or a presentation gate. Tooling warnings are printed and their count is retained. Raw build logs remain local.
+
+To retain a selected run for a documented result, export its allowlisted numeric samples and manifest rather than copying the entire output directory:
+
+```sh
+python3 scripts/benchmark-artifacts.py export \
+  .benchmark-results/diagnostic-1 docs/benchmarks/diagnostic-1
+python3 scripts/summarize-performance.py \
+  docs/benchmarks/diagnostic-1/measurements.json
+```
+
+Choose a new destination; existing evidence is not overwritten. Inspect the three exported files (`measurements.json`, `manifest.json`, `summary.md`) before committing them with the explanation of the run. The exporter validates known endpoint descriptions, numeric samples and bounded metadata formats; it omits unknown fields. It never copies logs, PID/handshake files, terminal text, process environments or raw Instruments traces. The exported sample checksum refers to the sanitized JSON. Regenerating the summary with the second command reproduces the saved Markdown.
+
+The profiling helper retains its local temporary trace directory and recording-start handshake. Export selected numeric evidence before temporary files are cleaned; keep raw traces and full exports local.
 
 ## What the numbers mean
 
@@ -72,8 +89,14 @@ The diagnostic Time Profiler data identified Generic RGB image preparation and c
 
 The final automated recording contains all ten workload-stage pairs, 96 input events, 278 output events, 353 capture intervals and two resize intervals. Instruments recorded one 50 ms hitch before the workloads and sixteen 16.67 ms hitches during native typing; none were attributed to the recorded CRT workload stages. This short profiled run is not a sustained frame-rate certification or a matched before/after hitch comparison.
 
-Xcode reported “Trace file had no SwiftUI data” in these recordings. CPU stacks, signposts and Hitches data were available, but SwiftUI view-update lanes were not. The profiling helper now prints such warnings. Raw artifacts remain under `/tmp/drum-performance/ab-diagnostic` and `/tmp/drum-performance/ab-srgb-profile`; the unprofiled samples are in `ab-baseline` and `ab-srgb-final`.
+Xcode reported “Trace file had no SwiftUI data” in these recordings. CPU stacks, signposts and Hitches data were available, but SwiftUI view-update lanes were not. The profiling helper now prints such warnings. Those recordings originally used `/tmp/drum-performance/ab-diagnostic` and `/tmp/drum-performance/ab-srgb-profile`, with unprofiled samples in `ab-baseline` and `ab-srgb-final`. At the 2026-09-24 audit, the two documented unprofiled `measurements.json` files were absent and `ab-srgb-profile` retained only its trace bundle. The committed summary tables remain historical evidence; no raw samples have been reconstructed or relabeled. New results use the retention procedure above.
 
 ### Verification
 
 24 regression tests pass in Debug and Release; the opt-in performance test is skipped during ordinary test runs and passes when invoked separately. Tests compare colors in a common sRGB space, cover translucent/colored content, and allow at most one 8-bit channel value of conversion rounding for the native/mirror reference comparison. Existing damage, resize, retained-snapshot and input/selection checks remain in place.
+
+## Retention workflow validation — 2026-09-24
+
+A single native/CRT repetition exercised the evidence workflow on Xcode 27.1. All ten stages completed, with 48 input echoes per mode. [Summary](benchmarks/2026-09-24-audit-validation/summary.md), [sanitized samples](benchmarks/2026-09-24-audit-validation/measurements.json) and [manifest](benchmarks/2026-09-24-audit-validation/manifest.json) are retained together. Regenerating the summary from these samples reproduces the saved Markdown exactly.
+
+The manifest identifies a dirty source tree and its build-input digest. This run validates retention and reproduction, not a performance improvement or the sustained 60 fps gate. Its incremental build emitted no warning diagnostics; the separate fresh Debug/Release checks during this audit still emitted the AppIntents metadata warning. This sample does not resolve that zero-warning build limitation.

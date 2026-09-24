@@ -1,5 +1,7 @@
 # Phase 1 findings — 2026-09-10
 
+> Historical findings from 2026-09-10. The mirror architecture remains, but capture scheduling and bitmap updates were replaced in the [2026-09-18 performance pass](performance.md). The FlowDeck project override now exists. See [current build instructions](../CLAUDE.md#build) and [current acceptance status](../drum-spec.md#8-phases-and-gates). The mechanisms and blockers below describe the original run.
+
 ## The §5 risk, verified: SwiftUI shader modifiers cannot host an AppKit view
 
 Spec §5 asked, before Phase 2, whether `.layerEffect` / `.distortionEffect`
@@ -94,5 +96,6 @@ Consequences worth knowing:
 - Legibility, keyboard/mouse feel under curvature, copy/paste — the app could
   not be screenshotted or driven from the agent session (no screen-recording
   permission; app control was declined).
-- The Xcode build itself — blocked by the FlowDeck guard hook until the
-  project-level override exists (see README section in CLAUDE.md).
+- At the time, the Xcode build was blocked by the FlowDeck guard hook. That
+  project-override blocker is resolved: `.flowdeck/config.json` now exists.
+  This is not a claim that all current build/test or warning gates pass.

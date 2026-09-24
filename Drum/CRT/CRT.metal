@@ -2,8 +2,9 @@
 #include <SwiftUI/SwiftUI.h>
 using namespace metal;
 
-// All four functions receive SwiftUI's `.boundingRect` argument, which is a
-// float4 (x, y, width, height) — not a float2 size. `bounds.zw` is the size.
+// Barrel, mask and flyback receive `.boundingRect` as float4 (x, y, w, h);
+// use bounds.zw for size. Match each SwiftUI call's argument types and order.
+// Bloom receives radius, strength and tint, without a bounds argument.
 
 // Barrel distortion (.distortionEffect). Output position -> source position.
 // Out-of-layer samples are transparent = the curved black tube edge.

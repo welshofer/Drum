@@ -1,0 +1,35 @@
+diff --git a/CLAUDE.md b/CLAUDE.md
+index 918943a..6dae51b 100644
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -8,7 +8,7 @@
+ - Shader order is Bloom → Mask → Barrel → Bezel. Do not reorder.
+ - Views < 200 lines. Extract.
+ - Bundled fonts have their license in CREDITS.md before commit.
+-- Always return whole files when editing source.
++- Make focused edits and summarize the changed behavior and verification. Return complete source files only when requested.
+ - One ordinary resizable window (`Window` scene). No screen pinning, no borderless mode; the user maximises it on whatever display they like.
+ 
+ ## Learned the hard way (see docs/phase-1-findings.md)
+diff --git a/drum-spec.md b/drum-spec.md
+index 8fee04e..1bbcfeb 100644
+--- a/drum-spec.md
++++ b/drum-spec.md
+@@ -273,7 +273,7 @@ Phase 2 is what should be on the panel when the box opens.
+ - Shader order is Bloom → Mask → Barrel → Bezel. Do not reorder.
+ - Views < 200 lines. Extract.
+ - Bundled fonts have their license in CREDITS.md before commit.
+-- Always return whole files when editing source.
++- Make focused edits and summarize the changed behavior and verification. Return complete source files only when requested.
+ ```
+ 
+ ---
+@@ -287,7 +287,7 @@ Build Phase 1, then Phase 2. Create the Xcode project per §2, add SwiftTerm via
+ 
+ Before Phase 2, verify the risk in §5: that SwiftUI's layerEffect correctly rasterizes the SwiftTerm NSView. Report what you find before proceeding.
+ 
+-Constraints: Swift 6 strict concurrency, zero warnings, no MVVM, no DispatchQueue outside the SwiftTerm wrapper, whole-file edits only. Verify every macOS 26 API against the current SDK, not memory.
++Constraints: Swift 6 strict concurrency, zero warnings, no MVVM, no DispatchQueue outside the SwiftTerm wrapper. Make focused edits and summarize the changed behavior and verification. Return complete source files only when requested. Verify every macOS 26 API against the current SDK, not memory.
+ 
+ Gates: §8. Report against the gate, not the task list.
+ ```

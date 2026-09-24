@@ -1,0 +1,117 @@
+[
+  {
+    "check": "Python syntax: summarize-performance.py",
+    "passed": true,
+    "detail": "Parsed in memory; no bytecode cache"
+  },
+  {
+    "check": "Python syntax: profile-performance.py",
+    "passed": true,
+    "detail": "Parsed in memory; no bytecode cache"
+  },
+  {
+    "check": "shell-syntax",
+    "passed": true,
+    "detail": "exit 0; audit/shell-syntax.log"
+  },
+  {
+    "check": "plist-Info.plist",
+    "passed": true,
+    "detail": "exit 0; audit/plist-Info.plist.log"
+  },
+  {
+    "check": "plist-project.pbxproj",
+    "passed": true,
+    "detail": "exit 0; audit/plist-project.pbxproj.log"
+  },
+  {
+    "check": "XML: Drum.xcscheme",
+    "passed": true,
+    "detail": "Parsed in memory"
+  },
+  {
+    "check": "XML: contents.xcworkspacedata",
+    "passed": true,
+    "detail": "Parsed in memory"
+  },
+  {
+    "check": "JSON: config.json",
+    "passed": true,
+    "detail": "Parsed in memory"
+  },
+  {
+    "check": "JSON: Package.resolved",
+    "passed": true,
+    "detail": "Parsed in memory"
+  },
+  {
+    "check": "swift-parse",
+    "passed": true,
+    "detail": "exit 0; audit/swift-parse.log"
+  },
+  {
+    "check": "Swift syntax scope",
+    "passed": true,
+    "detail": "32 Swift files parsed; no typecheck, linking, tests, or app execution"
+  },
+  {
+    "check": "summary-smoke",
+    "passed": true,
+    "detail": "exit 0; audit/summary-smoke.log"
+  },
+  {
+    "check": "Summary calculations",
+    "passed": true,
+    "detail": "Known median, p95, maximum, mean CPU, empty series and sample counts"
+  },
+  {
+    "check": "Summary presentation caveat",
+    "passed": true,
+    "detail": "Avoid equating display callbacks to presentation"
+  },
+  {
+    "check": "diff-check",
+    "passed": true,
+    "detail": "exit 0; audit/diff-check.log"
+  },
+  {
+    "check": "Tracked project unchanged",
+    "passed": true,
+    "detail": "57 file hashes compared; changed: []"
+  },
+  {
+    "check": "Whole-file mandate remains",
+    "passed": true,
+    "detail": "P1"
+  },
+  {
+    "check": "Window conflict remains",
+    "passed": true,
+    "detail": "P2"
+  },
+  {
+    "check": "Copied rules and kickoff remain",
+    "passed": true,
+    "detail": "P3/P4"
+  },
+  {
+    "check": "Native rendering implemented",
+    "passed": true,
+    "detail": "P6; behavior differs from unconditional invisible wording"
+  },
+  {
+    "check": "Bounds wording overbroad",
+    "passed": true,
+    "detail": "P8; bloom has no bounds argument"
+  },
+  {
+    "check": "Build documentation drift remains",
+    "passed": true,
+    "detail": "P7; no claim a fresh build was attempted"
+  },
+  {
+    "check": "Benchmark provenance fields absent",
+    "passed": true,
+    "detail": "S7; report has OS, scale, stage size, endpoint, resize method, stages"
+  }
+]

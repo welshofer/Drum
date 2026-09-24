@@ -1,0 +1,22 @@
+{
+  "architecture": "arm64",
+  "build_warning_count": 0,
+  "configuration": "Release",
+  "finished_at_utc": "2026-09-24T14:41:30+00:00",
+  "measurements_sha256": "c078315f515aee22622fcad8814602f2ba17ed033bce861b25fdb40c66820f5e",
+  "modes": [
+    "native",
+    "crt"
+  ],
+  "repetitions": 1,
+  "schema_version": 1,
+  "source_commit": "fcfe548936c3576e22ec97061a0be710e7e744cb",
+  "source_dirty": true,
+  "source_sha256": "8068e760f1d7c79dae3ab4a8f165b48e40e081108fb26bc1203b2b8303a7557d",
+  "started_at_utc": "2026-09-24T14:41:02+00:00",
+  "status": "complete",
+  "swiftterm_revision": "5d14406844143538cd8f8851d2d8a67c1fe443e5",
+  "swiftterm_version": "1.20.0",
+  "xcode_build": "Build version 27A9269",
+  "xcode_version": "Xcode 27.1"
+}

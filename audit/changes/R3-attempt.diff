@@ -1,0 +1,145 @@
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -22,6 +22,6 @@
+ ## Build
+ 
+ - Project is generated: edit `project.yml`, then run `xcodegen generate`. Never hand-edit `Drum.xcodeproj`.
+-- `xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Debug build` must finish with zero warnings. The Metal Toolchain must be installed (`xcodebuild -downloadComponent MetalToolchain`).
++- Build with `scripts/check-project.sh build Debug`; run Debug and Release regression tests for executable changes. See [development.md](docs/development.md) for prerequisites, plugin trust, test commands and launch checks. The zero-warning gate includes tooling warnings.
+ - Spec of record: `drum-spec.md`. Phase gates are in §8; report against the gate, not the task list.
+ - `DrumBundle.swift` carries `#if SWIFT_PACKAGE` branches so a scratch SwiftPM wrapper can compile-check and run the app; none of it is in the Xcode product.
+--- a/docs/performance.md
++++ b/docs/performance.md
+@@ -36,18 +36,7 @@
+ - A running Debug app was visually checked through shell input and two live window resizes. The optimized Release build was then launched and its terminal display verified.
+ - The final Debug build completed with zero warnings. Test builds emitted Xcode’s existing “Metadata extraction skipped, no AppIntents.framework dependency found” tooling warning; there were no Swift or Metal compiler warnings.
+ 
+-Reproduce with:
+-
+-```sh
+-xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Debug \
+-  -destination 'platform=macOS,arch=arm64' -skipPackagePluginValidation test
+-
+-xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Release \
+-  -destination 'platform=macOS,arch=arm64' -skipPackagePluginValidation \
+-  ENABLE_TESTABILITY=YES test
+-```
+-
+-The pinned SwiftTerm build plugin generates build metadata. Xcode 27's matching Metal Toolchain must be installed. If an existing derived app bundle fails signing because of Finder/resource-fork attributes, clear those attributes on the derived build product before rebuilding; source files do not need modification.
++For current build/test commands, plugin trust and toolchain prerequisites, see [development.md](development.md). The results above describe the dated runs, including their reported tooling warnings.
+ 
+ ## Remaining Phase 2 verification
+ 
+--- /dev/null
++++ b/scripts/check-project.sh
+@@ -0,0 +1,72 @@
++#!/bin/bash
++# Ordinary app build/regression checks. Performance workloads have their own runner.
++set -euo pipefail
++repo_dir="$(cd "$(dirname "$0")/.." && pwd)"
++usage() {
++  cat <<'USAGE'
++Usage: scripts/check-project.sh <build|test> <Debug|Release> [options]
++  --output-dir DIR          Fresh directory for xcodebuild.log (default: build/checks/…)
++  --allow-reviewed-plugin   Skip Xcode plugin validation for this invocation only.
++                           Use only after reviewing the locked dependency/plugin.
++  --help                   Show this help.
++USAGE
++}
++fail() { printf '%s\n' "$1" >&2; exit 2; }
++if [[ "${1:-}" == --help ]]; then usage; exit 0; fi
++[[ $# -ge 2 ]] || { usage >&2; exit 2; }
++action="$1"
++configuration="$2"
++shift 2
++case "$action" in build|test) ;; *) fail 'Action must be build or test.' ;; esac
++case "$configuration" in Debug|Release) ;; *) fail 'Configuration must be Debug or Release.' ;; esac
++output_dir="$repo_dir/build/checks/$(date -u +%Y%m%dT%H%M%SZ)-$$"
++allow_plugin=0
++while [[ $# -gt 0 ]]; do
++  case "$1" in
++    --output-dir)
++      [[ $# -ge 2 && -n "$2" && "$2" != --* ]] || fail '--output-dir requires a directory.'
++      output_dir="$2"; shift 2 ;;
++    --allow-reviewed-plugin) allow_plugin=1; shift ;;
++    *) fail "Unknown option: $1" ;;
++  esac
++done
++for tool in xcodebuild xcrun; do
++  command -v "$tool" >/dev/null || fail "Missing $tool. Select a full Xcode installation; see docs/development.md."
++done
++if ! xcode_version="$(xcodebuild -version 2>&1)"; then
++  printf '%s\n' "$xcode_version" >&2
++  fail 'Selected developer directory cannot run Xcode. See docs/development.md.'
++fi
++if ! metal_path="$(xcrun --no-cache --find metal 2>/dev/null)" || [[ ! -x "$metal_path" ]]; then
++  fail 'Metal toolchain unavailable for selected Xcode. Install its matching Metal Toolchain; see docs/development.md.'
++fi
++mkdir -p "$output_dir"
++output_dir="$(cd "$output_dir" && pwd)"
++log="$output_dir/xcodebuild.log"
++[[ ! -e "$log" ]] || fail "Refusing to replace existing log: $log"
++cd "$repo_dir"
++args=(-project Drum.xcodeproj -scheme Drum -configuration "$configuration"
++      -destination "platform=macOS,arch=$(uname -m)" -disableAutomaticPackageResolution
++      ONLY_ACTIVE_ARCH=YES)
++if [[ "$allow_plugin" == 1 ]]; then
++  printf '%s\n' 'Plugin validation bypass explicitly selected; it covers every package plugin in this invocation.' >&2
++  args+=(-skipPackagePluginValidation)
++fi
++if [[ "$action" == test ]]; then
++  args+=(-skip-testing:DrumTests/TerminalPerformanceTests)
++  [[ "$configuration" != Release ]] || args+=(ENABLE_TESTABILITY=YES)
++fi
++printf '%s\nLog: %s\n' "$xcode_version" "$log"
++# Preserve xcodebuild's exit code, independent of filtering/tee.
++status=0
++xcodebuild "${args[@]}" "$action" > "$log" 2>&1 || status=$?
++if [[ "$status" != 0 ]]; then
++  tail -n 40 "$log" >&2
++  printf 'xcodebuild failed (exit %s). Full log: %s\n' "$status" "$log" >&2
++  exit "$status"
++fi
++if LC_ALL=C grep -Ein '(^|[[:space:]])warning:' "$log"; then
++  printf 'xcodebuild succeeded, but the zero-warning gate failed. Full log: %s\n' "$log" >&2
++  exit 3
++fi
++printf '%s %s succeeded with zero warnings. Log: %s\n' "$configuration" "$action" "$log"
+--- /dev/null
++++ b/docs/development.md
+@@ -0,0 +1,35 @@
++# Building and checking Drum
++
++Use the selected full Xcode installation with Swift 6 support and its matching Metal Toolchain. Check `xcodebuild -version` and `xcrun --no-cache --find metal`. If Metal is unavailable, install the matching component through Xcode or `xcodebuild -downloadComponent MetalToolchain`. The check script diagnoses prerequisites; it does not download components or change the selected Xcode.
++
++The committed `Package.resolved` currently locks SwiftTerm 1.20.0 at `5d14406844143538cd8f8851d2d8a67c1fe443e5`. Its build plugin generates version metadata. Review the resolved plugin and generator before trusting them in Xcode. Plugin validation remains on by default. For an authorized headless run after that review, append `--allow-reviewed-plugin` to the commands below. This passes Xcode's `-skipPackagePluginValidation` for that invocation, which covers all package plugins, not just SwiftTerm. Revisit the review when the lockfile changes; do not change global trust settings to make a check pass. FlowDeck's existing invocation override does not affect a direct shell command.
++
++## Ordinary checks
++
++Run from the repository (or invoke the script by absolute path):
++
++```sh
++scripts/check-project.sh build Debug
++scripts/check-project.sh test Debug
++scripts/check-project.sh test Release
++# A distributable configuration build, when needed:
++scripts/check-project.sh build Release
++```
++
++The helper chooses the native macOS architecture, prevents automatic dependency version updates, and adds `ENABLE_TESTABILITY=YES` for Release tests. It excludes the opt-in performance suite from ordinary regression runs. Logs go to a fresh `build/checks/` directory; `--output-dir DIR` selects another location. Failed builds/tests retain their original exit code, invalid arguments/prerequisites return 2, and a successful Xcode invocation that emits any `warning:` returns 3. The full log is retained. Compiler warnings remain errors; tooling warnings are also reported and fail the zero-warning gate. Do not describe a run as warning-free when a tooling warning occurred.
++
++The [performance benchmark](performance-benchmark.md) is separate. Its display-link and capture endpoints do not establish screen presentation or the §8 frame-rate gate.
++
++## Project generation and troubleshooting
++
++Edit `project.yml` for project configuration, then run `xcodegen generate` and inspect the generated diff. Do not hand-edit `Drum.xcodeproj`. Run the appropriate ordinary checks after generation. When inspecting dependency APIs, use the checkout revision recorded in the lockfile; public methods are not necessarily open for subclass overrides.
++
++A resource-fork/Finder-attribute signing failure is not a reason to change source or signing policy. If the log identifies that problem, remove the offending attributes from the derived build product only and rebuild. Do not apply a blanket cleanup to the repository.
++
++## Launch and visual checks
++
++A completed build does not launch the app. When the task explicitly requests build and launch, wait for the build to finish, open the built app, and inspect its window; report launch separately from build success. Use the product path in the build output rather than assuming a DerivedData identifier. If an older process is still running, verify which product it belongs to before claiming the new build is active.
++
++For visual development checks that should preserve an existing shell session, use a separate preview app with a distinct bundle identifier, as documented in the [performance pass](performance.md). Keep the existing terminal process and user preferences intact. An explicit request to launch the new app should be carried through without treating this preview practice as a new approval requirement.
++
++The SwiftPM snapshot harness in `DrumBundle.swift` is historical diagnostic support. The Xcode project and ordinary checks above are the maintained build path.

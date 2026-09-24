@@ -1,0 +1,712 @@
+--- a/CLAUDE.md
++++ b/CLAUDE.md
+@@ -11,7 +11,7 @@
+ - Make focused edits and summarize the changed behavior and verification. Return complete source files only when requested.
+ - One ordinary resizable window (`Window` scene). No screen pinning, no borderless mode; the user maximises it on whatever display they like.
+ 
+-## Learned the hard way (see docs/phase-1-findings.md)
++## Rendering and lifecycle (historical rationale in [phase-1 findings](docs/phase-1-findings.md), current capture details in [performance notes](docs/performance.md))
+ 
+ - Keep the SwiftTerm input view outside the shader chain. With CRT on it is transparent and `PictureStage` renders the mirror; with CRT off it draws directly and mirror work stops. Preserve the same terminal, PTY, selection and focus across mode changes.
+ - The picture must never propose its own size upward (it is drawn in an `overlay` of a flexible `Color.black`) or the window would grow to fit it and the next capture would be bigger again.
+@@ -23,5 +23,5 @@
+ 
+ - Project is generated: edit `project.yml`, then run `xcodegen generate`. Never hand-edit `Drum.xcodeproj`.
+ - `xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Debug build` must finish with zero warnings. The Metal Toolchain must be installed (`xcodebuild -downloadComponent MetalToolchain`).
+-- Spec of record: `drum-spec.md`. Phase gates are in §8; report against the gate, not the task list.
++- This file contains current agent rules. [drum-spec.md](drum-spec.md) contains current product requirements and §8 gates; report evidence against the affected gates. Dated docs record historical evidence, and later implementation notes supersede older mechanisms. The archived kickoff is not current guidance.
+ - `DrumBundle.swift` carries `#if SWIFT_PACKAGE` branches so a scratch SwiftPM wrapper can compile-check and run the app; none of it is in the Xcode product.
+--- a/drum-spec.md
++++ b/drum-spec.md
+@@ -1,303 +1,111 @@
+ # Drum — a modern Cathode
+ 
+-**Kickoff spec v2.0 — 2026-09-10**
+-Native macOS 26 terminal app with a real phosphor CRT look. Swift 6 strict concurrency. SwiftUI + Metal shaders. Nothing else.
++Current product specification, reconciled 2026-09-24. Native macOS 26 terminal app: Swift 6 strict concurrency, SwiftUI and Metal, with AppKit where required by the terminal integration. A working shell with the phosphor CRT appearance inspired by Cathode, sized for a 2560×720 panel and usable at ordinary window sizes.
+ 
+-A working terminal — your shell, your Claude Code sessions, whatever you run — drawn as a curved amber tube with scanlines, bloom, and persistence. Cathode, on today's APIs, sized for a 2560×720 panel but happy at any size.
+-
+----
++[CLAUDE.md](CLAUDE.md) contains current agent rules; this document contains product requirements and acceptance gates. Dated documents record evidence at their stated date/revision. Later implementation notes supersede older mechanisms, not product requirements. The [original kickoff](docs/history/drum-kickoff-2026-09-10.md) is a historical archive, not an implementation template.
+ 
+ ## 1. Scope
+ 
+ **In:**
+-- A real terminal emulator: PTY running the user's login shell, full VT100/xterm, resize, copy/paste, scrollback.
+-- The CRT shader chain (curvature, sync wobble, bloom, scanlines, aperture grille, vignette, power-on flyback).
+-- Phosphor presets (amber, green, white) plus per-uniform sliders.
+-- Window that can pin itself borderless to a chosen screen (the 2560×720 panel) or run as a normal window.
+ 
+-**Out (v1):** tabs, split panes, profiles, ligatures, GPU-side true persistence (see §5.1).
++- A real terminal emulator: PTY running the user's login shell, full VT100/xterm, resize, copy/paste and scrollback, provided by SwiftTerm.
++- CRT curvature, sync wobble, bloom, scanlines, aperture grille, vignette and power-on flyback.
++- Phosphor presets (amber, green, white and custom colour), live visual controls and bundled bitmap-era fonts.
++- One ordinary resizable window with a standard title bar; the user can maximise it on the desired display. No display pinning, borderless mode or screen picker.
++- Direct native terminal rendering when CRT is disabled.
++- Optional boot tone, parsed terminal bell, key clicks, flyback whine and hum, each with volume and finite preview controls. All sounds default off; see [sound behavior and fidelity](docs/sound.md).
+ 
+----
++**Out (v1):** tabs, split panes, profiles, ligatures and GPU-side true persistence. True persistence remains a conditional future phase (§5.1), not a commitment to implement it now.
+ 
+ ## 2. Architecture
+ 
+-Modern SwiftUI. No MVVM. `@Observable` + `@Environment`. `@MainActor` on anything touching UI. No `DispatchQueue`.
++Use `@Observable` state injected with `@Environment`; no MVVM, `ObservableObject` or `@StateObject`. UI state is main-actor isolated. Preserve the concurrency and callback boundaries in [CLAUDE.md](CLAUDE.md).
+ 
+-```
+-Drum/
+-  App/
+-    DrumApp.swift               // WindowGroup + Settings scene
+-    AppState.swift              // @Observable: CRTSettings, pinned screen
+-    ScreenPinning.swift         // optional borderless pin to an NSScreen
+-  Terminal/
+-    TerminalView.swift          // NSViewRepresentable around SwiftTerm's LocalProcessTerminalView
+-    TerminalTheme.swift         // font, cell padding, phosphor-driven colours
+-  CRT/
+-    CRT.metal
+-    CRTEffect.swift             // the modifier chain
+-    Phosphor.swift
+-    PowerOnTransition.swift
+-  Settings/
+-    SettingsView.swift          // phosphor picker + sliders, live
+-  Resources/Fonts/
+-CLAUDE.md
+-CREDITS.md
+-```
++| Responsibility | Maintained implementation |
++| --- | --- |
++| One `Window` plus Settings scene, launch and quit lifecycle | [DrumApp.swift](Drum/App/DrumApp.swift) |
++| App state, settings persistence and power transitions | [AppState.swift](Drum/App/AppState.swift) |
++| Picture/input stage composition and shared insets | [RootView.swift](Drum/App/RootView.swift) |
++| Long-lived terminal, shell and row flashes | [TerminalSession.swift](Drum/Terminal/TerminalSession.swift) |
++| SwiftTerm host, native/CRT mode switching | [TerminalView.swift](Drum/Terminal/TerminalView.swift) |
++| Invalidations, input and parsed BEL hooks | [DrumTerminalView.swift](Drum/Terminal/DrumTerminalView.swift) |
++| Mirror, display clock and two incremental bitmap stores | [TerminalMirror.swift](Drum/Terminal/TerminalMirror.swift), [TerminalDisplayClock.swift](Drum/Terminal/TerminalDisplayClock.swift), [TerminalBitmapStore.swift](Drum/Terminal/TerminalBitmapStore.swift) |
++| Phosphor, font and monochrome ANSI palette | [Phosphor.swift](Drum/CRT/Phosphor.swift), [TerminalTheme.swift](Drum/Terminal/TerminalTheme.swift) |
++| CRT parameters, modifier chain and shader functions | [CRTSettings.swift](Drum/CRT/CRTSettings.swift), [CRTEffect.swift](Drum/CRT/CRTEffect.swift), [CRT.metal](Drum/CRT/CRT.metal) |
++| Appearance and sound controls | [SettingsView.swift](Drum/Settings/SettingsView.swift), [SoundSettingsView.swift](Drum/Settings/SoundSettingsView.swift) |
+ 
+-**Terminal engine:** [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) via SPM. `LocalProcessTerminalView` spawns the PTY and shell, handles resize and input. Don't write a VT parser. Wrap it in `NSViewRepresentable`; forward focus so the first click types.
++**Terminal engine:** SwiftTerm via SPM owns parsing, PTY, input, resize and scrollback. Do not write another VT parser. Keep the same terminal and PTY alive through host rebuilds, power animation and rendering-mode changes. Use the resolved dependency source when choosing extension points; public methods are not necessarily open to override.
+ 
+-**Font:** bitmap-era monospace bundled in `Resources/Fonts/` — *Glass TTY VT220* or *IBM VGA 8x16* (Ultimate Oldschool PC Font Pack, CC BY-SA 4.0). Verify license, record it in `CREDITS.md`. Set on SwiftTerm as `NSFont`. The font is half the look.
++**Fonts:** Glass TTY VT220 and IBM VGA 8×16 are bundled with their licenses. Preserve [CREDITS.md](CREDITS.md) and the adjacent license files. Register fonts through the bundle; keep a usable monospace fallback. Default font sizes and names live in AppState and TerminalTheme.
+ 
+-**Colours:** terminal foreground is the phosphor colour, background is pure black, ANSI palette is remapped to brightness steps of the phosphor (monochrome tube — a P3 tube had no colour). Bloom then tints the glow.
+-
+----
++**Colours:** foreground follows the phosphor; background is black. ANSI colours map to phosphor brightness steps. The CRT mask also converts arbitrary input colours, including true-colour escapes, into the selected phosphor. Clamp colour components before integer palette conversion. Theme colour changes should not reassign the font and reset terminal state.
+ 
+ ## 3. Window
+ 
+-- Default: a normal resizable window, hidden title bar, black.
+-- Settings → "Pin to display": pick an `NSScreen` by `localizedName`; the window goes `styleMask = [.borderless]`, `setFrame(screen.frame)`, `collectionBehavior = [.fullScreenNone, .canJoinAllSpaces, .stationary]`. Not native full screen (it makes a Space). Persist the choice; re-acquire on `didChangeScreenParametersNotification`.
+-- Read `backingScaleFactor` and pass it to the shaders — scanline period is in device pixels.
++Use the single `Window` scene with a standard dark title bar, normal resizing, zoom and native full-screen behavior. No screen-pinning state or `ScreenPinning.swift` is required.
+ 
+----
++Read `@Environment(\.displayScale)` at render time and pass the current scale into rendering settings; persisted scale is not authoritative. Capture uses the window's backing scale. Keep picture and input geometry aligned with shared bezel insets. Draw the image in the overlay of a flexible black stage so its captured size does not expand the window on each update.
+ 
+ ## 4. The CRT shaders
+ 
+-`CRT.metal`, all `[[stitchable]]`, fed by SwiftUI's shader modifiers.
++[CRT.metal](Drum/CRT/CRT.metal) is the maintained shader source; use it instead of the archived starter code. The corresponding Swift arguments live in [CRTEffect.swift](Drum/CRT/CRTEffect.swift) and [PowerOnTransition.swift](Drum/CRT/PowerOnTransition.swift).
+ 
+-```metal
+-#include <metal_stdlib>
+-#include <SwiftUI/SwiftUI.h>
+-using namespace metal;
++- Barrel maps output position to source position. It curves axes separately so a wide tube can look more cylindrical; keep curvature small enough for useful input targeting.
++- Bloom samples two rings, tints luminance and adds it to the text. Normal bloom uses 33 samples including the base; live resize temporarily uses 17. A zero-strength bloom bypasses its effect. Keep `maxSampleOffset` at least the sampling radius.
++- Mask applies scanlines at a two-device-pixel period, aperture grille, vignette and brightness. Current scanlines use device-row sampling; the archived cosine example produced incorrect pixel-centred samples. The mask produces monochrome phosphor output from every input colour.
++- Flyback produces the line/dot and fade used by power transitions.
++- Barrel, mask and flyback accept `.boundingRect` as `float4 bounds`, with `bounds.zw` providing size. Bloom receives radius, strength and tint, without bounds. Match argument types and order at both sides of each SwiftUI call.
+ 
+-// Barrel distortion (.distortionEffect). Output position -> source position.
+-// Out-of-layer samples are transparent = the curved black tube edge.
+-// Axes curved separately; a wide tube is a cylinder more than a sphere.
+-[[stitchable]] float2 crtBarrel(float2 position, float2 size,
+-                                float strengthX, float strengthY,
+-                                float wobble, float time)
+-{
+-    float2 uv = position / size;
+-    float2 c  = uv * 2.0 - 1.0;
+-    float r2  = dot(c, c);
+-    c.x *= 1.0 + strengthX * r2;
+-    c.y *= 1.0 + strengthY * r2;
+-    float n = fract(sin(dot(float2(uv.y * 173.0, time), float2(12.9898, 78.233))) * 43758.5453);
+-    c.x += wobble * (0.6 * sin(time * 1.7 + uv.y * 9.0) + 0.4 * (n - 0.5));
+-    uv = (c + 1.0) * 0.5;
+-    return uv * size;
+-}
+-
+-// Bloom / phosphor glow (.layerEffect). 16-tap ring, tinted, added on top.
+-[[stitchable]] half4 crtBloom(float2 position, SwiftUI::Layer layer,
+-                              float radius, float strength, half4 tint)
+-{
+-    half4 base = layer.sample(position);
+-    half4 acc  = half4(0.0);
+-    const int taps = 16;
+-    for (int i = 0; i < taps; i++) {
+-        float a = float(i) * (2.0 * M_PI_F / float(taps));
+-        float2 off = float2(cos(a), sin(a)) * radius;
+-        acc += layer.sample(position + off);
+-        acc += layer.sample(position + off * 0.5) * 0.5h;
+-    }
+-    acc /= half(taps) * 1.5h;
+-    half lum = dot(acc.rgb, half3(0.299h, 0.587h, 0.114h));
+-    return base + tint * lum * half(strength);
+-}
+-
+-// Scanlines + aperture grille + vignette (.colorEffect).
+-[[stitchable]] half4 crtMask(float2 position, half4 color, float2 size,
+-                             float scale, float lineStrength,
+-                             float grilleStrength, float vignette)
+-{
+-    float py   = position.y * scale;
+-    float line = 0.5 + 0.5 * cos(py * M_PI_F);          // 2-px period
+-    half l     = half(1.0 - lineStrength * line);
+-
+-    int col = int(position.x * scale) % 3;
+-    half3 grille = half3(1.0h);
+-    grille[(col + 1) % 3] = 1.0h - half(grilleStrength);
+-    grille[(col + 2) % 3] = 1.0h - half(grilleStrength);
+-
+-    float2 uv = position / size;
+-    float2 d  = uv * (1.0 - uv);
+-    half v    = half(pow(clamp(d.x * d.y * 16.0, 0.0, 1.0), vignette));
+-
+-    return half4(color.rgb * l * grille * v, color.a);
+-}
+-
+-// Flyback line for power-on (.colorEffect on a black overlay).
+-// progress 0->1: bright line collapses to a dot, then fades.
+-[[stitchable]] half4 crtFlyback(float2 position, half4 color, float2 size,
+-                                float progress, half4 tint)
+-{
+-    float2 uv = position / size;
+-    float2 c  = abs(uv * 2.0 - 1.0);
+-    float h   = mix(0.004, 0.0, smoothstep(0.6, 1.0, progress));
+-    float w   = mix(1.0, 0.0, smoothstep(0.0, 0.7, progress));
+-    float on  = step(c.y, h) * step(c.x, w);
+-    float fade = 1.0 - smoothstep(0.85, 1.0, progress);
+-    return tint * half(on * fade * 3.0);
+-}
+-```
+-
+-Tuning: on a 32:9 panel start at `strengthX 0.03, strengthY 0.06`; on a normal window `0.05 / 0.05`. Bloom radius 2.5 / strength 0.9 for amber, 3.5 / 0.7 for green; `maxSampleOffset ≥ radius`. Grille 0.06–0.1. Scanlines ≤ 0.35 at 720 px tall or text aliases.
+-
+----
++Keep current defaults in CRTSettings and Phosphor. The original tuning ranges and formulas are preserved in the historical archive, but they are not instructions to reset existing settings. Wide-panel tuning uses less horizontal curvature; verify readability at the real size rather than copying old constants. Wrap time before narrowing to Float so the wobble retains sub-frame precision.
+ 
+ ## 5. The modifier chain
+ 
+-Order matters: terminal → bloom → mask → barrel → bezel. Bloom before barrel so the glow curves with the glass.
++Order remains **Bloom → Mask → Barrel → Bezel**. Bloom precedes barrel so the glow curves with the glass. Apply the chain once to the picture container, not the window or AppKit terminal.
+ 
+-```swift
+-import SwiftUI
++The [Phase 1 experiment](docs/phase-1-findings.md) established that putting the AppKit representable under SwiftUI shader modifiers removed it from the window. Keep InputStage outside that chain. With CRT enabled, the terminal host is transparent and PictureStage renders its mirror, caret and row glow. With CRT disabled, the same terminal host draws directly; mirror captures, mirrored cursor animation and row-flash work stop. Preserve terminal identity, PTY, focus and selection across mode changes.
+ 
+-struct Phosphor: Sendable, Equatable {
+-    var color: Color
+-    var bloomRadius: CGFloat
+-    var bloomStrength: Float
++The mirror follows AppKit invalidations through a window-bound display link. Each reusable backing buffer retains its own dirty regions; clean or hidden terminals pause capture. Scrollbar refresh is bounded after scroll activity. Live resize reuses bitmap capacity and temporarily reduces effect work without changing saved settings. See the [performance implementation notes](docs/performance.md) and [rendering regression tests](DrumTests/TerminalRenderingTests.swift).
+ 
+-    static let p1Green = Phosphor(color: Color(red: 0.36, green: 1.00, blue: 0.40), bloomRadius: 3.5, bloomStrength: 0.7)
+-    static let p3Amber = Phosphor(color: Color(red: 1.00, green: 0.69, blue: 0.16), bloomRadius: 2.5, bloomStrength: 0.9)
+-    static let p4White = Phosphor(color: Color(red: 0.86, green: 0.92, blue: 1.00), bloomRadius: 2.0, bloomStrength: 0.5)
+-}
+-
+-struct CRTSettings: Sendable, Equatable {
+-    var phosphor: Phosphor = .p3Amber
+-    var barrelX: Float = 0.05
+-    var barrelY: Float = 0.05
+-    var wobble: Float = 0.0015
+-    var scanlines: Float = 0.28
+-    var grille: Float = 0.08
+-    var vignette: Float = 0.35
+-    var scale: Float = 1
+-    var animated = true
+-}
+-
+-struct CRTEffect: ViewModifier {
+-    let settings: CRTSettings
+-    let time: TimeInterval
+-
+-    func body(content: Content) -> some View {
+-        content
+-            .layerEffect(
+-                ShaderLibrary.crtBloom(
+-                    .float(settings.phosphor.bloomRadius),
+-                    .float(settings.phosphor.bloomStrength),
+-                    .color(settings.phosphor.color)),
+-                maxSampleOffset: CGSize(width: settings.phosphor.bloomRadius,
+-                                        height: settings.phosphor.bloomRadius))
+-            .colorEffect(
+-                ShaderLibrary.crtMask(
+-                    .boundingRect,
+-                    .float(settings.scale),
+-                    .float(settings.scanlines),
+-                    .float(settings.grille),
+-                    .float(settings.vignette)))
+-            .distortionEffect(
+-                ShaderLibrary.crtBarrel(
+-                    .boundingRect,
+-                    .float(settings.barrelX),
+-                    .float(settings.barrelY),
+-                    .float(settings.wobble),
+-                    .float(Float(time))),
+-                maxSampleOffset: CGSize(width: 160, height: 60))
+-            .clipShape(RoundedRectangle(cornerRadius: 42, style: .continuous))
+-            .background(Color.black)
+-    }
+-}
+-
+-extension View {
+-    func crt(_ settings: CRTSettings, time: TimeInterval) -> some View {
+-        modifier(CRTEffect(settings: settings, time: time))
+-    }
+-}
+-```
+-
+-Root view:
+-
+-```swift
+-TimelineView(.animation(minimumInterval: 1/60, paused: !state.crt.animated)) { ctx in
+-    TerminalView()
+-        .crt(state.crt, time: ctx.date.timeIntervalSinceReferenceDate)
+-}
+-.background(Color.black)
+-.transition(PowerOnTransition())
+-```
+-
+-**Known risk, check first:** `.layerEffect` / `.distortionEffect` rasterize the subtree. SwiftTerm is an `NSView`; confirm SwiftUI captures it into the layer correctly (it should — representables are rasterized like anything else — but verify in Phase 1 before building on it). Mouse hit-testing through a distortion is *not* remapped; if click-to-position-cursor feels wrong under curvature, keep curvature small or invert the barrel in `TerminalView`'s hit test. Keyboard is unaffected.
++Mouse hit-testing uses the undistorted terminal position. That limitation remains: keep curvature small, or separately design and verify inverse mapping if a future task requires it. Do not assume bitmap-capture timing measures user-visible input latency.
+ 
+ ### 5.1 Persistence
+ 
+-Cathode's phosphor trails came from blending previous frames. SwiftUI shader modifiers can't read the previous frame. Two options, in order:
++Shipping persistence is cursor and new-text glow: changed rows receive an 80 ms glyph-masked flash, and the blinking block cursor has a 2 Hz cycle. Glow and wobble share a timeline; cursor blinking does not require a terminal bitmap redraw.
+ 
+-1. **Cursor and new-text glow only** (ship first). SwiftTerm exposes terminal updates; on each update, the changed cells get an overbright flash (`opacity 1.4`, `blur 0.6`) for 80 ms. Blinking block cursor at 2 Hz. Reads as persistence at a glance.
+-2. **True persistence** (Phase 3). Snapshot the terminal layer each frame into an `MTLTexture`, ping-pong `current + 0.86 × previous`, feed the result — not the live view — into the CRT chain via an `MTKView` representable. This is the one custom render loop in the app. Do it only if (1) looks flat in person.
+-
+----
++True persistence remains optional only if the existing effect looks flat on the real panel. The original concept blends current and previous frames (`current + 0.86 × previous`) in a Metal path. It would require a separately verified rendering design; adding an `MTKView` under the current SwiftUI shader chain is not a validated implementation. Do not introduce a continuous render loop without that need and evidence.
+ 
+ ## 6. Power-on
+ 
+-On launch, and on ⌘R: 700 ms `crtFlyback` over black, then the terminal fades in from center. On quit: reverse in 300 ms. `PowerOnTransition` is a `Transition` on the root view.
++At launch and on ⌘R, play the 700 ms flyback/reveal; on ordinary quit, play the 300 ms reverse transition. [PowerOnTransition.swift](Drum/CRT/PowerOnTransition.swift) supplies the transition. Power cycling preserves the terminal session.
+ 
+----
++Ordinary quit uses cancel → power-off → terminate again because `.terminateLater` stalled the main-actor task in the tested configuration. System logout/restart/shutdown is answered immediately so the animation does not cancel the system operation.
+ 
+ ## 7. Settings
+ 
+-Live, no Apply button. Phosphor picker (Amber / Green / White / Custom colour), sliders for every `CRTSettings` field, font size, "Pin to display" picker, "Animated" toggle (kills wobble and the timeline for battery). Persist with `@AppStorage`-backed properties on `AppState`.
++Settings are live, with no Apply button. Appearance contains phosphor preset/custom colour, bloom, brightness, curvature, wobble, scanline, grille, vignette and bezel controls, plus CRT/animation toggles and font/size. Disabling animation stops continuous wobble; necessary input-driven drawing still occurs. Backing scale and transient resize quality come from runtime state, not a user slider.
+ 
+----
++AppState persists through a typed JSON `SettingsStore` over UserDefaults, not `@AppStorage` on AppState. CRT decoding tolerates missing keys; preserve saved choices when adding fields. Sound preferences are independent of appearance.
++
++Sound provides five independent opt-in effects, volume and finite previews, plus mains/flyback frequency choices. Parsed incoming BEL rings the bell; Ctrl-G is input to the running program, which decides whether to emit BEL. Key clicks exclude command shortcuts, paste, responses and unfocused events. Stop audio while inactive or powered off, bound simultaneous voices, and keep synthesis/file work off input and redraw paths. Fidelity limits and the deliberate 125 ms boot approximation are documented in [sound.md](docs/sound.md).
+ 
+ ## 8. Phases and gates
+ 
+-| Phase | Deliverable | Gate |
+-|---|---|---|
+-| **1** | Xcode project, SwiftTerm running a shell in a black window, bundled bitmap font, phosphor colour theme. | Can run `claude` in it and work normally for 10 min. Resize, copy, paste all correct. |
+-| **2** | `CRT.metal` + `CRTEffect` on the terminal; Settings with live sliders; power-on. | 60 fps with wobble on (Instruments) at 2560×720; text legible; keyboard and mouse still correct under curvature; screenshot in `docs/`. |
+-| **3** *(optional)* | True persistence via `MTKView`. | Only if Phase 2 looks flat on the real panel. |
++The original acceptance criteria remain. Implementation completion and a passing test suite do not alone close these gates.
+ 
+-Phase 2 is what should be on the panel when the box opens.
++| Phase | Deliverable | Gate | Evidence/status as of 2026-09-24 |
++| --- | --- | --- | --- |
++| **1** | Xcode project, SwiftTerm running a shell in a black window, bundled bitmap font, phosphor colour theme. | Can run `claude` in it and work normally for 10 min. Resize, copy, paste all correct. | Implemented; historical visual checks and current rendering tests supply partial evidence. A recorded complete 10-minute acceptance exercise is not present. |
++| **2** | `CRT.metal` + `CRTEffect` on the terminal; Settings with live sliders; power-on. | 60 fps with wobble on (Instruments) at 2560×720; text legible; keyboard and mouse still correct under curvature; screenshot in `docs/`. | Implemented with partial visual/test evidence. Sustained 60 fps and input-to-presentation timing remain unverified. No acceptance screenshot is currently stored in `docs/`. |
++| **3** *(optional)* | True persistence via `MTKView`. | Only if Phase 2 looks flat on the real panel. | Deferred; no evidence requires this optional phase. Its rendering integration needs separate verification (§5.1). |
+ 
+----
++Phase 2 is the intended shipping experience for the panel. [Performance results](docs/performance-benchmark.md) measure CPU/preparation/scheduling, not presentation. [Sound verification](docs/sound.md) records its own fidelity limits.
+ 
+-## 9. CLAUDE.md
++## 9. Agent workflow
+ 
+-```markdown
+-# Drum — invariants
++Follow [CLAUDE.md](CLAUDE.md) and its [build instructions](CLAUDE.md#build). Implement the requested scoped change, consult the relevant maintained source and tests above, and report evidence against affected §8 gates. Verify APIs against the selected SDK/dependency source. Build and test results must distinguish source failures, tooling warnings and checks not performed; keep the zero-warning requirement intact.
+ 
+-- macOS 26 only. Swift 6, strict concurrency, zero warnings. SwiftUI; AppKit only where SwiftUI has no API (SwiftTerm wrapper, window pinning, NSScreen).
+-- No MVVM. `@Observable` + `@Environment`. No `ObservableObject`, no `@StateObject`.
+-- No `DispatchQueue`, no completion handlers, except inside the SwiftTerm representable where the library's delegate API requires it — isolate it there.
+-- SwiftTerm is the terminal engine. Never write a VT parser.
+-- The CRT chain is applied once, on the terminal container. Never on the window.
+-- Shader order is Bloom → Mask → Barrel → Bezel. Do not reorder.
+-- Views < 200 lines. Extract.
+-- Bundled fonts have their license in CREDITS.md before commit.
+-- Make focused edits and summarize the changed behavior and verification. Return complete source files only when requested.
+-```
++Rendering changes should preserve [pixel-reference and retained-image tests](DrumTests/TerminalBitmapStoreTests.swift), [mode/selection/resize checks](DrumTests/TerminalRenderingTests.swift) and comparison in a common colour space. Preserve payload-free signposts and keep raw Instruments traces and process environments local. Use the existing [benchmark/profiling procedure](docs/performance-benchmark.md) for repeatable measurements. Do not repeat the completed Phase 1 hosting experiment unless a specific new change requires it.
+ 
+----
++## 10. Decision history
+ 
+-## 10. Kickoff prompt
+-
+-```
+-Read drum-spec.md fully.
+-
+-Build Phase 1, then Phase 2. Create the Xcode project per §2, add SwiftTerm via SPM, get a shell running in a black window with the bundled bitmap font and the amber theme (§2). Then implement CRT.metal and CRTEffect (§4–5) on the terminal container, Settings with live sliders (§7), and the power-on transition (§6). Use the shader and modifier code in the spec as the starting point; tune constants, keep the order.
+-
+-Before Phase 2, verify the risk in §5: that SwiftUI's layerEffect correctly rasterizes the SwiftTerm NSView. Report what you find before proceeding.
+-
+-Constraints: Swift 6 strict concurrency, zero warnings, no MVVM, no DispatchQueue outside the SwiftTerm wrapper. Make focused edits and summarize the changed behavior and verification. Return complete source files only when requested. Verify every macOS 26 API against the current SDK, not memory.
+-
+-Gates: §8. Report against the gate, not the task list.
+-```
+-
+----
+-
+-## Amendments — 2026-09-10 (after first run)
+-
+-- **§1, §3, §7 — screen pinning is out.** Drum is one ordinary resizable window (`Window` scene, standard title bar); the user maximises it on whichever display they like. No borderless mode, no screen picker, no `ScreenPinning.swift`.
+-- **§3 — title bar.** Standard, dark. Not hidden.
+-- **§5 — the rasterisation risk is real.** SwiftUI's shader modifiers do not host AppKit views. The chain is applied to a mirrored bitmap of the terminal (`TerminalMirror`, `PictureStage`); the real SwiftTerm view stays outside the chain for input. See `docs/phase-1-findings.md`.
+-- **§4 — shaders take `float4 bounds`**, because `.boundingRect` is a float4. `crtMask` also takes `brightness` and the phosphor colour and renders every input colour monochrome in the phosphor.
+-- **§2 — window.** `DrumApp.swift` is `Window` + `Settings`; there is no `ScreenPinning.swift`.
++The [archived kickoff](docs/history/drum-kickoff-2026-09-10.md) preserves the original formulas, templates and amendments. The [Phase 1 findings](docs/phase-1-findings.md) preserve the reasons for the mirror, flexible stage, bounds contract and quit sequence. The [performance notes](docs/performance.md) document later capture/scheduling/native-mode/sRGB changes, and [sound notes](docs/sound.md) document audio decisions. Consult these for rationale; use the current instructions and source for implementation.
+--- a/docs/phase-1-findings.md
++++ b/docs/phase-1-findings.md
+@@ -1,4 +1,6 @@
+ # Phase 1 findings — 2026-09-10
++
++> Historical findings from 2026-09-10. The mirror architecture remains, but capture scheduling and bitmap updates were replaced in the [2026-09-18 performance pass](performance.md). The FlowDeck project override now exists. See [current build instructions](../CLAUDE.md#build) and [current acceptance status](../drum-spec.md#8-phases-and-gates). The mechanisms and blockers below describe the original run.
+ 
+ ## The §5 risk, verified: SwiftUI shader modifiers cannot host an AppKit view
+ 
+@@ -94,5 +96,6 @@
+ - Legibility, keyboard/mouse feel under curvature, copy/paste — the app could
+   not be screenshotted or driven from the agent session (no screen-recording
+   permission; app control was declined).
+-- The Xcode build itself — blocked by the FlowDeck guard hook until the
+-  project-level override exists (see README section in CLAUDE.md).
++- At the time, the Xcode build was blocked by the FlowDeck guard hook. That
++  project-override blocker is resolved: `.flowdeck/config.json` now exists.
++  This is not a claim that all current build/test or warning gates pass.
+--- /dev/null
++++ b/docs/history/drum-kickoff-2026-09-10.md
+@@ -0,0 +1,309 @@
++# Historical kickoff — not current implementation guidance
++
++Archived unchanged from the 2026-09-10 spec at audit baseline `fcfe548`. The code templates, copied agent rules, kickoff prompt, screen-pinning requirements and tentative workarounds below are superseded. Do not execute the kickoff or copy its code into the app. See the [current spec](../../drum-spec.md) and [current agent rules](../../CLAUDE.md). This archive preserves design rationale and the record of changed decisions.
++
++---
++
++# Drum — a modern Cathode
++
++**Kickoff spec v2.0 — 2026-09-10**
++Native macOS 26 terminal app with a real phosphor CRT look. Swift 6 strict concurrency. SwiftUI + Metal shaders. Nothing else.
++
++A working terminal — your shell, your Claude Code sessions, whatever you run — drawn as a curved amber tube with scanlines, bloom, and persistence. Cathode, on today's APIs, sized for a 2560×720 panel but happy at any size.
++
++---
++
++## 1. Scope
++
++**In:**
++- A real terminal emulator: PTY running the user's login shell, full VT100/xterm, resize, copy/paste, scrollback.
++- The CRT shader chain (curvature, sync wobble, bloom, scanlines, aperture grille, vignette, power-on flyback).
++- Phosphor presets (amber, green, white) plus per-uniform sliders.
++- Window that can pin itself borderless to a chosen screen (the 2560×720 panel) or run as a normal window.
++
++**Out (v1):** tabs, split panes, profiles, ligatures, GPU-side true persistence (see §5.1).
++
++---
++
++## 2. Architecture
++
++Modern SwiftUI. No MVVM. `@Observable` + `@Environment`. `@MainActor` on anything touching UI. No `DispatchQueue`.
++
++```
++Drum/
++  App/
++    DrumApp.swift               // WindowGroup + Settings scene
++    AppState.swift              // @Observable: CRTSettings, pinned screen
++    ScreenPinning.swift         // optional borderless pin to an NSScreen
++  Terminal/
++    TerminalView.swift          // NSViewRepresentable around SwiftTerm's LocalProcessTerminalView
++    TerminalTheme.swift         // font, cell padding, phosphor-driven colours
++  CRT/
++    CRT.metal
++    CRTEffect.swift             // the modifier chain
++    Phosphor.swift
++    PowerOnTransition.swift
++  Settings/
++    SettingsView.swift          // phosphor picker + sliders, live
++  Resources/Fonts/
++CLAUDE.md
++CREDITS.md
++```
++
++**Terminal engine:** [SwiftTerm](https://github.com/migueldeicaza/SwiftTerm) via SPM. `LocalProcessTerminalView` spawns the PTY and shell, handles resize and input. Don't write a VT parser. Wrap it in `NSViewRepresentable`; forward focus so the first click types.
++
++**Font:** bitmap-era monospace bundled in `Resources/Fonts/` — *Glass TTY VT220* or *IBM VGA 8x16* (Ultimate Oldschool PC Font Pack, CC BY-SA 4.0). Verify license, record it in `CREDITS.md`. Set on SwiftTerm as `NSFont`. The font is half the look.
++
++**Colours:** terminal foreground is the phosphor colour, background is pure black, ANSI palette is remapped to brightness steps of the phosphor (monochrome tube — a P3 tube had no colour). Bloom then tints the glow.
++
++---
++
++## 3. Window
++
++- Default: a normal resizable window, hidden title bar, black.
++- Settings → "Pin to display": pick an `NSScreen` by `localizedName`; the window goes `styleMask = [.borderless]`, `setFrame(screen.frame)`, `collectionBehavior = [.fullScreenNone, .canJoinAllSpaces, .stationary]`. Not native full screen (it makes a Space). Persist the choice; re-acquire on `didChangeScreenParametersNotification`.
++- Read `backingScaleFactor` and pass it to the shaders — scanline period is in device pixels.
++
++---
++
++## 4. The CRT shaders
++
++`CRT.metal`, all `[[stitchable]]`, fed by SwiftUI's shader modifiers.
++
++```metal
++#include <metal_stdlib>
++#include <SwiftUI/SwiftUI.h>
++using namespace metal;
++
++// Barrel distortion (.distortionEffect). Output position -> source position.
++// Out-of-layer samples are transparent = the curved black tube edge.
++// Axes curved separately; a wide tube is a cylinder more than a sphere.
++[[stitchable]] float2 crtBarrel(float2 position, float2 size,
++                                float strengthX, float strengthY,
++                                float wobble, float time)
++{
++    float2 uv = position / size;
++    float2 c  = uv * 2.0 - 1.0;
++    float r2  = dot(c, c);
++    c.x *= 1.0 + strengthX * r2;
++    c.y *= 1.0 + strengthY * r2;
++    float n = fract(sin(dot(float2(uv.y * 173.0, time), float2(12.9898, 78.233))) * 43758.5453);
++    c.x += wobble * (0.6 * sin(time * 1.7 + uv.y * 9.0) + 0.4 * (n - 0.5));
++    uv = (c + 1.0) * 0.5;
++    return uv * size;
++}
++
++// Bloom / phosphor glow (.layerEffect). 16-tap ring, tinted, added on top.
++[[stitchable]] half4 crtBloom(float2 position, SwiftUI::Layer layer,
++                              float radius, float strength, half4 tint)
++{
++    half4 base = layer.sample(position);
++    half4 acc  = half4(0.0);
++    const int taps = 16;
++    for (int i = 0; i < taps; i++) {
++        float a = float(i) * (2.0 * M_PI_F / float(taps));
++        float2 off = float2(cos(a), sin(a)) * radius;
++        acc += layer.sample(position + off);
++        acc += layer.sample(position + off * 0.5) * 0.5h;
++    }
++    acc /= half(taps) * 1.5h;
++    half lum = dot(acc.rgb, half3(0.299h, 0.587h, 0.114h));
++    return base + tint * lum * half(strength);
++}
++
++// Scanlines + aperture grille + vignette (.colorEffect).
++[[stitchable]] half4 crtMask(float2 position, half4 color, float2 size,
++                             float scale, float lineStrength,
++                             float grilleStrength, float vignette)
++{
++    float py   = position.y * scale;
++    float line = 0.5 + 0.5 * cos(py * M_PI_F);          // 2-px period
++    half l     = half(1.0 - lineStrength * line);
++
++    int col = int(position.x * scale) % 3;
++    half3 grille = half3(1.0h);
++    grille[(col + 1) % 3] = 1.0h - half(grilleStrength);
++    grille[(col + 2) % 3] = 1.0h - half(grilleStrength);
++
++    float2 uv = position / size;
++    float2 d  = uv * (1.0 - uv);
++    half v    = half(pow(clamp(d.x * d.y * 16.0, 0.0, 1.0), vignette));
++
++    return half4(color.rgb * l * grille * v, color.a);
++}
++
++// Flyback line for power-on (.colorEffect on a black overlay).
++// progress 0->1: bright line collapses to a dot, then fades.
++[[stitchable]] half4 crtFlyback(float2 position, half4 color, float2 size,
++                                float progress, half4 tint)
++{
++    float2 uv = position / size;
++    float2 c  = abs(uv * 2.0 - 1.0);
++    float h   = mix(0.004, 0.0, smoothstep(0.6, 1.0, progress));
++    float w   = mix(1.0, 0.0, smoothstep(0.0, 0.7, progress));
++    float on  = step(c.y, h) * step(c.x, w);
++    float fade = 1.0 - smoothstep(0.85, 1.0, progress);
++    return tint * half(on * fade * 3.0);
++}
++```
++
++Tuning: on a 32:9 panel start at `strengthX 0.03, strengthY 0.06`; on a normal window `0.05 / 0.05`. Bloom radius 2.5 / strength 0.9 for amber, 3.5 / 0.7 for green; `maxSampleOffset ≥ radius`. Grille 0.06–0.1. Scanlines ≤ 0.35 at 720 px tall or text aliases.
++
++---
++
++## 5. The modifier chain
++
++Order matters: terminal → bloom → mask → barrel → bezel. Bloom before barrel so the glow curves with the glass.
++
++```swift
++import SwiftUI
++
++struct Phosphor: Sendable, Equatable {
++    var color: Color
++    var bloomRadius: CGFloat
++    var bloomStrength: Float
++
++    static let p1Green = Phosphor(color: Color(red: 0.36, green: 1.00, blue: 0.40), bloomRadius: 3.5, bloomStrength: 0.7)
++    static let p3Amber = Phosphor(color: Color(red: 1.00, green: 0.69, blue: 0.16), bloomRadius: 2.5, bloomStrength: 0.9)
++    static let p4White = Phosphor(color: Color(red: 0.86, green: 0.92, blue: 1.00), bloomRadius: 2.0, bloomStrength: 0.5)
++}
++
++struct CRTSettings: Sendable, Equatable {
++    var phosphor: Phosphor = .p3Amber
++    var barrelX: Float = 0.05
++    var barrelY: Float = 0.05
++    var wobble: Float = 0.0015
++    var scanlines: Float = 0.28
++    var grille: Float = 0.08
++    var vignette: Float = 0.35
++    var scale: Float = 1
++    var animated = true
++}
++
++struct CRTEffect: ViewModifier {
++    let settings: CRTSettings
++    let time: TimeInterval
++
++    func body(content: Content) -> some View {
++        content
++            .layerEffect(
++                ShaderLibrary.crtBloom(
++                    .float(settings.phosphor.bloomRadius),
++                    .float(settings.phosphor.bloomStrength),
++                    .color(settings.phosphor.color)),
++                maxSampleOffset: CGSize(width: settings.phosphor.bloomRadius,
++                                        height: settings.phosphor.bloomRadius))
++            .colorEffect(
++                ShaderLibrary.crtMask(
++                    .boundingRect,
++                    .float(settings.scale),
++                    .float(settings.scanlines),
++                    .float(settings.grille),
++                    .float(settings.vignette)))
++            .distortionEffect(
++                ShaderLibrary.crtBarrel(
++                    .boundingRect,
++                    .float(settings.barrelX),
++                    .float(settings.barrelY),
++                    .float(settings.wobble),
++                    .float(Float(time))),
++                maxSampleOffset: CGSize(width: 160, height: 60))
++            .clipShape(RoundedRectangle(cornerRadius: 42, style: .continuous))
++            .background(Color.black)
++    }
++}
++
++extension View {
++    func crt(_ settings: CRTSettings, time: TimeInterval) -> some View {
++        modifier(CRTEffect(settings: settings, time: time))
++    }
++}
++```
++
++Root view:
++
++```swift
++TimelineView(.animation(minimumInterval: 1/60, paused: !state.crt.animated)) { ctx in
++    TerminalView()
++        .crt(state.crt, time: ctx.date.timeIntervalSinceReferenceDate)
++}
++.background(Color.black)
++.transition(PowerOnTransition())
++```
++
++**Known risk, check first:** `.layerEffect` / `.distortionEffect` rasterize the subtree. SwiftTerm is an `NSView`; confirm SwiftUI captures it into the layer correctly (it should — representables are rasterized like anything else — but verify in Phase 1 before building on it). Mouse hit-testing through a distortion is *not* remapped; if click-to-position-cursor feels wrong under curvature, keep curvature small or invert the barrel in `TerminalView`'s hit test. Keyboard is unaffected.
++
++### 5.1 Persistence
++
++Cathode's phosphor trails came from blending previous frames. SwiftUI shader modifiers can't read the previous frame. Two options, in order:
++
++1. **Cursor and new-text glow only** (ship first). SwiftTerm exposes terminal updates; on each update, the changed cells get an overbright flash (`opacity 1.4`, `blur 0.6`) for 80 ms. Blinking block cursor at 2 Hz. Reads as persistence at a glance.
++2. **True persistence** (Phase 3). Snapshot the terminal layer each frame into an `MTLTexture`, ping-pong `current + 0.86 × previous`, feed the result — not the live view — into the CRT chain via an `MTKView` representable. This is the one custom render loop in the app. Do it only if (1) looks flat in person.
++
++---
++
++## 6. Power-on
++
++On launch, and on ⌘R: 700 ms `crtFlyback` over black, then the terminal fades in from center. On quit: reverse in 300 ms. `PowerOnTransition` is a `Transition` on the root view.
++
++---
++
++## 7. Settings
++
++Live, no Apply button. Phosphor picker (Amber / Green / White / Custom colour), sliders for every `CRTSettings` field, font size, "Pin to display" picker, "Animated" toggle (kills wobble and the timeline for battery). Persist with `@AppStorage`-backed properties on `AppState`.
++
++---
++
++## 8. Phases and gates
++
++| Phase | Deliverable | Gate |
++|---|---|---|
++| **1** | Xcode project, SwiftTerm running a shell in a black window, bundled bitmap font, phosphor colour theme. | Can run `claude` in it and work normally for 10 min. Resize, copy, paste all correct. |
++| **2** | `CRT.metal` + `CRTEffect` on the terminal; Settings with live sliders; power-on. | 60 fps with wobble on (Instruments) at 2560×720; text legible; keyboard and mouse still correct under curvature; screenshot in `docs/`. |
++| **3** *(optional)* | True persistence via `MTKView`. | Only if Phase 2 looks flat on the real panel. |
++
++Phase 2 is what should be on the panel when the box opens.
++
++---
++
++## 9. CLAUDE.md
++
++```markdown
++# Drum — invariants
++
++- macOS 26 only. Swift 6, strict concurrency, zero warnings. SwiftUI; AppKit only where SwiftUI has no API (SwiftTerm wrapper, window pinning, NSScreen).
++- No MVVM. `@Observable` + `@Environment`. No `ObservableObject`, no `@StateObject`.
++- No `DispatchQueue`, no completion handlers, except inside the SwiftTerm representable where the library's delegate API requires it — isolate it there.
++- SwiftTerm is the terminal engine. Never write a VT parser.
++- The CRT chain is applied once, on the terminal container. Never on the window.
++- Shader order is Bloom → Mask → Barrel → Bezel. Do not reorder.
++- Views < 200 lines. Extract.
++- Bundled fonts have their license in CREDITS.md before commit.
++- Always return whole files when editing source.
++```
++
++---
++
++## 10. Kickoff prompt
++
++```
++Read drum-spec.md fully.
++
++Build Phase 1, then Phase 2. Create the Xcode project per §2, add SwiftTerm via SPM, get a shell running in a black window with the bundled bitmap font and the amber theme (§2). Then implement CRT.metal and CRTEffect (§4–5) on the terminal container, Settings with live sliders (§7), and the power-on transition (§6). Use the shader and modifier code in the spec as the starting point; tune constants, keep the order.
++
++Before Phase 2, verify the risk in §5: that SwiftUI's layerEffect correctly rasterizes the SwiftTerm NSView. Report what you find before proceeding.
++
++Constraints: Swift 6 strict concurrency, zero warnings, no MVVM, no DispatchQueue outside the SwiftTerm wrapper, whole-file edits only. Verify every macOS 26 API against the current SDK, not memory.
++
++Gates: §8. Report against the gate, not the task list.
++```
++
++---
++
++## Amendments — 2026-09-10 (after first run)
++
++- **§1, §3, §7 — screen pinning is out.** Drum is one ordinary resizable window (`Window` scene, standard title bar); the user maximises it on whichever display they like. No borderless mode, no screen picker, no `ScreenPinning.swift`.
++- **§3 — title bar.** Standard, dark. Not hidden.
++- **§5 — the rasterisation risk is real.** SwiftUI's shader modifiers do not host AppKit views. The chain is applied to a mirrored bitmap of the terminal (`TerminalMirror`, `PictureStage`); the real SwiftTerm view stays outside the chain for input. See `docs/phase-1-findings.md`.
++- **§4 — shaders take `float4 bounds`**, because `.boundingRect` is a float4. `crtMask` also takes `brightness` and the phosphor colour and renders every input colour monochrome in the phosphor.
++- **§2 — window.** `DrumApp.swift` is `Window` + `Settings`; there is no `ScreenPinning.swift`.
