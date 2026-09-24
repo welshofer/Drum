@@ -14,7 +14,7 @@ export TEST_RUNNER_DRUM_BENCHMARK_OUTPUT="$report_dir"
 export TEST_RUNNER_DRUM_BENCHMARK_MODES="${DRUM_BENCHMARK_MODES:-native,crt}"
 export TEST_RUNNER_DRUM_BENCHMARK_REPETITIONS="${DRUM_BENCHMARK_REPETITIONS:-3}"
 export TEST_RUNNER_DRUM_BENCHMARK_WAIT="${DRUM_BENCHMARK_WAIT:-0}"
-python3 "$repo_dir/scripts/benchmark-artifacts.py" start "$report_dir" \
+"$repo_dir/scripts/benchmark-artifacts.swift" start "$report_dir" \
   --modes "$TEST_RUNNER_DRUM_BENCHMARK_MODES" --repetitions "$TEST_RUNNER_DRUM_BENCHMARK_REPETITIONS"
 printf 'Building and benchmarking; report: %s\n' "$report_dir"
 if ! xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Release \
@@ -28,8 +28,8 @@ if [[ ! -f "$report_dir/measurements.json" ]]; then
   printf 'No report produced. Inspect %s\n' "$report_dir/build-test.log" >&2
   exit 1
 fi
-python3 scripts/benchmark-artifacts.py finish "$report_dir"
-python3 scripts/summarize-performance.py "$report_dir/measurements.json" | tee "$report_dir/summary.md"
+scripts/benchmark-artifacts.swift finish "$report_dir"
+scripts/benchmark-artifacts.swift summary "$report_dir/measurements.json" | tee "$report_dir/summary.md"
 
 # Surface tooling warnings; a completed measurement run is not a zero-warning build gate.
 if rg -n -i "(^|[[:space:]])warning:" "$report_dir/build-test.log"; then

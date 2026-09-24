@@ -1,6 +1,0 @@
-# Local execution artifacts; retain reports and reproducible validation scripts.
-*.log
-changes/*-before.json
-validation/r1-sample.swift
-validation/r3-fixtures/
-validation/r5-fixtures/

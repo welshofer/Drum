@@ -29,9 +29,9 @@ The runner records a UTC start/end date, source commit and dirty boolean, a dige
 To retain a selected run for a documented result, export its allowlisted numeric samples and manifest rather than copying the entire output directory:
 
 ```sh
-python3 scripts/benchmark-artifacts.py export \
+scripts/benchmark-artifacts.swift export \
   .benchmark-results/diagnostic-1 docs/benchmarks/diagnostic-1
-python3 scripts/summarize-performance.py \
+scripts/benchmark-artifacts.swift summary \
   docs/benchmarks/diagnostic-1/measurements.json
 ```
 
@@ -56,7 +56,7 @@ Actual key-to-screen percentiles and the spec's sustained 60 fps gate require co
 For an automatic recording and export, run:
 
 ```sh
-scripts/profile-performance.py
+scripts/profile-performance.swift
 ```
 
 This waits for Instruments' **recording-start Darwin notification** before releasing the workload. The console's “Starting recording” line can precede actual readiness, so it is not used as the handshake. The script exports signposts, sampled CPU stacks and hitches, and removes the process environment from its exported table of contents. Trace bundles remain local.

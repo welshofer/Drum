@@ -10,6 +10,7 @@
 - Bundled fonts have their license in CREDITS.md before commit.
 - Make focused edits and summarize the changed behavior and verification. Return complete source files only when requested.
 - One ordinary resizable window (`Window` scene). No screen pinning, no borderless mode; the user maximises it on whatever display they like.
+- No Python anywhere in the repo. Tooling is Swift (`#!/usr/bin/env swift` scripts in `scripts/`) or shell.
 
 ## Rendering and lifecycle (historical rationale in [phase-1 findings](docs/phase-1-findings.md), current capture details in [performance notes](docs/performance.md))
 
@@ -30,6 +31,6 @@
 
 - Run Debug and Release regression checks for executable changes; the dated [performance notes](docs/performance.md) contain the existing commands. The performance workload remains opt-in.
 - A direct Xcode build may require trust for the resolved SwiftTerm build plugin; `.flowdeck/config.json` only controls FlowDeck invocations. Review the locked plugin before authorizing a per-run validation bypass; do not change global trust to make a check pass.
-- The 2026-09-24 checks on Xcode 27.1 passed 32 regression tests in each configuration but emitted an AppIntents metadata tooling warning. The zero-warning gate remains unmet for those runs; do not suppress the warning or describe them as warning-free. The proposed check helper was reverted; see [audit/CHANGELOG.md](audit/CHANGELOG.md).
+- The 2026-09-24 checks on Xcode 27.1 passed 32 regression tests in each configuration but emitted an AppIntents metadata tooling warning. The zero-warning gate remains unmet for those runs; do not suppress the warning or describe them as warning-free. The proposed check helper was reverted.
 - Use [the benchmark workflow](docs/performance-benchmark.md) for repeatable performance evidence. Keep selected sanitized samples, manifest and summary together under `docs/benchmarks/`; ordinary runs stay in ignored `.benchmark-results/`. Keep raw traces, logs, process environments and terminal content local.
 - Capture completion and display-link intervals are not presentation times. Preserve the open §8 gates until their specified evidence exists.

@@ -1,7 +1,0 @@
-Exactly seven approved tracked paths changed; project, lockfile, tests, licensing and all other source content unchanged.
-Metal executable tokens unchanged. Reverted R3 helper/runbook absent.
-Production Python AST, benchmark shell syntax and diff whitespace checks pass.
-65 local document links and anchors resolve.
-All three phase gates preserved; active stale whole-file/window/shader instructions removed.
-Retained evidence checksum and exact regenerated summary verified; only three allowlisted files present.
-Debug/Release logs each confirm 32 passing regression tests and the reported tooling-warning limitation.

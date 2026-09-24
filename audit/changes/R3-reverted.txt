@@ -1,1 +1,0 @@
-No R3 changes retained outside audit/. All four candidate paths match the R3-before snapshot.
