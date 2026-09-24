@@ -16,6 +16,7 @@
 		29C931A58EFC16687F38F9B9 /* TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB1C43E7C928ED4D70DA96E9 /* TerminalView.swift */; };
 		2C971B3CDE213588DF521F62 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 747DF943371BBD3E7CCFC748 /* AppState.swift */; };
 		2E2F245B973819EC449A4620 /* TerminalBitmapStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19F68692303E291295286F84 /* TerminalBitmapStore.swift */; };
+		36317E8C8031546F5A5961C1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 25D82A4A12C293B40B404FD3 /* Assets.xcassets */; };
 		446C0F63D4A976932B39CE1A /* CRTSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */; };
 		51257DA75B8EE3FAE5000AB0 /* SoundSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6472B824B16A45704FAFFBB7 /* SoundSettingsView.swift */; };
 		537A0F7A2FB64D7646E1F880 /* SoundSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA686926331863EB06E336 /* SoundSettings.swift */; };
@@ -56,6 +57,7 @@
 
 /* Begin PBXFileReference section */
 		19F68692303E291295286F84 /* TerminalBitmapStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalBitmapStore.swift; sourceTree = "<group>"; };
+		25D82A4A12C293B40B404FD3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		2F06DF22B4EBE6B9DB5555F6 /* DrumTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumTerminalView.swift; sourceTree = "<group>"; };
 		304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalThemeTests.swift; sourceTree = "<group>"; };
 		31ACC088B79255497356FE35 /* PowerOnTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerOnTransition.swift; sourceTree = "<group>"; };
@@ -216,6 +218,7 @@
 		FC82E2273522489205355FB5 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				25D82A4A12C293B40B404FD3 /* Assets.xcassets */,
 				44B043D74DF45B0F38B4DBE6 /* Fonts */,
 			);
 			path = Resources;
@@ -309,6 +312,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				36317E8C8031546F5A5961C1 /* Assets.xcassets in Resources */,
 				EB352D7D4EA5D20673951529 /* Fonts in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
