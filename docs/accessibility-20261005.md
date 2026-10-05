@@ -56,6 +56,19 @@ at UTF-16 range `{1, 5}`, combined-character range `{2, 2}`, and a caret at
 offset 14 on line 1. Fifty output lines verify early scrollback remains
 available while visible ranges change with scrolling. Both opacity modes pass.
 
+Independent review found that trimming a row could clamp a caret moved into
+blank columns. The narrow reproduction fed `A` followed by `ESC[10G`: the
+native cursor was at column 9, but actual `AXSelectedTextRange` was `{1, 0}`
+in both opacity modes. The repair retains blank cells through the active caret
+before computing row ranges and subsequent UTF-16 offsets. Actual AX queries
+now report `{9, 0}`, with the following line beginning at offset 10.
+
+A second actual AX case wraps `界界é😀AB` in eight columns, moves the caret
+into blank cells on the continuation row, and writes a following line. Both
+opacity modes report caret `{12, 0}`, continuation range `{7, 5}`, and the
+following line range `{13, 4}`. Selection across the wrapped Unicode text
+remains `{0, 8}` with the exact selected string `界界é😀AB`.
+
 A separate test launches `/bin/sh` with a fixed command that prints a marker
 and executes `/bin/cat`. Setting actual `AXFocused` restores the same terminal
 as first responder; native key events reach the same live PTY in both modes.
@@ -83,9 +96,10 @@ The new adapter is 70 lines, and DrumTerminalView remains 169 lines. The new
 files were registered by local `xcodegen generate` for testing; generated
 project changes are excluded from the commit for integration registration.
 
-Debug and Release passed 62 reported tests each (61 regression passes and the existing opt-in
-performance skip). Both configurations retain AppIntents metadata tooling
-warnings; the zero-warning gate remains open.
+The original implementation passed 62 reported tests each (61 regression
+passes and the existing opt-in performance skip). The review repair adds two
+actual AX tests. AppIntents metadata tooling warnings remain in the rebuilt
+Debug and Release runs; the zero-warning gate remains open.
 
 The first implementation compile caught a dependency callback signature
 mismatch. After correcting it, an incremental linker retained the obsolete
@@ -97,6 +111,28 @@ Local evidence:
 - Baseline probe: `/tmp/drum-burndown-use3-probe.log`
 - Debug: `/tmp/drum-burndown-use3-debug-cycle2-clean.log`
 - Release: `/tmp/drum-burndown-use3-release-cycle2.log`
+- Review reproduction: `/tmp/drum-burndown-use3-caret-baseline.log`
+- Repair Debug, first full run: `/tmp/drum-burndown-use3-debug-cycle3.log`
+- Repair Release, first full run: `/tmp/drum-burndown-use3-release-cycle3.log`
+- Unchanged Debug retry: `/tmp/drum-burndown-use3-debug-cycle3-activated.log`
+- Unchanged Release retry: `/tmp/drum-burndown-use3-release-cycle3-activated.log`
+- Test-host window samples: `/tmp/drum-burndown-use3-debug-activation.log` and
+  `/tmp/drum-burndown-use3-release-activation.log`
+
+The first repair full runs passed every AX assertion but failed four existing
+mirror assertions when ordinary test windows produced no initial capture.
+The logs show the AX suite completed before the rendering suite began; the
+scheme already disables parallel tests. Public window inventory showed
+screen-sized HazeOver windows and ordinary application windows at the fixture
+coordinates. No other worker had a test window running. The unchanged Debug
+and Release retries each passed all 64 reported tests (63 regression passes
+and the existing performance skip). A temporary external harness requested
+activation only for the new test host, with public `NSRunningApplication`
+and `CGWindowListCopyWindowInfo` APIs. The request was accepted, but sampled
+`isActive` remained false; the pass does not establish activation as its cause.
+No test assertions, other applications or preferences were changed for the
+retry. The harness is `/tmp/drum-use3-activate-host.swift`, invoked as
+`/tmp/drum-use3-activate-host` concurrently with each retry command below.
 
 ```sh
 xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Debug -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/drum-burndown-build-rel3 -skipPackagePluginValidation -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile ONLY_ACTIVE_ARCH=YES test

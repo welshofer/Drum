@@ -114,6 +114,68 @@ struct TerminalAccessibilityTests {
         }
     }
 
+    @Test func actualAXCaretInBlankColumnsPreservesFollowingLineOffsets() throws {
+        let fixture = AXFixture()
+        defer { fixture.stop() }
+        let terminal = fixture.view.getTerminal()
+        terminal.resize(cols: 16, rows: 4)
+        fixture.view.feed(text: "A\u{1B}[10G")
+        for alpha in [CGFloat(0), CGFloat(1)] {
+            fixture.host.alphaValue = alpha
+            let element = try textElement(in: fixture)
+            #expect(terminal.buffer.x == 9)
+            let caret = try rangeAttribute(element, kAXSelectedTextRangeAttribute)
+            #expect(caret == NSRange(location: 9, length: 0))
+            let initial = try #require(attribute(element, kAXValueAttribute) as? String)
+            #expect(initial.hasPrefix("A        \n"))
+            fixture.view.feed(text: "\r\nnext\u{1B}[1;10H")
+            let text = try #require(attribute(element, kAXValueAttribute) as? String)
+            #expect(text.hasPrefix("A        \nnext"))
+            let following = try lineRange(element, line: 1)
+            #expect(following == NSRange(location: 10, length: 4))
+            #expect(try rangeAttribute(element, kAXSelectedTextRangeAttribute) == NSRange(location: 9, length: 0))
+            print("Drum AX blank caret alpha=\(alpha) nativeColumn=\(terminal.buffer.x) AXRange=\(caret) followingLineUTF16=\(following.location)")
+        }
+    }
+
+    @Test func actualAXBlankCaretAfterWrappedUnicodeKeepsUTF16Coordinates() throws {
+        let fixture = AXFixture()
+        defer { fixture.stop() }
+        let terminal = fixture.view.getTerminal()
+        terminal.resize(cols: 8, rows: 4)
+        fixture.view.feed(text: "界界e\u{301}😀AB\u{1B}[6G\r\ntail\u{1B}[2;6H")
+        for alpha in [CGFloat(0), CGFloat(1)] {
+            fixture.host.alphaValue = alpha
+            let element = try textElement(in: fixture)
+            #expect(terminal.buffer.x == 5 && terminal.buffer.y == 1)
+            #expect(terminal.bufferLine(atRow: 1)?.isWrapped == true)
+            let text = try #require(attribute(element, kAXValueAttribute) as? String)
+            #expect(text.hasPrefix("界界e\u{301}😀AB    \ntail"))
+            let caret = try rangeAttribute(element, kAXSelectedTextRangeAttribute)
+            let continuation = try lineRange(element, line: 1)
+            let following = try lineRange(element, line: 2)
+            #expect(caret == NSRange(location: 12, length: 0))
+            #expect(continuation == NSRange(location: 7, length: 5))
+            #expect(following == NSRange(location: 13, length: 4))
+            fixture.view.selection.setSelection(start: Position(col: 0, row: 0), end: Position(col: 1, row: 1))
+            #expect(try rangeAttribute(element, kAXSelectedTextRangeAttribute) == NSRange(location: 0, length: 8))
+            #expect((attribute(element, kAXSelectedTextAttribute) as? String) == "界界e\u{301}😀AB")
+            fixture.view.selection.selectNone()
+            print("Drum AX wrapped blank caret alpha=\(alpha) nativeColumn=\(terminal.buffer.x) AXRange=\(caret) followingLineUTF16=\(following.location)")
+        }
+    }
+
+    private func lineRange(_ element: AXUIElement, line: Int) throws -> NSRange {
+        var value: CFTypeRef?
+        try #require(AXUIElementCopyParameterizedAttributeValue(element,
+                      kAXRangeForLineParameterizedAttribute as CFString, NSNumber(value: line), &value) == .success)
+        let wrapped = try #require(value)
+        try #require(CFGetTypeID(wrapped) == AXValueGetTypeID())
+        var range = CFRange()
+        try #require(AXValueGetValue(wrapped as! AXValue, .cfRange, &range))
+        return NSRange(location: range.location, length: range.length)
+    }
+
     private func attribute(_ element: AXUIElement, _ name: String) -> CFTypeRef? {
         var value: CFTypeRef?
         guard AXUIElementCopyAttributeValue(element, name as CFString, &value) == .success else { return nil }
