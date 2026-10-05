@@ -28,7 +28,7 @@ xcrun swiftc -frontend -parse scripts/profile-performance.swift
 xcrun swiftc -frontend -parse scripts/benchmark-artifacts.swift
 ```
 
-Logs: [Debug](/tmp/drum-review-20261005-debug.log), [Release](/tmp/drum-review-20261005-release.log). Framework/linkd runtime diagnostics did not fail tests.
+Local logs: `/tmp/drum-review-20261005-debug.log`, `/tmp/drum-review-20261005-release.log` (not distributed). Framework/linkd runtime diagnostics did not fail tests.
 
 Several behaviors are source-confirmed; this review did not reproduce every edge case in a running terminal. Performance, IME and screen-reader uncertainties are explicit below. Existing tests do not close the recorded 10-minute interactive-shell or sustained-presentation gates.
 
@@ -40,7 +40,7 @@ Several behaviors are source-confirmed; this review did not reproduce every edge
 
 **Location / Proof:**
 
-[drum-spec.md](/Users/welshofer/Developer/Drum/drum-spec.md:98)
+[drum-spec.md](drum-spec.md)
 
 ```text
 | **2** | `CRT.metal` + `CRTEffect` on the terminal; Settings with live sliders; power-on. | 60 fps with wobble on (Instruments) at 2560×720; text legible; keyboard and mouse still correct under curvature; screenshot in `docs/`. | Implemented with partial visual/test evidence. Sustained 60 fps and input-to-presentation timing remain unverified. No acceptance screenshot is currently stored in `docs/`. |
@@ -88,7 +88,7 @@ DrumTests/TerminalPerformanceTests.swift:12:struct TerminalPerformanceTests {
 
 **Location / Proof:**
 
-[Drum/Terminal/TerminalDisplayClock.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalDisplayClock.swift:15)
+[Drum/Terminal/TerminalDisplayClock.swift](Drum/Terminal/TerminalDisplayClock.swift#L15)
 
 ```swift
         let link = window.displayLink(target: self, selector: #selector(tick))
@@ -128,7 +128,7 @@ Drum/Terminal/TerminalDisplayClock.swift:7:final class TerminalDisplayClock: NSO
 
 **Location / Proof:**
 
-[Drum/Terminal/TerminalMirror.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalMirror.swift:48)
+[Drum/Terminal/TerminalMirror.swift](Drum/Terminal/TerminalMirror.swift#L48)
 
 ```swift
         scrollerDeadline = 0
@@ -181,7 +181,7 @@ Drum/Terminal/TerminalMirror.swift:45:    func setEnabled(_ enabled: Bool) {
 
 **Location / Proof:**
 
-[Drum/Terminal/CaretOverlay.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/CaretOverlay.swift:18)
+[Drum/Terminal/CaretOverlay.swift](Drum/Terminal/CaretOverlay.swift#L18)
 
 ```swift
                     if caret.focused {
@@ -238,7 +238,7 @@ rg -n 'glyph|block.*cursor|CaretOverlay' DrumTests -g '*.swift'
 
 **Location / Proof:**
 
-[Drum/Settings/SettingsView.swift](/Users/welshofer/Developer/Drum/Drum/Settings/SettingsView.swift:60)
+[Drum/Settings/SettingsView.swift](Drum/Settings/SettingsView.swift#L60)
 
 ```swift
         LabeledSlider("Curvature X", value: $crt.barrelX, in: 0...0.15, format: "%.3f")
@@ -283,7 +283,7 @@ Drum/Settings/SettingsView.swift:55:struct CRTSlidersView: View {
 
 **Location / Proof:**
 
-[Drum/Terminal/DrumTerminalView.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/DrumTerminalView.swift:80)
+[Drum/Terminal/DrumTerminalView.swift](Drum/Terminal/DrumTerminalView.swift#L80)
 
 ```swift
     override func setNeedsDisplay(_ invalidRect: NSRect) {
@@ -293,7 +293,7 @@ Drum/Settings/SettingsView.swift:55:struct CRTSlidersView: View {
 
 ```
 
-[MacTerminalView.swift](/Users/welshofer/Library/Developer/Xcode/DerivedData/Drum-ghoymwvcpxbveudovhgedkqhrvzs/SourcePackages/checkouts/SwiftTerm/Sources/SwiftTerm/Mac/MacTerminalView.swift:1959)
+[MacTerminalView.swift](https://github.com/migueldeicaza/SwiftTerm/blob/5d14406844143538cd8f8851d2d8a67c1fe443e5/Sources/SwiftTerm/Mac/MacTerminalView.swift#L1959)
 
 ```swift
         }
@@ -345,7 +345,7 @@ rg -n 'open func setMarkedText|open func unmarkText|updateMarkedTextOverlay' '/U
 
 **Location / Proof:**
 
-[Drum/Terminal/TerminalSession.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalSession.swift:128)
+[Drum/Terminal/TerminalSession.swift](Drum/Terminal/TerminalSession.swift#L128)
 
 ```swift
     func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}
@@ -385,7 +385,7 @@ rg -n 'func hostCurrentDirectoryUpdate|func startIfNeeded' Drum/Terminal/Termina
 
 **Location / Proof:**
 
-[Drum/App/AppState.swift](/Users/welshofer/Developer/Drum/Drum/App/AppState.swift:68)
+[Drum/App/AppState.swift](Drum/App/AppState.swift#L68)
 
 ```swift
         crt = store.load(CRTSettings.self, for: .crt) ?? CRTSettings()
@@ -395,7 +395,7 @@ rg -n 'func hostCurrentDirectoryUpdate|func startIfNeeded' Drum/Terminal/Termina
         fontSize = store.load(Double.self, for: .fontSize) ?? font.defaultSize
 ```
 
-[Drum/App/AppState.swift](/Users/welshofer/Developer/Drum/Drum/App/AppState.swift:73)
+[Drum/App/AppState.swift](Drum/App/AppState.swift#L73)
 
 ```swift
         audio.configure(sound)
@@ -448,7 +448,7 @@ Drum/App/AppState.swift:39:final class AppState {
 
 **Location / Proof:**
 
-[Drum/Terminal/TerminalSession.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalSession.swift:132)
+[Drum/Terminal/TerminalSession.swift](Drum/Terminal/TerminalSession.swift#L132)
 
 ```swift
     func processTerminated(source: SwiftTerm.TerminalView, exitCode: Int32?) {
@@ -500,7 +500,7 @@ rg -n -A 7 '^    func processTerminated \(\)' '/Users/welshofer/Library/Develope
 
 **Location / Proof:**
 
-[CLAUDE.md](/Users/welshofer/Developer/Drum/CLAUDE.md:34)
+[CLAUDE.md](CLAUDE.md)
 
 ```text
 - The 2026-09-24 checks on Xcode 27.1 passed 32 regression tests in each configuration but emitted an AppIntents metadata tooling warning. The zero-warning gate remains unmet for those runs; do not suppress the warning or describe them as warning-free. The proposed check helper was reverted.
@@ -567,7 +567,7 @@ rg -n 'warning:|Test run with|TEST SUCCEEDED|skipped' /tmp/drum-review-20261005-
 
 **Location / Proof:**
 
-[Drum/Terminal/TerminalSession.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalSession.swift:69)
+[Drum/Terminal/TerminalSession.swift](Drum/Terminal/TerminalSession.swift#L69)
 
 ```swift
     func startIfNeeded() {
@@ -577,7 +577,7 @@ rg -n 'warning:|Test run with|TEST SUCCEEDED|skipped' /tmp/drum-review-20261005-
         view.startProcess(executable: shell,
 ```
 
-[Drum/Terminal/TerminalSession.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalSession.swift:74)
+[Drum/Terminal/TerminalSession.swift](Drum/Terminal/TerminalSession.swift#L74)
 
 ```swift
                           args: ["-l"],
@@ -587,7 +587,7 @@ rg -n 'warning:|Test run with|TEST SUCCEEDED|skipped' /tmp/drum-review-20261005-
     }
 ```
 
-[LocalProcess.swift](/Users/welshofer/Library/Developer/Xcode/DerivedData/Drum-ghoymwvcpxbveudovhgedkqhrvzs/SourcePackages/checkouts/SwiftTerm/Sources/SwiftTerm/LocalProcess.swift:555)
+[LocalProcess.swift](https://github.com/migueldeicaza/SwiftTerm/blob/5d14406844143538cd8f8851d2d8a67c1fe443e5/Sources/SwiftTerm/LocalProcess.swift#L555)
 
 ```swift
             io.read(offset: 0, length: readSize, queue: readQueue) { [weak self] done, data, errno in
@@ -654,7 +654,7 @@ rg -n 'public func startProcess' '/Users/welshofer/Library/Developer/Xcode/Deriv
 
 **Location / Proof:**
 
-[Drum/Terminal/TerminalSession.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalSession.swift:142)
+[Drum/Terminal/TerminalSession.swift](Drum/Terminal/TerminalSession.swift#L142)
 
 ```swift
         Task { @MainActor [weak self] in
@@ -699,7 +699,7 @@ Drum/App/DrumApp.swift:68:    func applicationShouldTerminate(_ sender: NSApplic
 
 **Location / Proof:**
 
-[Drum/App/AppState.swift](/Users/welshofer/Developer/Drum/Drum/App/AppState.swift:67)
+[Drum/App/AppState.swift](Drum/App/AppState.swift#L67)
 
 ```swift
         sound = store.load(SoundSettings.self, for: .sound) ?? SoundSettings()
@@ -761,7 +761,7 @@ rg -n '^final class AppState|^struct SettingsStore|enum Key|func select\(_ prese
 
 **Location / Proof:**
 
-[MacLocalTerminalView.swift](/Users/welshofer/Library/Developer/Xcode/DerivedData/Drum-ghoymwvcpxbveudovhgedkqhrvzs/SourcePackages/checkouts/SwiftTerm/Sources/SwiftTerm/Mac/MacLocalTerminalView.swift:123)
+[MacLocalTerminalView.swift](https://github.com/migueldeicaza/SwiftTerm/blob/5d14406844143538cd8f8851d2d8a67c1fe443e5/Sources/SwiftTerm/Mac/MacLocalTerminalView.swift#L123)
 
 ```swift
         guard let str = NSPasteboard.general.string(forType: .string) else {
@@ -860,7 +860,7 @@ rg -n -A 7 '^    public func clipboardCopy' '/Users/welshofer/Library/Developer/
 
 **Location / Proof:**
 
-[MacTerminalView.swift](/Users/welshofer/Library/Developer/Xcode/DerivedData/Drum-ghoymwvcpxbveudovhgedkqhrvzs/SourcePackages/checkouts/SwiftTerm/Sources/SwiftTerm/Mac/MacTerminalView.swift:3549)
+[MacTerminalView.swift](https://github.com/migueldeicaza/SwiftTerm/blob/5d14406844143538cd8f8851d2d8a67c1fe443e5/Sources/SwiftTerm/Mac/MacTerminalView.swift#L3549)
 
 ```swift
     static func defaultLinkURL (_ link: String, fileManager: FileManager = .default) -> URL?
@@ -908,7 +908,7 @@ rg -n 'open func requestOpenLink|openDefaultLink' '/Users/welshofer/Library/Deve
 
 **Location / Proof:**
 
-[project.yml](/Users/welshofer/Developer/Drum/project.yml:23)
+[project.yml](project.yml#L23)
 
 ```text
     CODE_SIGN_IDENTITY: "-"
@@ -956,7 +956,7 @@ Apple requires hardened runtime for notarization: [Hardened Runtime](https://dev
 
 **Location / Proof:**
 
-[Drum/App/RootView.swift](/Users/welshofer/Developer/Drum/Drum/App/RootView.swift:49)
+[Drum/App/RootView.swift](Drum/App/RootView.swift#L49)
 
 ```swift
     private var needsAnimation: Bool {
@@ -997,7 +997,7 @@ Apple exposes this preference in [accessibilityReduceMotion](https://developer.a
 
 **Location / Proof:**
 
-[Drum/Settings/SettingsView.swift](/Users/welshofer/Developer/Drum/Drum/Settings/SettingsView.swift:35)
+[Drum/Settings/SettingsView.swift](Drum/Settings/SettingsView.swift#L35)
 
 ```swift
                 Toggle("Animated (sync wobble, 60 fps)", isOn: $state.crt.animated)
@@ -1037,7 +1037,7 @@ rg -n '^struct SettingsView|^struct CRTSlidersView' Drum/Settings/SettingsView.s
 
 **Location / Proof:**
 
-[Drum/Terminal/TerminalView.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalView.swift:55)
+[Drum/Terminal/TerminalView.swift](Drum/Terminal/TerminalView.swift#L55)
 
 ```swift
         if alphaValue != alpha {
@@ -1047,7 +1047,7 @@ rg -n '^struct SettingsView|^struct CRTSlidersView' Drum/Settings/SettingsView.s
     }
 ```
 
-[Drum/App/RootView.swift](/Users/welshofer/Developer/Drum/Drum/App/RootView.swift:72)
+[Drum/App/RootView.swift](Drum/App/RootView.swift#L72)
 
 ```swift
             .overlay(alignment: .topLeading) {
@@ -1105,7 +1105,7 @@ rg -n -A 5 '^class AccessibilityService' '/Users/welshofer/Library/Developer/Xco
 
 **Location / Proof:**
 
-[drum-spec.md](/Users/welshofer/Developer/Drum/drum-spec.md:98)
+[drum-spec.md](drum-spec.md)
 
 ```text
 | **2** | `CRT.metal` + `CRTEffect` on the terminal; Settings with live sliders; power-on. | 60 fps with wobble on (Instruments) at 2560×720; text legible; keyboard and mouse still correct under curvature; screenshot in `docs/`. | Implemented with partial visual/test evidence. Sustained 60 fps and input-to-presentation timing remain unverified. No acceptance screenshot is currently stored in `docs/`. |
@@ -1143,7 +1143,7 @@ Drum/CRT/CRTSettings.swift:39:    static let ribbon: CRTSettings = {
 
 **Location / Proof:**
 
-[Drum/Settings/SettingsView.swift](/Users/welshofer/Developer/Drum/Drum/Settings/SettingsView.swift:35)
+[Drum/Settings/SettingsView.swift](Drum/Settings/SettingsView.swift#L35)
 
 ```swift
                 Toggle("Animated (sync wobble, 60 fps)", isOn: $state.crt.animated)
@@ -1181,7 +1181,7 @@ rg -n '^struct CRTSlidersView|struct LabeledSlider' Drum/Settings/SettingsView.s
 
 **Location / Proof:**
 
-[Drum/Settings/SoundSettingsView.swift](/Users/welshofer/Developer/Drum/Drum/Settings/SoundSettingsView.swift:55)
+[Drum/Settings/SoundSettingsView.swift](Drum/Settings/SoundSettingsView.swift#L55)
 
 ```swift
                 Button("Preview", systemImage: "speaker.wave.2") { state.audio.preview(sound) }
@@ -1548,44 +1548,44 @@ The orchestrator re-read each cited final source; the following short quotations
 
 | ID | Current location and post-change proof |
 | --- | --- |
-| PERF-1 | [presentation-evidence.swift](/Users/welshofer/Developer/Drum/scripts/presentation-evidence.swift:155): `blockers.append("no-validated-compositor-or-device-present-track")`; line 209 always requires independent semantics/target review. |
-| PERF-2 | [TerminalDisplayClock.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalDisplayClock.swift:19): `link.preferredFrameRateRange = Self.captureFrameRateRange`; line 10 requests 60/60/60. |
-| PERF-3 | [TerminalMirror.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalMirror.swift:37): `private let bitmaps = TerminalBitmapStore()` still retains capacity; no integrated release operation. Original demonstrated problem remains. |
-| FUNC-1 | [CaretOverlay.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/CaretOverlay.swift:19): `if let block = caret.blockImage`; [TerminalMirror.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalMirror.swift:118): `renderer.draw?(layer, in: context)`. |
-| FUNC-2 | [DrumTerminalView.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/DrumTerminalView.swift:27): window-point conversion applies `pointerMap.sourcePoint`; [TerminalPointerMap.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalPointerMap.swift:32) shares quantized integer noise with the shader. |
-| FUNC-3 | [DrumTerminalView.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/DrumTerminalView.swift:98): `super.setMarkedText(...)` then `session?.mirror.markDirty()`; line 103 does the same for unmarking. |
-| FUNC-4 | [TerminalSession.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalSession.swift:23): `TerminalWorkingDirectory.isDirectory(reportedDirectory)` before use; line 186 validates the report. |
-| STAB-1 | [CRTSettings.swift](/Users/welshofer/Developer/Drum/Drum/CRT/CRTSettings.swift:52): `value.isFinite && range.contains(value) ? value : fallback`; [AppState.swift](/Users/welshofer/Developer/Drum/Drum/App/AppState.swift:35) normalizes font size. |
-| STAB-2 | [TerminalWaitStatus.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalWaitStatus.swift:10): `return "exit \((status >> 8) & 0xff)"`; line 13 formats the signal/core state. |
-| STAB-3 | [project.yml](/Users/welshofer/Developer/Drum/project.yml:93): `ONLY_ACTIVE_ARCH: YES` is within DrumTests; [reproduce-appintents-warning.sh](/Users/welshofer/Developer/Drum/scripts/reproduce-appintents-warning.sh:33) retains an unsuppressed minimal build log. |
-| REL-1 | [TerminalSession.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalSession.swift:93): `isRunning = view.process.running`; line 30 bounds `canRetryLaunch`. |
-| REL-2 | [TerminalSession.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalSession.swift:124): `restart?.cancel()`; line 131 only terminates when `isRunning`; line 207 checks task cancellation/shutdown before restart. |
-| REL-3 | [AppState.swift](/Users/welshofer/Developer/Drum/Drum/App/AppState.swift:144): `loadAppearance()` reconciles preset tint; line 184 migrates only fields matching historical defaults. |
-| SEC-1 | [TerminalClipboardPolicy.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalClipboardPolicy.swift:24): `!(encoded.count == 1 && encoded.first == UInt8(ascii: "?"))` explicitly rejects queries before decoding; the app-owned handler only invokes bounded `write`. |
-| SEC-2 | [TerminalLinkPolicy.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalLinkPolicy.swift:37): `guard decision == .web \|\| confirm(url) else { return false }`; line 45 installs Cancel first. |
-| SEC-3 | [project.yml](/Users/welshofer/Developer/Drum/project.yml:35): separate Distribution runtime/signing config; [distribute.sh](/Users/welshofer/Developer/Drum/scripts/distribute.sh:94): `[[ "$status" == Accepted ]]` before stapling. |
-| USE-1 | [RootView.swift](/Users/welshofer/Developer/Drum/Drum/App/RootView.swift:6): `@Environment(\.accessibilityReduceMotion)`; [CRTSettings.swift](/Users/welshofer/Developer/Drum/Drum/CRT/CRTSettings.swift:59): `if liveResize \|\| reduceMotion { result.animated = false }`. |
-| USE-2 | [SettingsView.swift](/Users/welshofer/Developer/Drum/Drum/Settings/SettingsView.swift:38): `Toggle("Sync wobble", ...)`; line 40 scopes the help text. |
-| USE-3 | [AccessibleTerminalView.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/AccessibleTerminalView.swift:13): `.textArea`; [TerminalAccessibilitySnapshot.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalAccessibilitySnapshot.swift:30) pads the active caret row before computing later offsets. |
-| ATTR-1 | [terminal-demo.sh](/Users/welshofer/Developer/Drum/scripts/terminal-demo.sh:23): full-width box and deterministic positioned rows; line 30 identifies the real-selection target. [visual checklist](/Users/welshofer/Developer/Drum/docs/visual-acceptance-20261005.md:13) records absent panel/screenshot. |
-| ATTR-2 | [SettingsView.swift](/Users/welshofer/Developer/Drum/Drum/Settings/SettingsView.swift:31): `.disabled(!state.crt.enabled)` on bloom; line 42 disables tube sliders; footer explains still-active colour/font. |
-| ATTR-3 | [TerminalAudio.swift](/Users/welshofer/Developer/Drum/Drum/Audio/TerminalAudio.swift:95): checks `remainingPlaybackTime` until actual completion/deadline; [SoundSettingsView.swift](/Users/welshofer/Developer/Drum/Drum/Settings/SoundSettingsView.swift:62): `Button(isPreviewing ? "Stop" : "Preview", ...)`. |
+| PERF-1 | [presentation-evidence.swift](scripts/presentation-evidence.swift#L155): `blockers.append("no-validated-compositor-or-device-present-track")`; line 209 always requires independent semantics/target review. |
+| PERF-2 | [TerminalDisplayClock.swift](Drum/Terminal/TerminalDisplayClock.swift#L19): `link.preferredFrameRateRange = Self.captureFrameRateRange`; line 10 requests 60/60/60. |
+| PERF-3 | [TerminalMirror.swift](Drum/Terminal/TerminalMirror.swift#L37): `private let bitmaps = TerminalBitmapStore()` still retains capacity; no integrated release operation. Original demonstrated problem remains. |
+| FUNC-1 | [CaretOverlay.swift](Drum/Terminal/CaretOverlay.swift#L19): `if let block = caret.blockImage`; [TerminalMirror.swift](Drum/Terminal/TerminalMirror.swift#L118): `renderer.draw?(layer, in: context)`. |
+| FUNC-2 | [DrumTerminalView.swift](Drum/Terminal/DrumTerminalView.swift#L27): window-point conversion applies `pointerMap.sourcePoint`; [TerminalPointerMap.swift](Drum/Terminal/TerminalPointerMap.swift#L32) shares quantized integer noise with the shader. |
+| FUNC-3 | [DrumTerminalView.swift](Drum/Terminal/DrumTerminalView.swift#L98): `super.setMarkedText(...)` then `session?.mirror.markDirty()`; line 103 does the same for unmarking. |
+| FUNC-4 | [TerminalSession.swift](Drum/Terminal/TerminalSession.swift#L23): `TerminalWorkingDirectory.isDirectory(reportedDirectory)` before use; line 186 validates the report. |
+| STAB-1 | [CRTSettings.swift](Drum/CRT/CRTSettings.swift#L52): `value.isFinite && range.contains(value) ? value : fallback`; [AppState.swift](Drum/App/AppState.swift#L35) normalizes font size. |
+| STAB-2 | [TerminalWaitStatus.swift](Drum/Terminal/TerminalWaitStatus.swift#L10): `return "exit \((status >> 8) & 0xff)"`; line 13 formats the signal/core state. |
+| STAB-3 | [project.yml](project.yml#L93): `ONLY_ACTIVE_ARCH: YES` is within DrumTests; [reproduce-appintents-warning.sh](scripts/reproduce-appintents-warning.sh#L33) retains an unsuppressed minimal build log. |
+| REL-1 | [TerminalSession.swift](Drum/Terminal/TerminalSession.swift#L93): `isRunning = view.process.running`; line 30 bounds `canRetryLaunch`. |
+| REL-2 | [TerminalSession.swift](Drum/Terminal/TerminalSession.swift#L124): `restart?.cancel()`; line 131 only terminates when `isRunning`; line 207 checks task cancellation/shutdown before restart. |
+| REL-3 | [AppState.swift](Drum/App/AppState.swift#L144): `loadAppearance()` reconciles preset tint; line 184 migrates only fields matching historical defaults. |
+| SEC-1 | [TerminalClipboardPolicy.swift](Drum/Terminal/TerminalClipboardPolicy.swift#L24): `!(encoded.count == 1 && encoded.first == UInt8(ascii: "?"))` explicitly rejects queries before decoding; the app-owned handler only invokes bounded `write`. |
+| SEC-2 | [TerminalLinkPolicy.swift](Drum/Terminal/TerminalLinkPolicy.swift#L37): `guard decision == .web \|\| confirm(url) else { return false }`; line 45 installs Cancel first. |
+| SEC-3 | [project.yml](project.yml#L35): separate Distribution runtime/signing config; [distribute.sh](scripts/distribute.sh#L94): `[[ "$status" == Accepted ]]` before stapling. |
+| USE-1 | [RootView.swift](Drum/App/RootView.swift#L6): `@Environment(\.accessibilityReduceMotion)`; [CRTSettings.swift](Drum/CRT/CRTSettings.swift#L59): `if liveResize \|\| reduceMotion { result.animated = false }`. |
+| USE-2 | [SettingsView.swift](Drum/Settings/SettingsView.swift#L38): `Toggle("Sync wobble", ...)`; line 40 scopes the help text. |
+| USE-3 | [AccessibleTerminalView.swift](Drum/Terminal/AccessibleTerminalView.swift#L13): `.textArea`; [TerminalAccessibilitySnapshot.swift](Drum/Terminal/TerminalAccessibilitySnapshot.swift#L30) pads the active caret row before computing later offsets. |
+| ATTR-1 | [terminal-demo.sh](scripts/terminal-demo.sh#L23): full-width box and deterministic positioned rows; line 30 identifies the real-selection target. [visual checklist](docs/visual-acceptance-20261005.md) records absent panel/screenshot. |
+| ATTR-2 | [SettingsView.swift](Drum/Settings/SettingsView.swift#L31): `.disabled(!state.crt.enabled)` on bloom; line 42 disables tube sliders; footer explains still-active colour/font. |
+| ATTR-3 | [TerminalAudio.swift](Drum/Audio/TerminalAudio.swift#L95): checks `remainingPlaybackTime` until actual completion/deadline; [SoundSettingsView.swift](Drum/Settings/SoundSettingsView.swift#L62): `Button(isPreviewing ? "Stop" : "Preview", ...)`. |
 
 ### Verification history and concrete remaining gates
 
 Earlier focused Debug/Release runs passed as each wave grew: 35 reported tests for SEC-1; 47 for launch recovery; 49 for restart shutdown; 50 for numeric normalization; 57 for local CWD; 58 for reaped-PID repair; 61 for pointer reconciliation; 62 for wait-status formatting. All retained existing opt-in skips and tooling warnings. Root log families are `/tmp/drum-burndown-{sec1,rel1,rel2,func4,rel2-repair,func2-integration,stab2}-*.log`; the final successful launch-recovery Debug suffix is `debug-2`, reaped-PID repair is `debug-2`, and wait-status runs are `debug-3`/`release-3`. Initial compile failures and POSIX signal-mask fixture failures were fixed from their actual diagnostics rather than relaxing assertions. Final combined logs above supersede intermediate suite counts.
 
-**PERF-3:** Worker branch `codex/burndown/perf-3-20261005` in `/tmp/drum-burndown-rel-3` retains its dirty five-file experiment. Root's one focused reconciliation still failed `glyph != nil` in its controlled state-preservation fixture: `/tmp/drum-burndown-perf3-integration-debug.log` exited 65. The run's release changes were reverted; `/tmp/drum-burndown-perf3-revert-debug.log` then passed 61 reported tests. Preserved patch `/tmp/drum-perf3-final-integration.patch` and fixture `/tmp/drum-perf3-final-storage-tests.swift` permit a future bounded follow-up. Descriptive measurements observed owned bitmap capacity 14,745,600→0 bytes and local cold/warm capture differences, but they do not close the failed identity/focus/selection/caret gate or demonstrate a shipped memory improvement. The [burn-down skill](/Users/welshofer/.codex/skills/burn-down/SKILL.md) permits one focused reconciliation, then requires: “revert only this run's offending merge with evidence, mark the item blocked, and re-verify.” That stopping rule was applied; no fourth implementation repair was attempted.
+**PERF-3:** Worker branch `codex/burndown/perf-3-20261005` in `/tmp/drum-burndown-rel-3` retains its dirty five-file experiment. Root's one focused reconciliation still failed `glyph != nil` in its controlled state-preservation fixture: `/tmp/drum-burndown-perf3-integration-debug.log` exited 65. The run's release changes were reverted; `/tmp/drum-burndown-perf3-revert-debug.log` then passed 61 reported tests. Preserved patch `/tmp/drum-perf3-final-integration.patch` and fixture `/tmp/drum-perf3-final-storage-tests.swift` permit a future bounded follow-up. Descriptive measurements observed owned bitmap capacity 14,745,600→0 bytes and local cold/warm capture differences, but they do not close the failed identity/focus/selection/caret gate or demonstrate a shipped memory improvement. The burn-down skill (local execution guidance) permits one focused reconciliation, then requires: “revert only this run's offending merge with evidence, mark the item blocked, and re-verify.” That stopping rule was applied; no fourth implementation repair was attempted.
 
-**PERF-1 / FUNC-2 / ATTR-1:** This machine has M5 Max graphics and four screens, including a 6016×3384/60 Hz XDR and a nominal 3456×2234/120 Hz internal panel. None is the physical 2560×720 target panel. A 2560×720 backing-pixel window on the XDR is not physical target acceptance. The controlled PERF-1 run passed after 162.282 seconds, with four stable stages lasting 30.650–31.414 seconds, fixed window/display attribution, visible geometry and wobble enabled. Resize is separate because production disables wobble during resizing. Instruments attached and recorded, but its 120-second finalization wait timed out; one recovery export failed `Document Missing Template Error`. The incomplete 18 GB trace was removed after diagnosis, with sanitized measurements/provenance and explicit blocked validation retained under [the workflow evidence](/Users/welshofer/Developer/Drum/docs/benchmarks/2026-10-05-presentation-workflow/summary.md). No actual-present FPS, latency percentile, target PNG or physical input acceptance is asserted. The workload predates the final pointer/noise change and cannot establish its performance.
+**PERF-1 / FUNC-2 / ATTR-1:** This machine has M5 Max graphics and four screens, including a 6016×3384/60 Hz XDR and a nominal 3456×2234/120 Hz internal panel. None is the physical 2560×720 target panel. A 2560×720 backing-pixel window on the XDR is not physical target acceptance. The controlled PERF-1 run passed after 162.282 seconds, with four stable stages lasting 30.650–31.414 seconds, fixed window/display attribution, visible geometry and wobble enabled. Resize is separate because production disables wobble during resizing. Instruments attached and recorded, but its 120-second finalization wait timed out; one recovery export failed `Document Missing Template Error`. The incomplete 18 GB trace was removed after diagnosis, with sanitized measurements/provenance and explicit blocked validation retained under [the workflow evidence](docs/benchmarks/2026-10-05-presentation-workflow/summary.md). No actual-present FPS, latency percentile, target PNG or physical input acceptance is asserted. The workload predates the final pointer/noise change and cannot establish its performance.
 
-**PERF-2:** A requested 120 Hz range did not produce a measured 120 Hz callback baseline on the attached internal panel. Its nominal refresh and callback timestamps are separate data. Early cadence samples overlapped unrelated tests; the CPU outlier is retained and disclosed. A controlled real high-refresh comparison remains deferred; explicit scheduling policy is retained without a savings claim. See [cadence evidence](/Users/welshofer/Developer/Drum/docs/display-cadence-20261005.md).
+**PERF-2:** A requested 120 Hz range did not produce a measured 120 Hz callback baseline on the attached internal panel. Its nominal refresh and callback timestamps are separate data. Early cadence samples overlapped unrelated tests; the CPU outlier is retained and disclosed. A controlled real high-refresh comparison remains deferred; explicit scheduling policy is retained without a savings claim. See [cadence evidence](docs/display-cadence-20261005.md).
 
 **STAB-3:** `scripts/reproduce-appintents-warning.sh` succeeded in a fresh project with no packages/tests/AppIntents usage and reproduced `Metadata extraction skipped, no AppIntents.framework dependency found`. Actual new-script run log: `/tmp/drum-burndown-stab3-repro-run.log`; minimal project and build log: `/var/folders/f5/d9r1b8yn40dbl827trq2w67m0000gn/T/drum-appintents-repro.Va9Tbn`. This isolates the installed metadata-tool step, not a vendor-confirmed root cause. The warning remains unsuppressed; no zero-warning claim.
 
-**SEC-3:** Installed signing identities contained only Apple Development, no Developer ID Application identity or stored notarization profile. Hardened ad hoc signature/runtime/no-entitlement checks and an eight-second shell launch smoke succeeded. Those checks do not establish Developer ID signed PTY/font/audio/shader acceptance, notarization or Gatekeeper distribution readiness. The helper rejected a development identity and ad hoc verification as expected. No credential was invented and no external submission was made. See [distribution preparation](/Users/welshofer/Developer/Drum/docs/distribution.md).
+**SEC-3:** Installed signing identities contained only Apple Development, no Developer ID Application identity or stored notarization profile. Hardened ad hoc signature/runtime/no-entitlement checks and an eight-second shell launch smoke succeeded. Those checks do not establish Developer ID signed PTY/font/audio/shader acceptance, notarization or Gatekeeper distribution readiness. The helper rejected a development identity and ad hoc verification as expected. No credential was invented and no external submission was made. See [distribution preparation](docs/distribution.md).
 
-**USE-1 / USE-3 / FUNC-3:** Live system Reduce Motion toggling, spoken VoiceOver and actual input-source candidate-popup commit/cancel exercises are explicitly deferred manual acceptance. Automated policy and own-process AX/input/composition checks supply narrower evidence. VoiceOver was disabled and AX process trust false; own-process queries still succeeded. User preferences, permissions and input sources were not changed. A before-adapter probe exposed `AXUnknown`, no value and only a scrollbar; the adapter now exposes exactly one terminal `AXTextArea`. Blank-column caret nine returns `{9,0}`, wrapped Unicode caret returns `{12,0}`, and following-line offsets are 10/13 in both opacity modes. During the worker's final cycle, two full runs failed existing visibility fixtures while new AX cases passed; unchanged retries passed both configurations. Test-host activation requests were accepted but samples stayed inactive, so no causal activation claim is made. Test-owned floating placement stabilized the separate composition fixture. These desktop-dependent checks do not prove behavior under real occlusion. See [AX evidence](/Users/welshofer/Developer/Drum/docs/accessibility-20261005.md) and [composition evidence](/Users/welshofer/Developer/Drum/docs/input-method-20261005.md).
+**USE-1 / USE-3 / FUNC-3:** Live system Reduce Motion toggling, spoken VoiceOver and actual input-source candidate-popup commit/cancel exercises are explicitly deferred manual acceptance. Automated policy and own-process AX/input/composition checks supply narrower evidence. VoiceOver was disabled and AX process trust false; own-process queries still succeeded. User preferences, permissions and input sources were not changed. A before-adapter probe exposed `AXUnknown`, no value and only a scrollbar; the adapter now exposes exactly one terminal `AXTextArea`. Blank-column caret nine returns `{9,0}`, wrapped Unicode caret returns `{12,0}`, and following-line offsets are 10/13 in both opacity modes. During the worker's final cycle, two full runs failed existing visibility fixtures while new AX cases passed; unchanged retries passed both configurations. Test-host activation requests were accepted but samples stayed inactive, so no causal activation claim is made. Test-owned floating placement stabilized the separate composition fixture. These desktop-dependent checks do not prove behavior under real occlusion. See [AX evidence](docs/accessibility-20261005.md) and [composition evidence](docs/input-method-20261005.md).
 
 No required work is silently pending: the table explicitly distinguishes implemented local behavior, prepared scope with incomplete acceptance, and the reverted blocked experiment. Original specification §8 gates, including a recorded ten-minute normal-use session, real target-panel legibility/input/presentation and screenshot acceptance, remain open. A future pass should start from these exact blockers rather than treating this local burn-down as release approval.
 
@@ -1604,7 +1604,7 @@ Unrelated untracked `audit/` is preserved.
 The later questions about open-sourcing and cool-retro-term were handled during
 this pass. SwiftTerm's pinned MIT terms permit open-sourcing Drum with its
 notices retained; the font licenses remain separate and no root project license
-was selected. The [source comparison](/Users/welshofer/Developer/Drum/docs/cool-retro-term-comparison-20261005.md)
+was selected. The [source comparison](docs/cool-retro-term-comparison-20261005.md)
 proposes a future feature order. None of those new ideas was silently added to
 the execution queue or implemented.
 
@@ -1676,7 +1676,7 @@ PTY identity/descriptor, selection, focus, cancellation and weak lifetime.
 However, full root Debug and one source-unchanged confirmation each exited 65
 with four issues in two pre-existing initial/resumed capture cases (81 reported
 tests, 51.745/51.896 seconds). The feature was reverted under the
-[burn-down skill](/Users/welshofer/.codex/skills/burn-down/SKILL.md) rule:
+burn-down skill (local execution guidance) rule:
 “revert only this run's offending merge with evidence, mark the item blocked,
 and re-verify.” Reversion baseline also exited 65 with the same four issues
 (74 reported tests, 19.520 seconds); that failure does not establish a storage
@@ -1685,7 +1685,7 @@ regression. No additional storage repair or Release integration attempt ran.
 `/tmp/drum-perf3-followup-focused-integration.patch` and
 `/tmp/drum-perf3-followup-focused-storage-tests.swift` preserve the reviewed root
 experiment; the original dirty follow-up worktree and earlier experiment are
-untouched. [Detailed storage evidence](/Users/welshofer/Developer/Drum/docs/bitmap-storage-followup-20261005.md)
+untouched. [Detailed storage evidence](docs/bitmap-storage-followup-20261005.md)
 retains capacities, RSS/capture samples and every failed log. Those measurements
 are experimental, not an integrated memory improvement.
 
@@ -1698,7 +1698,7 @@ remain. Both configurations then pass as recorded above. Normal production
 window behavior under every desktop occlusion condition is not established by
 this fixture correction. The SDK exposes a public but underscored writable
 Reduce Motion setter; tests use it locally while production reads the documented
-getter. [Runtime evidence](/Users/welshofer/Developer/Drum/docs/reduced-motion-followup-20261005.md)
+getter. [Runtime evidence](docs/reduced-motion-followup-20261005.md)
 records this portability limit and the uninjected current OS value. No real OS
 preference was changed.
 
@@ -1719,11 +1719,11 @@ state. This was an orchestration error. Root caught and recorded the count,
 stopped further worker attempts, and independently verified the final unchanged
 diagnostic. Independent review approved it. No compliant bounded-loop claim,
 second trace or presentation acceptance is made. The full sequence is in
-[the probe record](/Users/welshofer/Developer/Drum/docs/presentation-probe-followup-20261005.md).
+[the probe record](docs/presentation-probe-followup-20261005.md).
 
 **STAB-3:** Successful minimal builds still emit the metadata warning on both
 installed Xcodes, including fresh explicit per-command Xcode Default selection.
-No genuine supported correction is established. [The comparison](/Users/welshofer/Developer/Drum/docs/build-warning-followup-20261005.md)
+No genuine supported correction is established. [The comparison](docs/build-warning-followup-20261005.md)
 retains commands, six logs, exact versions/hashes and the help-command failures.
 
 ### Independent review and current citation evidence
@@ -1740,10 +1740,10 @@ mode while retaining the separate 16-slot native palette remapping.
 
 | Item | Exact maintained post-change proof |
 | --- | --- |
-| USE-1 | [RootReducedMotionTests.swift](/Users/welshofer/Developer/Drum/DrumTests/RootReducedMotionTests.swift:26) changes the actual hosted environment and observes CRTStage-delivered settings/time; line 35 requires engine/process/PID continuity, line 37 saved JSON equality. |
-| Integration fixture | [TerminalRenderingTests.swift](/Users/welshofer/Developer/Drum/DrumTests/TerminalRenderingTests.swift:402) creates a real panel through public APIs; line 396 keeps tolerance-one native pixel comparison. |
-| PERF-1 | [presentation-probe.swift](/Users/welshofer/Developer/Drum/scripts/presentation-probe.swift:48) bounds owned cleanup; line 89 limits inventory fields and prevents overwrites. Failed runner completion prevents successful normal probe inventory. |
-| STAB-3 | [build-warning-followup-20261005.md](/Users/welshofer/Developer/Drum/docs/build-warning-followup-20261005.md:52) records the six successful yet warning-producing comparisons. |
+| USE-1 | [RootReducedMotionTests.swift](DrumTests/RootReducedMotionTests.swift#L26) changes the actual hosted environment and observes CRTStage-delivered settings/time; line 35 requires engine/process/PID continuity, line 37 saved JSON equality. |
+| Integration fixture | [TerminalRenderingTests.swift](DrumTests/TerminalRenderingTests.swift#L402) creates a real panel through public APIs; line 396 keeps tolerance-one native pixel comparison. |
+| PERF-1 | [presentation-probe.swift](scripts/presentation-probe.swift#L48) bounds owned cleanup; line 89 limits inventory fields and prevents overwrites. Failed runner completion prevents successful normal probe inventory. |
+| STAB-3 | [build-warning-followup-20261005.md](docs/build-warning-followup-20261005.md) records the six successful yet warning-producing comparisons. |
 | PERF-3 | No maintained release implementation: current `TerminalMirror` still owns retained bitmap capacity. Preserved experiment and reversion evidence are linked above. |
 
 The existing signing/notarization, real target-panel screenshot/input/presentation,

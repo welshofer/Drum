@@ -17,7 +17,7 @@ profile payloads, fonts or assets were copied into Drum.
 Drum already implements bloom, phosphor colours, scanlines, grille, curvature,
 vignette, wobble and a rounded bezel, with live controls and two bundled retro
 fonts. Its power transitions and five independently optional sound effects are
-part of the current scope. See [current requirements](/Users/welshofer/Developer/Drum/drum-spec.md:9).
+part of the current scope. See [current requirements](../drum-spec.md).
 
 Cool-retro-term exposes a broader styling surface: complete profiles, font
 sources and rasterization choices, colour mixing, noise/flicker/RGB shift,
@@ -49,8 +49,8 @@ working directories in an explicit launch configuration rather than executable
 content in a shared appearance file. Reuse Drum's typed Codable settings.
 
 Colour preservation must change both
-[TerminalTheme's ANSI palette](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalTheme.swift:45)
-and [the monochrome Metal mask](/Users/welshofer/Developer/Drum/Drum/CRT/CRT.metal:78).
+[TerminalTheme's ANSI palette](../Drum/Terminal/TerminalTheme.swift#L45)
+and [the monochrome Metal mask](../Drum/CRT/CRT.metal#L78).
 Changing only the phosphor picker would not restore colour. A complete look
 must retain the PTY; font changes need explicit regression checks because the
 pinned terminal engine's font setter can reset modes and selection.
@@ -80,7 +80,7 @@ porting GPL code needs a separate licensing decision; SwiftTerm's MIT license
 does not override that code's terms. SwiftTerm itself permits an open-source
 Drum, retaining its
 [pinned MIT notices](https://github.com/migueldeicaza/SwiftTerm/blob/5d14406844143538cd8f8851d2d8a67c1fe443e5/LICENSE).
-The bundled fonts keep their separate [credits/licenses](/Users/welshofer/Developer/Drum/CREDITS.md:7).
+The bundled fonts keep their separate [credits/licenses](../CREDITS.md).
 
 ## Burn-down — 20261005
 

@@ -49,6 +49,12 @@ targets:
       - path: Drum/Resources/Fonts
         type: folder
         buildPhase: resources
+      - path: LICENSE
+        buildPhase: resources
+      - path: CREDITS.md
+        buildPhase: resources
+      - path: THIRD_PARTY_NOTICES.md
+        buildPhase: resources
     dependencies:
       - package: SwiftTerm
         product: SwiftTerm

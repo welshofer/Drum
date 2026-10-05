@@ -8,3 +8,13 @@ build/
 *.xcuserstate
 .claude/settings.local.json
 .benchmark-results/
+.env
+.env.*
+!.env.example
+*.p12
+*.p8
+*.pem
+*.mobileprovision
+*.xcarchive/
+*.trace/
+*.xcresult/

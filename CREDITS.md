@@ -3,7 +3,9 @@
 ## Terminal engine
 
 **SwiftTerm** — Miguel de Icaza and contributors. MIT License.
-https://github.com/migueldeicaza/SwiftTerm (pulled via Swift Package Manager, v1.20.0 or later).
+[Source](https://github.com/migueldeicaza/SwiftTerm), pulled via Swift Package Manager.
+The resolved version is 1.20.0 at `5d14406844143538cd8f8851d2d8a67c1fe443e5`.
+The complete copyright and permission notice is in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), which is also included in the app bundle.
 
 ## Bundled fonts (`Drum/Resources/Fonts/`)
 
@@ -21,4 +23,11 @@ License text: `Px437_IBM_VGA_8x16-LICENSE.txt`. Native cell is 8×16 px, so 16 p
 
 ## Inspiration
 
-Cathode (Secret Geometry) for the idea that a terminal should look like a tube.
+**Cathode — Secret Geometry.** Drum pays homage to the old macOS app, now unavailable, for making a terminal feel like a glowing CRT. Drum isn't as cool as Cathode, but it's a start. Cathode's code, artwork, and sound assets are not included.
+
+The README quotes a short excerpt of Cathode's original description as historical attribution. It is not part of Drum's original MIT-licensed text.
+
+## Project license
+
+Drum's original code and documentation are under the [MIT License](LICENSE).
+Third-party fonts and components retain the licenses listed above. The supplied screenshots show Drum and were contributed by the project owner.
