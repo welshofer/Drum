@@ -55,4 +55,44 @@ struct TerminalThemeTests {
         #expect(state.preset == .custom)
         #expect(state.crt.phosphor.bloomRadius == Phosphor.p1Green.bloomRadius)
     }
+
+    @Test @MainActor func savedGreenRecoversMissingOrInvalidCRT() {
+        for data in [nil, Data("invalid JSON".utf8), Data(#"{"brightness":"invalid"}"#.utf8)] as [Data?] {
+            let suite = "drum.tests.\(UUID().uuidString)"
+            let defaults = UserDefaults(suiteName: suite)!
+            defer { defaults.removePersistentDomain(forName: suite) }
+            let store = SettingsStore(defaults: defaults)
+            store.save(PhosphorPreset.green, for: .preset)
+            if let data { defaults.set(data, forKey: "drum.crt.v3") }
+            let state = AppState(defaults: defaults)
+            #expect(state.preset == .green)
+            #expect(state.crt.phosphor == .p1Green)
+            let restored = AppState(defaults: defaults)
+            #expect(restored.preset == .green)
+            #expect(restored.crt.phosphor == .p1Green)
+            let theme = TerminalTheme(font: .monospacedSystemFont(ofSize: 14, weight: .regular),
+                                      phosphor: restored.crt.phosphor)
+            #expect(theme.palette.allSatisfy { $0.green >= $0.red && $0.green >= $0.blue })
+        }
+    }
+
+    @Test @MainActor func survivingPresetRepairsMismatchedTintWithoutResettingBloom() {
+        let suite = "drum.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = SettingsStore(defaults: defaults)
+        var saved = CRTSettings()
+        saved.phosphor.bloomRadius = 7
+        saved.phosphor.bloomStrength = 0.1
+        saved.brightness = 1.1
+        store.save(saved, for: .crt)
+        store.save(PhosphorPreset.green, for: .preset)
+        let state = AppState(defaults: defaults)
+        #expect(state.preset == .green)
+        #expect(state.crt.phosphor.red == Phosphor.p1Green.red)
+        #expect(state.crt.phosphor.green == Phosphor.p1Green.green)
+        #expect(state.crt.phosphor.blue == Phosphor.p1Green.blue)
+        #expect(state.crt.phosphor.bloomRadius == 7 && state.crt.phosphor.bloomStrength == 0.1)
+        #expect(state.crt.brightness == 1.1)
+    }
 }

@@ -65,8 +65,9 @@ final class AppState {
         let store = SettingsStore(defaults: defaults)
         self.store = store
         sound = store.load(SoundSettings.self, for: .sound) ?? SoundSettings()
-        crt = store.load(CRTSettings.self, for: .crt) ?? CRTSettings()
-        preset = store.load(PhosphorPreset.self, for: .preset) ?? .amber
+        let appearance = store.loadAppearance()
+        crt = appearance.crt
+        preset = appearance.preset
         let font = store.load(TerminalFontChoice.self, for: .font) ?? .glassTTY
         self.font = font
         fontSize = store.load(Double.self, for: .fontSize) ?? font.defaultSize
@@ -129,11 +130,71 @@ final class AppState {
 /// Tiny typed façade over `UserDefaults` with JSON for the composite values.
 /// Only ever touched from `AppState` on the main actor.
 struct SettingsStore {
-    /// `crt` is versioned: bump it when defaults change on purpose so users
-    /// pick up the new tuning instead of their persisted copy of the old one.
+    /// Keep this key stable when adding fields (CRTSettings supplies defaults).
+    /// Tuning changes need a selective migration, preserving colour and edits.
     enum Key: String { case crt = "crt.v3", preset, font, fontSize, sound = "sound.v1" }
 
     let defaults: UserDefaults
+
+    func loadAppearance() -> (crt: CRTSettings, preset: PhosphorPreset) {
+        let restored = restoredCRT()
+        var crt = restored ?? CRTSettings()
+        let preset = load(PhosphorPreset.self, for: .preset) ??
+            PhosphorPreset.allCases.first { choice in
+                guard let phosphor = choice.phosphor else { return false }
+                return crt.phosphor.red == phosphor.red && crt.phosphor.green == phosphor.green &&
+                    crt.phosphor.blue == phosphor.blue
+            } ?? .custom
+        if let phosphor = preset.phosphor {
+            // Reconcile the tint without resetting the user's bloom sliders.
+            if restored == nil {
+                crt.phosphor = phosphor
+            } else {
+                crt.phosphor.red = phosphor.red
+                crt.phosphor.green = phosphor.green
+                crt.phosphor.blue = phosphor.blue
+            }
+        }
+        save(crt, for: .crt)
+        save(preset, for: .preset)
+        return (crt, preset)
+    }
+
+    private func restoredCRT() -> CRTSettings? {
+        for key in [Key.crt.rawValue, "crt.v2", "crt"] {
+            guard let data = defaults.data(forKey: "drum." + key) else { continue }
+            if var settings = try? JSONDecoder().decode(CRTSettings.self, from: data) {
+                if key != Key.crt.rawValue {
+                    // Upgrade only untouched historical defaults. Custom RGB and
+                    // bloom remain intact, including when other tuning changes.
+                    let current = CRTSettings()
+                    let original = key == "crt"
+                    let fields: [(WritableKeyPath<CRTSettings, Float>, Float)] = [
+                        (\.barrelX, original ? 0.05 : 0.03),
+                        (\.barrelY, original ? 0.05 : 0.03),
+                        (\.scanlines, original ? 0.28 : 0.20),
+                        (\.grille, original ? 0.08 : 0.06),
+                        (\.vignette, 0.35), (\.brightness, 1.25)
+                    ]
+                    for (field, oldDefault) in fields where settings[keyPath: field] == oldDefault {
+                        settings[keyPath: field] = current[keyPath: field]
+                    }
+                }
+                return settings
+            }
+            // A bad tuning field should not discard an otherwise usable custom tint.
+            if let saved = try? JSONDecoder().decode(SavedPhosphor.self, from: data) {
+                var settings = CRTSettings()
+                settings.phosphor = saved.phosphor
+                return settings
+            }
+        }
+        return nil
+    }
+
+    private struct SavedPhosphor: Decodable {
+        let phosphor: Phosphor
+    }
 
     func save<T: Encodable>(_ value: T, for key: Key) {
         if let data = try? JSONEncoder().encode(value) {
