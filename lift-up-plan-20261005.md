@@ -1451,3 +1451,140 @@ Drum/App/DrumApp.swift:16:        .defaultSize(width: 1280, height: 400)
 - Broader dependency vulnerability checking — no advisory is asserted from this source review; upgrades need fresh primary advisory evidence and regression checks.
 
 Effort: S under one day, M one to five days, L more than a week. Impact: S local improvement, M noticeable correctness/usability/release improvement, L major safety/accessibility/product-acceptance improvement. These are estimates, not measured outcomes.
+
+## Burn-down — 20261005
+
+All 22 surviving entries were addressed within the authorized local scope. **12 items are implemented locally, nine have a local implementation or preparation with explicitly deferred/blocked acceptance, and one implementation is blocked and reverted.** None is shipped. No PR, remote push, merge to main, notarization submission, deployment or App Store submission occurred. Dropped and Deferred entries above remain outside the implementation scope.
+
+### Baseline, integration and checks
+
+The initial checkout was `codex/performance-profiling` at `8d6e7b4`. Its pull was already current with its upstream; `origin/main` contained two additional commits. A fast-forward brought the checkout to `c432b25e9dfe0f4d7f470e8544e8006bf6d8898d`, and the original verified plan was committed as `9b811a9`. Implementation is on `codex/burndown/drum-20261005`; executable changes are complete through `a92784b`. A fresh `git fetch --prune origin` during final verification again reported `origin/main` at `c432b25`; the integration branch contains that complete remote baseline. The pre-existing untracked `audit/` residuals were preserved.
+
+Resolved commands run from `/Users/welshofer/Developer/Drum`:
+
+```sh
+xcodegen generate
+xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Debug \
+  -destination 'platform=macOS,arch=arm64' -skipPackagePluginValidation \
+  -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile test
+xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Release \
+  -destination 'platform=macOS,arch=arm64' -skipPackagePluginValidation \
+  -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile \
+  ENABLE_TESTABILITY=YES test
+```
+
+Final integration output:
+
+```text
+Debug:   Test run with 74 tests in 15 suites passed after 17.521 seconds.
+         ** TEST SUCCEEDED **
+Release: Test run with 74 tests in 15 suites passed after 11.645 seconds.
+         ** TEST SUCCEEDED **
+```
+
+These are 72 regression passes plus two explicitly skipped opt-in measurements (`compareRenderingModes` and `measureDisplayCadences`) in each configuration. Logs: `/tmp/drum-burndown-final-debug.log` and `/tmp/drum-burndown-final-release.log`; each points to its retained local `.xcresult`. Both final runs emitted two unsuppressed AppIntents metadata warnings. No `_Testing_CoreTransferable` x86_64 linker warning appeared. Debug also logged macOS `linkd.autoShortcut` connection diagnostics during host launch; these did not fail tests and are retained in its log. The zero-warning gate remains open.
+
+Xcode is 27.0 (27A266a); macOS deployment target remains 26.0 with Swift 6 strict concurrency. SwiftTerm remains locked to `5d14406844143538cd8f8851d2d8a67c1fe443e5` (1.20.0). Its bounded build-information plugin was inspected before the per-invocation validation bypass; global plugin trust was unchanged. Project registration and architecture changes were generated from `project.yml`, never hand-edited. A repository linter and CI workflow are unconfigured (N/A, not passing checks).
+
+Additional final checks: `git diff --check`; shell syntax for `distribute.sh`, `benchmark-performance.sh`, `reproduce-appintents-warning.sh` and `terminal-demo.sh`; warnings-as-errors Swift type checks for `benchmark-artifacts.swift`, `profile-performance.swift` and `presentation-evidence.swift`. All succeeded. The presentation validator's positive, missing-track and 12 negative synthetic fixtures passed. Synthetic presentations are never measured frame evidence. The worker regenerated the historical benchmark summary byte-for-byte. Demo output was byte-identical across repeat runs at 80×24 and 160×30, had the requested row/column structure, accepted decimal leading zeros, and rejected an out-of-range width with exit 2. Views remain below 200 lines; `DrumTerminalView` is 192 lines.
+
+A final `xcodegen generate` produced a byte-identical `project.pbxproj`. The independent record review approved all 22 statuses/counts, current source citations, preserved original-plan prefix, final check output and open-gate/model-provenance wording. It required two table-escaping fixes and an exact OSC 52 query-guard quotation; those documentation corrections were made before approval. Maintained `drum-spec.md` now describes the implemented behavior without closing its acceptance gates.
+
+### Routing, isolation and review provenance
+
+The burn-down skill explicitly requested isolated delegation. The runtime allowed four concurrent agents including the orchestrator. Worktrees were created sequentially; write sets serialized shared terminal/settings files and project generation. UI/trace intervals were reserved separately because visible-window tests can interfere with one another. All final integration tests ran after worker UI processes exited. No user-visible tasks were created.
+
+| Worker | Requested routing | Isolated paths and work |
+| --- | --- | --- |
+| `/root/cursor` | `gpt-6-astra`, high | `/tmp/drum-burndown-func-1`: FUNC-1/2; `/tmp/drum-burndown-perf-2`: PERF-2; independent later reviews |
+| `/root/appearance` | `gpt-6.1-sol`, high | `/tmp/drum-burndown-rel-3`: REL-3, STAB-1, blocked PERF-3; `/tmp/drum-burndown-use-3`: USE-3 and repair |
+| `/root/sound_preview` | `gpt-6.1-sol`, medium | `/tmp/drum-burndown-attr-3`: ATTR-3 and SEC-3; `/tmp/drum-burndown-func-3`: FUNC-3; independent later reviews |
+| `/root/review_wave1` | `gpt-6-astra`, high | Earlier independent reviews; `/tmp/drum-burndown-perf-1`: PERF-1 workflow |
+| Orchestrator | Main runtime | `/Users/welshofer/Developer/Drum`: cross-subsystem inline work, sequential integration and final verification |
+
+These are **requested** model IDs. Actual runtime model identity is unavailable for executors and reviewers, so distinct agent names or requested IDs do not establish confirmed cross-model execution. Review was role-independent and read-only. Requested distinct models were used where available; no model-independence claim exceeds this evidence.
+
+Review closures and repairs:
+
+- First wave: clipboard protection and appearance recovery approved. ATTR-3 required clearing feedback on actual playback completion rather than a fixed visual timer; `f612620` repaired this and was approved.
+- Second wave: launch recovery, numeric validation and repaired preview completion approved. REL-2 required avoiding signals to SwiftTerm's retained, reaped PID; `dee40b4` repaired ownership and was approved. FUNC-1 separately received a read-only approval.
+- FUNC-2 integration: worker verification exposed up to 5.1000214 points of CPU/Metal noise disagreement. The orchestrator's one focused reconciliation replaced both implementations with the same integer hash and added an actual Metal computation test. Debug/Release passed; maximum measured coordinate error was 0.000732421875 points. Independent source/evidence review approved `13d03ef`, with physical presentation limits retained.
+- FUNC-4, hardened-distribution preparation and raw wait-status formatting were independently approved. A small wait-formatting review note about the Linux continued marker was addressed in `b629ad6`.
+- Final wave: reduced-motion policy, wobble wording, inactive controls and warning investigation approved. SEC-2 initially broke implicit local-file links; preserving plain paths, tilde paths and source-location suffixes corrected it before final approval. No real external URL handler was launched by tests.
+- USE-3 initially clamped a blank-column caret to trimmed text. Actual AX reproduction produced 18 issues; `6c9da45` repairs blank-prefix and following-line UTF-16 offsets. The reviewer then approved the repair.
+- FUNC-3's stabilized hook-removal fixture still produced ten CRT composition failures, while restored hooks passed both configurations; independent review approved the fix. Real IME popup acceptance remains open.
+- A separate reviewer approved PERF-1/PERF-2/ATTR-1 preparation and their explicitly incomplete acceptance claims. All actionable REQUEST-CHANGES were repaired; no unresolved source review request remains.
+
+### Per-item result and current citation evidence
+
+“Partial” below means local code/preparation is retained and verified, while the named acceptance step is explicitly blocked or deferred. It does not mean the full original Do or product gate passed. “Implemented locally” means the scoped behavior and applicable checks passed; broader specification §8 acceptance still requires its own evidence.
+
+| ID | Status | Integrated commits | Verification and remaining gate |
+| --- | --- | --- | --- |
+| PERF-1 | Partial; presentation blocked | `3ffd72f` (worker `f673102`) | Sustained 30-second workload stages, attribution metadata, typed sanitizer and fail-closed present validator verified. Actual trace finalization failed; physical panel and validated present timestamps absent. |
+| PERF-2 | Partial; high-refresh comparison deferred | `3d6fc6d` (worker `bc931b8`) | Explicit 60 Hz preference and existing pause behavior retained. 24 controlled screen samples collected; all actual callbacks were about 60 Hz, including the nominal 120 Hz screen. No measured savings or latency improvement claim. |
+| PERF-3 | Blocked; reverted | No integrated feature commit | Three worker cycles and one focused integration reconciliation failed the controlled caret/selection fixture. Final root reversion passed 61 reported tests. Dirty worker branch and patch retained locally. |
+| FUNC-1 | Implemented locally | `5c89dad` | Native block-cursor drawing supplies contrasting ASCII, wide and combined glyphs. Cursor-on/off pixel comparisons and bar/underline/unfocused preservation pass. |
+| FUNC-2 | Partial; physical input/presentation acceptance blocked | `13d03ef` | CPU/actual-Metal agreement and dispatched selection/drag/link/mouse-report outcomes pass at 640/1280/2560 widths. Real panel and stalled-present-frame alignment remain unverified. |
+| FUNC-3 | Partial; real candidate popup deferred | `7b2f6b5` (worker `a2369b6`) | Idle ASCII/CJK composition update/clear pixels and native-mode pause pass. Programmatic candidate screen rectangle passes; actual popup, commit/cancel and curved-picture alignment remain unverified. |
+| FUNC-4 | Implemented locally | `f295afb` | Existing local file-directory reports restore restart CWD; remote/deleted/unusable reports fall back home. Controlled fixtures and final suites pass. |
+| STAB-1 | Implemented locally | `351ea9a` | Loaded font sizes and all visual uniforms normalize before use; invalid fields get individual defaults. Extreme finite JSON and saved font fixtures pass without losing valid choices. |
+| STAB-2 | Implemented locally | `3f71280`, `b629ad6` | Pinned raw waitpid status decodes to exit or signal. Real exit-1/SIGTERM processes plus nil/core/nonterminal fixtures pass. |
+| STAB-3 | Partial; zero-warning gate blocked | `94fa7ca` | Test-only active architecture removes the mismatched linker warning. Standalone minimal SwiftUI build reproduces AppIntents warning; underlying tooling resolution remains open. |
+| REL-1 | Implemented locally | `df10a0f` | Actual `process.running` replaces optimistic state; initial failure plus three manual retries is bounded. Simulated failure and real PTY recovery pass. |
+| REL-2 | Implemented locally | `d339b10`, `dee40b4` | Quit cancels owned delayed restart before terminating a still-owned process. Pending-restart quit, real reaped-PID quit and detach/power-cycle fixtures pass. |
+| REL-3 | Implemented locally | `e21e102` | Preset/CRT reconciliation and selective legacy-default migration preserve custom colour/bloom. Missing/invalid green and custom migration fixtures pass. |
+| SEC-1 | Implemented locally | `e137c4e` | OSC 52 queries never read/respond; writes default off and require explicit opt-in with UTF-8/base64/64 KiB bounds. Isolated pasteboard tests and ordinary input response preservation pass. |
+| SEC-2 | Implemented locally | `f9fc107` | HTTP(S) opens through NSWorkspace; file/app targets require Cancel-default confirmation showing the destination. Unsafe schemes blocked; implicit files and misleading OSC labels covered with injected confirmation/opener fixtures. |
+| SEC-3 | Partial; signed-product release blocked | `a0d8514` (worker `cb72d5d`) | Distribution config, identity/runtime/timestamp/entitlement verification and explicit Accepted→staple→Gatekeeper workflow prepared. Ad hoc hardened build and controlled shell smoke pass; Developer ID identity/notary credentials unavailable. |
+| USE-1 | Partial; live system-preference acceptance deferred | `e66d31d` | SwiftUI environment drives transient no-wobble rendering and a 150 ms fade without flyback/scaling. Saved settings survive both policy values in tests. Actual system preference toggling during use remains unverified. |
+| USE-2 | Implemented locally | `94ffda6` | “Sync wobble” plus scoped help separates cursor/input/power behavior and makes no FPS promise. Direct source inspection and compiled final settings form pass. |
+| USE-3 | Partial; spoken VoiceOver deferred | `db36ce5`, `6c9da45` | Actual AX tree exposes one read-only text area at host alpha 0 and 1, with Unicode selection, blank-column caret, wrapped offsets, scrollback, focus and same-PTY keyboard operation. VoiceOver was off; spoken/rotor/client acceptance unverified. |
+| ATTR-1 | Partial; panel screenshots blocked | `a92784b` | Deterministic text/box/ruler/edge/selection-target output and real-selection/capture checklist prepared and checked. No physical target panel, acceptance PNG or aesthetic retuning. |
+| ATTR-2 | Implemented locally | `ae97149`, `2791f85` | CRT-off disables bloom/tube-only controls and explains inactivity; enable/font/colour stay usable and tuning bindings remain intact. Valid settings Section compiled in both configurations. |
+| ATTR-3 | Implemented locally | `6635bb9`, `f612620` | Playing/Stop state follows actual voice completion and finite watchdog; replacement, failure, stop, tab exit, deactivation and power-off clear state. Accessible labels/values and lifecycle tests pass. |
+
+The orchestrator re-read each cited final source; the following short quotations identify the behavior that resolves the original proof rather than merely changed text:
+
+| ID | Current location and post-change proof |
+| --- | --- |
+| PERF-1 | [presentation-evidence.swift](/Users/welshofer/Developer/Drum/scripts/presentation-evidence.swift:155): `blockers.append("no-validated-compositor-or-device-present-track")`; line 209 always requires independent semantics/target review. |
+| PERF-2 | [TerminalDisplayClock.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalDisplayClock.swift:19): `link.preferredFrameRateRange = Self.captureFrameRateRange`; line 10 requests 60/60/60. |
+| PERF-3 | [TerminalMirror.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalMirror.swift:37): `private let bitmaps = TerminalBitmapStore()` still retains capacity; no integrated release operation. Original demonstrated problem remains. |
+| FUNC-1 | [CaretOverlay.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/CaretOverlay.swift:19): `if let block = caret.blockImage`; [TerminalMirror.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalMirror.swift:118): `renderer.draw?(layer, in: context)`. |
+| FUNC-2 | [DrumTerminalView.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/DrumTerminalView.swift:27): window-point conversion applies `pointerMap.sourcePoint`; [TerminalPointerMap.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalPointerMap.swift:32) shares quantized integer noise with the shader. |
+| FUNC-3 | [DrumTerminalView.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/DrumTerminalView.swift:98): `super.setMarkedText(...)` then `session?.mirror.markDirty()`; line 103 does the same for unmarking. |
+| FUNC-4 | [TerminalSession.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalSession.swift:23): `TerminalWorkingDirectory.isDirectory(reportedDirectory)` before use; line 186 validates the report. |
+| STAB-1 | [CRTSettings.swift](/Users/welshofer/Developer/Drum/Drum/CRT/CRTSettings.swift:52): `value.isFinite && range.contains(value) ? value : fallback`; [AppState.swift](/Users/welshofer/Developer/Drum/Drum/App/AppState.swift:35) normalizes font size. |
+| STAB-2 | [TerminalWaitStatus.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalWaitStatus.swift:10): `return "exit \((status >> 8) & 0xff)"`; line 13 formats the signal/core state. |
+| STAB-3 | [project.yml](/Users/welshofer/Developer/Drum/project.yml:93): `ONLY_ACTIVE_ARCH: YES` is within DrumTests; [reproduce-appintents-warning.sh](/Users/welshofer/Developer/Drum/scripts/reproduce-appintents-warning.sh:33) retains an unsuppressed minimal build log. |
+| REL-1 | [TerminalSession.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalSession.swift:93): `isRunning = view.process.running`; line 30 bounds `canRetryLaunch`. |
+| REL-2 | [TerminalSession.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalSession.swift:124): `restart?.cancel()`; line 131 only terminates when `isRunning`; line 207 checks task cancellation/shutdown before restart. |
+| REL-3 | [AppState.swift](/Users/welshofer/Developer/Drum/Drum/App/AppState.swift:144): `loadAppearance()` reconciles preset tint; line 184 migrates only fields matching historical defaults. |
+| SEC-1 | [TerminalClipboardPolicy.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalClipboardPolicy.swift:24): `!(encoded.count == 1 && encoded.first == UInt8(ascii: "?"))` explicitly rejects queries before decoding; the app-owned handler only invokes bounded `write`. |
+| SEC-2 | [TerminalLinkPolicy.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalLinkPolicy.swift:37): `guard decision == .web \|\| confirm(url) else { return false }`; line 45 installs Cancel first. |
+| SEC-3 | [project.yml](/Users/welshofer/Developer/Drum/project.yml:35): separate Distribution runtime/signing config; [distribute.sh](/Users/welshofer/Developer/Drum/scripts/distribute.sh:94): `[[ "$status" == Accepted ]]` before stapling. |
+| USE-1 | [RootView.swift](/Users/welshofer/Developer/Drum/Drum/App/RootView.swift:6): `@Environment(\.accessibilityReduceMotion)`; [CRTSettings.swift](/Users/welshofer/Developer/Drum/Drum/CRT/CRTSettings.swift:59): `if liveResize \|\| reduceMotion { result.animated = false }`. |
+| USE-2 | [SettingsView.swift](/Users/welshofer/Developer/Drum/Drum/Settings/SettingsView.swift:38): `Toggle("Sync wobble", ...)`; line 40 scopes the help text. |
+| USE-3 | [AccessibleTerminalView.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/AccessibleTerminalView.swift:13): `.textArea`; [TerminalAccessibilitySnapshot.swift](/Users/welshofer/Developer/Drum/Drum/Terminal/TerminalAccessibilitySnapshot.swift:30) pads the active caret row before computing later offsets. |
+| ATTR-1 | [terminal-demo.sh](/Users/welshofer/Developer/Drum/scripts/terminal-demo.sh:23): full-width box and deterministic positioned rows; line 30 identifies the real-selection target. [visual checklist](/Users/welshofer/Developer/Drum/docs/visual-acceptance-20261005.md:13) records absent panel/screenshot. |
+| ATTR-2 | [SettingsView.swift](/Users/welshofer/Developer/Drum/Drum/Settings/SettingsView.swift:31): `.disabled(!state.crt.enabled)` on bloom; line 42 disables tube sliders; footer explains still-active colour/font. |
+| ATTR-3 | [TerminalAudio.swift](/Users/welshofer/Developer/Drum/Drum/Audio/TerminalAudio.swift:95): checks `remainingPlaybackTime` until actual completion/deadline; [SoundSettingsView.swift](/Users/welshofer/Developer/Drum/Drum/Settings/SoundSettingsView.swift:62): `Button(isPreviewing ? "Stop" : "Preview", ...)`. |
+
+### Verification history and concrete remaining gates
+
+Earlier focused Debug/Release runs passed as each wave grew: 35 reported tests for SEC-1; 47 for launch recovery; 49 for restart shutdown; 50 for numeric normalization; 57 for local CWD; 58 for reaped-PID repair; 61 for pointer reconciliation; 62 for wait-status formatting. All retained existing opt-in skips and tooling warnings. Root log families are `/tmp/drum-burndown-{sec1,rel1,rel2,func4,rel2-repair,func2-integration,stab2}-*.log`; the final successful launch-recovery Debug suffix is `debug-2`, reaped-PID repair is `debug-2`, and wait-status runs are `debug-3`/`release-3`. Initial compile failures and POSIX signal-mask fixture failures were fixed from their actual diagnostics rather than relaxing assertions. Final combined logs above supersede intermediate suite counts.
+
+**PERF-3:** Worker branch `codex/burndown/perf-3-20261005` in `/tmp/drum-burndown-rel-3` retains its dirty five-file experiment. Root's one focused reconciliation still failed `glyph != nil` in its controlled state-preservation fixture: `/tmp/drum-burndown-perf3-integration-debug.log` exited 65. The run's release changes were reverted; `/tmp/drum-burndown-perf3-revert-debug.log` then passed 61 reported tests. Preserved patch `/tmp/drum-perf3-final-integration.patch` and fixture `/tmp/drum-perf3-final-storage-tests.swift` permit a future bounded follow-up. Descriptive measurements observed owned bitmap capacity 14,745,600→0 bytes and local cold/warm capture differences, but they do not close the failed identity/focus/selection/caret gate or demonstrate a shipped memory improvement. The [burn-down skill](/Users/welshofer/.codex/skills/burn-down/SKILL.md) permits one focused reconciliation, then requires: “revert only this run's offending merge with evidence, mark the item blocked, and re-verify.” That stopping rule was applied; no fourth implementation repair was attempted.
+
+**PERF-1 / FUNC-2 / ATTR-1:** This machine has M5 Max graphics and four screens, including a 6016×3384/60 Hz XDR and a nominal 3456×2234/120 Hz internal panel. None is the physical 2560×720 target panel. A 2560×720 backing-pixel window on the XDR is not physical target acceptance. The controlled PERF-1 run passed after 162.282 seconds, with four stable stages lasting 30.650–31.414 seconds, fixed window/display attribution, visible geometry and wobble enabled. Resize is separate because production disables wobble during resizing. Instruments attached and recorded, but its 120-second finalization wait timed out; one recovery export failed `Document Missing Template Error`. The incomplete 18 GB trace was removed after diagnosis, with sanitized measurements/provenance and explicit blocked validation retained under [the workflow evidence](/Users/welshofer/Developer/Drum/docs/benchmarks/2026-10-05-presentation-workflow/summary.md). No actual-present FPS, latency percentile, target PNG or physical input acceptance is asserted. The workload predates the final pointer/noise change and cannot establish its performance.
+
+**PERF-2:** A requested 120 Hz range did not produce a measured 120 Hz callback baseline on the attached internal panel. Its nominal refresh and callback timestamps are separate data. Early cadence samples overlapped unrelated tests; the CPU outlier is retained and disclosed. A controlled real high-refresh comparison remains deferred; explicit scheduling policy is retained without a savings claim. See [cadence evidence](/Users/welshofer/Developer/Drum/docs/display-cadence-20261005.md).
+
+**STAB-3:** `scripts/reproduce-appintents-warning.sh` succeeded in a fresh project with no packages/tests/AppIntents usage and reproduced `Metadata extraction skipped, no AppIntents.framework dependency found`. Actual new-script run log: `/tmp/drum-burndown-stab3-repro-run.log`; minimal project and build log: `/var/folders/f5/d9r1b8yn40dbl827trq2w67m0000gn/T/drum-appintents-repro.Va9Tbn`. This isolates the installed metadata-tool step, not a vendor-confirmed root cause. The warning remains unsuppressed; no zero-warning claim.
+
+**SEC-3:** Installed signing identities contained only Apple Development, no Developer ID Application identity or stored notarization profile. Hardened ad hoc signature/runtime/no-entitlement checks and an eight-second shell launch smoke succeeded. Those checks do not establish Developer ID signed PTY/font/audio/shader acceptance, notarization or Gatekeeper distribution readiness. The helper rejected a development identity and ad hoc verification as expected. No credential was invented and no external submission was made. See [distribution preparation](/Users/welshofer/Developer/Drum/docs/distribution.md).
+
+**USE-1 / USE-3 / FUNC-3:** Live system Reduce Motion toggling, spoken VoiceOver and actual input-source candidate-popup commit/cancel exercises are explicitly deferred manual acceptance. Automated policy and own-process AX/input/composition checks supply narrower evidence. VoiceOver was disabled and AX process trust false; own-process queries still succeeded. User preferences, permissions and input sources were not changed. A before-adapter probe exposed `AXUnknown`, no value and only a scrollbar; the adapter now exposes exactly one terminal `AXTextArea`. Blank-column caret nine returns `{9,0}`, wrapped Unicode caret returns `{12,0}`, and following-line offsets are 10/13 in both opacity modes. During the worker's final cycle, two full runs failed existing visibility fixtures while new AX cases passed; unchanged retries passed both configurations. Test-host activation requests were accepted but samples stayed inactive, so no causal activation claim is made. Test-owned floating placement stabilized the separate composition fixture. These desktop-dependent checks do not prove behavior under real occlusion. See [AX evidence](/Users/welshofer/Developer/Drum/docs/accessibility-20261005.md) and [composition evidence](/Users/welshofer/Developer/Drum/docs/input-method-20261005.md).
+
+No required work is silently pending: the table explicitly distinguishes implemented local behavior, prepared scope with incomplete acceptance, and the reverted blocked experiment. Original specification §8 gates, including a recorded ten-minute normal-use session, real target-panel legibility/input/presentation and screenshot acceptance, remain open. A future pass should start from these exact blockers rather than treating this local burn-down as release approval.

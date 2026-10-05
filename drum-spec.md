@@ -1,6 +1,6 @@
 # Drum — a modern Cathode
 
-Current product specification, reconciled 2026-09-24. Native macOS 26 terminal app: Swift 6 strict concurrency, SwiftUI and Metal, with AppKit where required by the terminal integration. A working shell with the phosphor CRT appearance inspired by Cathode, sized for a 2560×720 panel and usable at ordinary window sizes.
+Current product specification, reconciled 2026-10-05. Native macOS 26 terminal app: Swift 6 strict concurrency, SwiftUI and Metal, with AppKit where required by the terminal integration. A working shell with the phosphor CRT appearance inspired by Cathode, sized for a 2560×720 panel and usable at ordinary window sizes.
 
 [CLAUDE.md](CLAUDE.md) contains current agent rules; this document contains product requirements and acceptance gates. Dated documents record evidence at their stated date/revision. Later implementation notes supersede older mechanisms, not product requirements. The [original kickoff](docs/history/drum-kickoff-2026-09-10.md) is a historical archive, not an implementation template.
 
@@ -36,6 +36,12 @@ Use `@Observable` state injected with `@Environment`; no MVVM, `ObservableObject
 
 **Terminal engine:** SwiftTerm via SPM owns parsing, PTY, input, resize and scrollback. Do not write another VT parser. Keep the same terminal and PTY alive through host rebuilds, power animation and rendering-mode changes. Use the resolved dependency source when choosing extension points; public methods are not necessarily open to override.
 
+Shell launch failure stays stopped and offers a bounded **Tube → Retry Shell** action. Unexpected exits restart in the last existing local working directory reported by the shell, falling back to home for unavailable, remote or stale reports. Application quit cancels pending restart work before terminating a still-owned process.
+
+Terminal-output clipboard queries are denied. Output-driven writes require the Terminal settings opt-in and are limited to 64 KiB; ordinary user Copy/Paste remains available. Activated HTTP(S) links use the platform opener. Local-file and application links show their destination and require explicit confirmation; unsafe script/data schemes are blocked.
+
+The native input view exposes one read-only accessibility text surface in both rendering modes. Automated AX checks cover Unicode text/selection, blank-column caret offsets, scrollback, focus and keyboard input; [spoken VoiceOver acceptance remains open](docs/accessibility-20261005.md).
+
 **Fonts:** Glass TTY VT220 and IBM VGA 8×16 are bundled with their licenses. Preserve [CREDITS.md](CREDITS.md) and the adjacent license files. Register fonts through the bundle; keep a usable monospace fallback. Default font sizes and names live in AppState and TerminalTheme.
 
 **Colours:** foreground follows the phosphor; background is black. ANSI colours map to phosphor brightness steps. The CRT mask also converts arbitrary input colours, including true-colour escapes, into the selected phosphor. Clamp colour components before integer palette conversion. Theme colour changes should not reassign the font and reset terminal state.
@@ -66,7 +72,7 @@ The [Phase 1 experiment](docs/phase-1-findings.md) established that putting the 
 
 The mirror follows AppKit invalidations through a window-bound display link. Each reusable backing buffer retains its own dirty regions; clean or hidden terminals pause capture. Scrollbar refresh is bounded after scroll activity. Live resize reuses bitmap capacity and temporarily reduces effect work without changing saved settings. See the [performance implementation notes](docs/performance.md) and [rendering regression tests](DrumTests/TerminalRenderingTests.swift).
 
-Mouse hit-testing uses the undistorted terminal position. That limitation remains: keep curvature small, or separately design and verify inverse mapping if a future task requires it. Do not assume bitmap-capture timing measures user-visible input latency.
+Window-point hit-testing now maps through the same barrel/wobble source-coordinate function and stage insets as the picture, using shared frame time. Selection, drag, links and mouse reports have native-event and actual-Metal computation coverage at ordinary and ribbon backing sizes; [physical-panel and actual-present-frame alignment remain unverified](docs/pointer-mapping-20261005.md). Input-method changes explicitly invalidate an idle mirror after SwiftTerm updates or removes composition. Candidate screen geometry is tested; real candidate-popup acceptance remains open. Bitmap-capture timing does not measure user-visible input latency.
 
 ### 5.1 Persistence
 
@@ -78,21 +84,27 @@ True persistence remains optional only if the existing effect looks flat on the 
 
 At launch and on ⌘R, play the 700 ms flyback/reveal; on ordinary quit, play the 300 ms reverse transition. [PowerOnTransition.swift](Drum/CRT/PowerOnTransition.swift) supplies the transition. Power cycling preserves the terminal session.
 
+With system Reduce Motion requested, pause continuous wobble and use a restrained 150 ms power fade without flyback or vertical scaling. This rendering policy is transient and preserves saved artistic settings; necessary terminal updates continue. Automated policy checks pass, while a recorded live system-preference change exercise remains open.
+
 Ordinary quit uses cancel → power-off → terminate again because `.terminateLater` stalled the main-actor task in the tested configuration. System logout/restart/shutdown is answered immediately so the animation does not cancel the system operation.
 
 ## 7. Settings
 
 Settings are live, with no Apply button. Appearance contains phosphor preset/custom colour, bloom, brightness, curvature, wobble, scanline, grille, vignette and bezel controls, plus CRT/animation toggles and font/size. Disabling animation stops continuous wobble; necessary input-driven drawing still occurs. Backing scale and transient resize quality come from runtime state, not a user slider.
 
+The motion toggle is labelled **Sync wobble** and makes no presentation-FPS promise. CRT-off disables effect-only bloom/tube controls with an explanation; font and phosphor colour remain usable and stored tuning survives the mode switch.
+
 AppState persists through a typed JSON `SettingsStore` over UserDefaults, not `@AppStorage` on AppState. CRT decoding tolerates missing keys; preserve saved choices when adding fields. Sound preferences are independent of appearance.
 
 Sound provides five independent opt-in effects, volume and finite previews, plus mains/flyback frequency choices. Parsed incoming BEL rings the bell; Ctrl-G is input to the running program, which decides whether to emit BEL. Key clicks exclude command shortcuts, paste, responses and unfocused events. Stop audio while inactive or powered off, bound simultaneous voices, and keep synthesis/file work off input and redraw paths. Fidelity limits and the deliberate 125 ms boot approximation are documented in [sound.md](docs/sound.md).
+
+The currently previewed sound shows Playing/Stop state with accessible feedback. Completion follows actual playback state with a finite watchdog; replacement, failure, leaving Settings, deactivation and power-off clear it.
 
 ## 8. Phases and gates
 
 The original acceptance criteria remain. Implementation completion and a passing test suite do not alone close these gates.
 
-| Phase | Deliverable | Gate | Evidence/status as of 2026-09-24 |
+| Phase | Deliverable | Gate | Evidence/status as of 2026-10-05 |
 | --- | --- | --- | --- |
 | **1** | Xcode project, SwiftTerm running a shell in a black window, bundled bitmap font, phosphor colour theme. | Can run `claude` in it and work normally for 10 min. Resize, copy, paste all correct. | Implemented; historical visual checks and current rendering tests supply partial evidence. A recorded complete 10-minute acceptance exercise is not present. |
 | **2** | `CRT.metal` + `CRTEffect` on the terminal; Settings with live sliders; power-on. | 60 fps with wobble on (Instruments) at 2560×720; text legible; keyboard and mouse still correct under curvature; screenshot in `docs/`. | Implemented with partial visual/test evidence. Sustained 60 fps and input-to-presentation timing remain unverified. No acceptance screenshot is currently stored in `docs/`. |
