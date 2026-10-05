@@ -27,8 +27,9 @@ final class TerminalSession {
         return NSHomeDirectory()
     }
     static let maxLaunchFailures = 4
-    var canRetryLaunch: Bool { launchError != nil && launchFailures < Self.maxLaunchFailures }
+    var canRetryLaunch: Bool { !isShuttingDown && launchError != nil && launchFailures < Self.maxLaunchFailures }
     @ObservationIgnored private let launch: @MainActor (DrumTerminalView, String) -> Void
+    @ObservationIgnored var terminateProcess: @MainActor (DrumTerminalView) -> Void = { $0.terminate() }
     /// What `TerminalTheme.apply` last applied; lives here, not in the host
     /// view, because the host may be rebuilt while the terminal survives.
     @ObservationIgnored var appliedTheme: TerminalTheme?
@@ -125,7 +126,9 @@ final class TerminalSession {
         cleanup?.cancel()
         cleanup = nil
         mirror.stop()
-        view.terminate()
+        // SwiftTerm retains shellPid after waitpid reaps it. Only a process
+        // still owned by this session may be signalled; an old PID can be reused.
+        if isRunning { terminateProcess(view) }
         isRunning = false
     }
 

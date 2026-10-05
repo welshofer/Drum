@@ -4,6 +4,24 @@ import Testing
 
 @Suite(.serialized) @MainActor
 struct TerminalSessionTests {
+    @Test func shutdownAfterARealExitDoesNotSignalTheReapedPID() async throws {
+        var terminations = 0
+        let session = TerminalSession(restartDelay: .seconds(10)) { view, _ in
+            view.startProcess(executable: "/bin/sh", args: ["-c", "exit 0"])
+        }
+        session.terminateProcess = { _ in terminations += 1 }
+        session.startIfNeeded()
+        let deadline = ContinuousClock().now.advanced(by: .seconds(2))
+        while session.isRunning && ContinuousClock().now < deadline {
+            try await Task.sleep(for: .milliseconds(10))
+        }
+        #expect(!session.isRunning)
+        #expect(!session.view.process.running)
+        #expect(session.view.process.shellPid != 0, "Pinned SwiftTerm retains the reaped PID")
+        session.shutdown()
+        #expect(terminations == 0)
+    }
+
     @Test func restartUsesOnlyAnExistingLocalReportedDirectory() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
