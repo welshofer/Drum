@@ -33,7 +33,8 @@ private struct AppearanceSettingsView: View {
 
             Section("Tube") {
                 Toggle("CRT effect", isOn: $state.crt.enabled)
-                Toggle("Animated (sync wobble, 60 fps)", isOn: $state.crt.animated)
+                Toggle("Sync wobble", isOn: $state.crt.animated)
+                    .help("Adds subtle motion to the CRT picture. Cursor blinking, terminal updates, and power transitions are separate. Reduce Motion pauses wobble.")
                 CRTSlidersView(crt: $state.crt)
             }
 
