@@ -27,6 +27,31 @@ struct CRTSettings: Codable, Sendable, Equatable {
     /// Only the sync wobble needs continuous animation.
     var isWobbling: Bool { enabled && animated && wobble != 0 }
 
+    /// Persisted values must obey the same limits as the appearance controls.
+    /// Invalid fields get their defaults; valid tuning and switches survive.
+    var normalized: Self {
+        var result = self
+        let defaults = Self()
+        result.phosphor = phosphor.normalized
+        result.barrelX = Self.validated(barrelX, in: 0...0.15, default: defaults.barrelX)
+        result.barrelY = Self.validated(barrelY, in: 0...0.15, default: defaults.barrelY)
+        result.wobble = Self.validated(wobble, in: 0...0.01, default: defaults.wobble)
+        result.scanlines = Self.validated(scanlines, in: 0...0.5, default: defaults.scanlines)
+        result.grille = Self.validated(grille, in: 0...0.3, default: defaults.grille)
+        result.vignette = Self.validated(vignette, in: 0...1.5, default: defaults.vignette)
+        result.brightness = Self.validated(brightness, in: 0.5...2, default: defaults.brightness)
+        result.bezelCornerRadius = Self.validated(bezelCornerRadius, in: 0...120, default: defaults.bezelCornerRadius)
+        // Backing scale comes from the display at rendering time, never storage.
+        result.scale = defaults.scale
+        return result
+    }
+
+    static func validated<Value: BinaryFloatingPoint>(
+        _ value: Value, in range: ClosedRange<Value>, default fallback: Value
+    ) -> Value {
+        value.isFinite && range.contains(value) ? value : fallback
+    }
+
     /// Transient rendering policy; never written back to the user's settings.
     func forRendering(scale: Float, liveResize: Bool) -> Self {
         var result = self
@@ -53,17 +78,23 @@ struct CRTSettings: Codable, Sendable, Equatable {
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let d = CRTSettings()
+        // Decode through Double so even finite JSON beyond Float's capacity
+        // defaults just that field rather than discarding the entire record.
+        func number(_ key: CodingKeys, default fallback: Double) throws -> Double {
+            try c.decodeIfPresent(Double.self, forKey: key) ?? fallback
+        }
         enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? d.enabled
         phosphor = try c.decodeIfPresent(Phosphor.self, forKey: .phosphor) ?? d.phosphor
-        barrelX = try c.decodeIfPresent(Float.self, forKey: .barrelX) ?? d.barrelX
-        barrelY = try c.decodeIfPresent(Float.self, forKey: .barrelY) ?? d.barrelY
-        wobble = try c.decodeIfPresent(Float.self, forKey: .wobble) ?? d.wobble
-        scanlines = try c.decodeIfPresent(Float.self, forKey: .scanlines) ?? d.scanlines
-        grille = try c.decodeIfPresent(Float.self, forKey: .grille) ?? d.grille
-        vignette = try c.decodeIfPresent(Float.self, forKey: .vignette) ?? d.vignette
-        brightness = try c.decodeIfPresent(Float.self, forKey: .brightness) ?? d.brightness
-        scale = try c.decodeIfPresent(Float.self, forKey: .scale) ?? d.scale
+        barrelX = Float(try number(.barrelX, default: Double(d.barrelX)))
+        barrelY = Float(try number(.barrelY, default: Double(d.barrelY)))
+        wobble = Float(try number(.wobble, default: Double(d.wobble)))
+        scanlines = Float(try number(.scanlines, default: Double(d.scanlines)))
+        grille = Float(try number(.grille, default: Double(d.grille)))
+        vignette = Float(try number(.vignette, default: Double(d.vignette)))
+        brightness = Float(try number(.brightness, default: Double(d.brightness)))
+        scale = d.scale
         animated = try c.decodeIfPresent(Bool.self, forKey: .animated) ?? d.animated
-        bezelCornerRadius = try c.decodeIfPresent(CGFloat.self, forKey: .bezelCornerRadius) ?? d.bezelCornerRadius
+        bezelCornerRadius = CGFloat(try number(.bezelCornerRadius, default: Double(d.bezelCornerRadius)))
+        self = normalized
     }
 }

@@ -130,4 +130,95 @@ struct CRTSettingsTests {
         #expect(appearance.crt.phosphor == phosphor)
         #expect(appearance.crt.brightness == CRTSettings().brightness)
     }
+
+    @Test func decodingDefaultsExtremeFiniteValuesIndividually() throws {
+        let json = #"""
+        {"enabled":false,"animated":false,"barrelX":1e100,"barrelY":-1e100,
+         "wobble":1e30,"scanlines":-1e30,"grille":1e30,"vignette":-1e30,
+         "brightness":1e30,"bezelCornerRadius":1e100,"scale":-1e30,
+         "phosphor":{"red":1e100,"green":0.42,"blue":-1e100,
+                     "bloomRadius":1e100,"bloomStrength":-1e30}}
+        """#
+        let settings = try JSONDecoder().decode(CRTSettings.self, from: Data(json.utf8))
+        var expected = CRTSettings()
+        expected.enabled = false
+        expected.animated = false
+        expected.phosphor.green = 0.42
+        #expect(settings == expected)
+    }
+
+    @Test func supportedRangeEndpointsSurviveDecoding() throws {
+        for upper in [false, true] {
+            var settings = CRTSettings()
+            settings.barrelX = upper ? 0.15 : 0
+            settings.barrelY = settings.barrelX
+            settings.wobble = upper ? 0.01 : 0
+            settings.scanlines = upper ? 0.5 : 0
+            settings.grille = upper ? 0.3 : 0
+            settings.vignette = upper ? 1.5 : 0
+            settings.brightness = upper ? 2 : 0.5
+            settings.bezelCornerRadius = upper ? 120 : 0
+            settings.phosphor = Phosphor(red: upper ? 1 : 0, green: 0.42, blue: upper ? 1 : 0,
+                                         bloomRadius: upper ? 8 : 0, bloomStrength: upper ? 2 : 0)
+            let decoded = try JSONDecoder().decode(CRTSettings.self, from: JSONEncoder().encode(settings))
+            #expect(decoded == settings)
+        }
+    }
+
+    @Test func normalizationRejectsNonfiniteUniforms() {
+        for invalid in [Float.nan, Float.infinity, -Float.infinity] {
+            var settings = CRTSettings()
+            settings.barrelX = invalid
+            settings.barrelY = invalid
+            settings.wobble = invalid
+            settings.scanlines = invalid
+            settings.grille = invalid
+            settings.vignette = invalid
+            settings.brightness = invalid
+            settings.bezelCornerRadius = CGFloat(invalid)
+            settings.scale = invalid
+            settings.phosphor = Phosphor(red: invalid, green: invalid, blue: invalid,
+                                         bloomRadius: CGFloat(invalid), bloomStrength: invalid)
+            #expect(settings.normalized == CRTSettings())
+        }
+    }
+
+    @Test @MainActor func storedFontSizesRespectSupportedRangeAndSelectedFace() {
+        for font in TerminalFontChoice.allCases {
+            for size in [-1e100, 0, 7.9, 48.1, 1e100, 8, 48, 23.5] {
+                let suite = "drum.tests.\(UUID().uuidString)"
+                let defaults = UserDefaults(suiteName: suite)!
+                defer { defaults.removePersistentDomain(forName: suite) }
+                let store = SettingsStore(defaults: defaults)
+                store.save(font, for: .font)
+                store.save(size, for: .fontSize)
+                let state = AppState(defaults: defaults)
+                let expected = (8...48).contains(size) ? size : font.defaultSize
+                #expect(state.font == font)
+                #expect(state.fontSize == expected)
+                #expect(store.load(Double.self, for: .fontSize) == expected)
+            }
+            for invalid in [Double.nan, Double.infinity, -Double.infinity] {
+                #expect(font.normalizedSize(invalid) == font.defaultSize)
+            }
+        }
+    }
+
+    @Test func appearanceRecoveryNormalizesSalvagedCustomPhosphor() {
+        let suite = "drum.tests.\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let store = SettingsStore(defaults: defaults)
+        let json = #"""
+        {"brightness":"invalid","phosphor":{"red":0.2,"green":0.4,"blue":0.6,
+                                             "bloomRadius":1e100,"bloomStrength":-1e30}}
+        """#
+        defaults.set(Data(json.utf8), forKey: "drum.crt.v3")
+        store.save(PhosphorPreset.custom, for: .preset)
+        let appearance = store.loadAppearance()
+        #expect(appearance.preset == .custom)
+        #expect(appearance.crt.phosphor == Phosphor(red: 0.2, green: 0.4, blue: 0.6,
+                                                  bloomRadius: 2.5, bloomStrength: 0.75))
+        #expect(store.load(CRTSettings.self, for: .crt) == appearance.crt)
+    }
 }

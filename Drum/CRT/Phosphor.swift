@@ -16,6 +16,18 @@ struct Phosphor: Codable, Sendable, Equatable {
     static let p3Amber = Phosphor(red: 1.00, green: 0.69, blue: 0.16, bloomRadius: 2.5, bloomStrength: 0.75)
     static let p4White = Phosphor(red: 0.86, green: 0.92, blue: 1.00, bloomRadius: 2.0, bloomStrength: 0.5)
 
+    /// Storage recovery defaults invalid fields without changing valid custom colours.
+    var normalized: Self {
+        let defaults = Self.p3Amber
+        return Phosphor(
+            red: CRTSettings.validated(red, in: 0...1, default: defaults.red),
+            green: CRTSettings.validated(green, in: 0...1, default: defaults.green),
+            blue: CRTSettings.validated(blue, in: 0...1, default: defaults.blue),
+            bloomRadius: CRTSettings.validated(bloomRadius, in: 0...8, default: defaults.bloomRadius),
+            bloomStrength: CRTSettings.validated(bloomStrength, in: 0...2, default: defaults.bloomStrength)
+        )
+    }
+
     var swiftUIColor: Color {
         Color(.sRGB, red: Double(red), green: Double(green), blue: Double(blue), opacity: 1)
     }
@@ -51,6 +63,26 @@ struct Phosphor: Codable, Sendable, Equatable {
         p.green = Self.unit(green)
         p.blue = Self.unit(blue)
         return p
+    }
+}
+
+extension Phosphor {
+    private enum CodingKeys: String, CodingKey {
+        case red, green, blue, bloomRadius, bloomStrength
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        let defaults = Self.p3Amber
+        func number(_ key: CodingKeys, default fallback: Double) -> Double {
+            (try? c.decodeIfPresent(Double.self, forKey: key)) ?? fallback
+        }
+        red = Float(number(.red, default: Double(defaults.red)))
+        green = Float(number(.green, default: Double(defaults.green)))
+        blue = Float(number(.blue, default: Double(defaults.blue)))
+        bloomRadius = CGFloat(number(.bloomRadius, default: Double(defaults.bloomRadius)))
+        bloomStrength = Float(number(.bloomStrength, default: Double(defaults.bloomStrength)))
+        self = normalized
     }
 }
 

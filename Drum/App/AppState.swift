@@ -31,6 +31,10 @@ enum TerminalFontChoice: String, CaseIterable, Codable, Sendable, Identifiable {
         case .system: 14
         }
     }
+
+    func normalizedSize(_ size: Double) -> Double {
+        CRTSettings.validated(size, in: 8...48, default: defaultSize)
+    }
 }
 
 /// All user-facing state. `@Observable`, injected with `.environment`.
@@ -70,7 +74,8 @@ final class AppState {
         preset = appearance.preset
         let font = store.load(TerminalFontChoice.self, for: .font) ?? .glassTTY
         self.font = font
-        fontSize = store.load(Double.self, for: .fontSize) ?? font.defaultSize
+        fontSize = font.normalizedSize(store.load(Double.self, for: .fontSize) ?? font.defaultSize)
+        store.save(fontSize, for: .fontSize)
         audio.configure(sound)
         terminal.view.soundEvents = audio
         terminal.view.keyClicksEnabled = sound.keyClick.enabled && sound.gain(for: .keyClick) > 0
@@ -138,7 +143,7 @@ struct SettingsStore {
 
     func loadAppearance() -> (crt: CRTSettings, preset: PhosphorPreset) {
         let restored = restoredCRT()
-        var crt = restored ?? CRTSettings()
+        var crt = (restored ?? CRTSettings()).normalized
         let preset = load(PhosphorPreset.self, for: .preset) ??
             PhosphorPreset.allCases.first { choice in
                 guard let phosphor = choice.phosphor else { return false }
