@@ -16,6 +16,9 @@ struct TerminalPerformanceTests {
         let env = ProcessInfo.processInfo.environment
         let output = try #require(env["DRUM_BENCHMARK_OUTPUT"])
         let directory = URL(fileURLWithPath: output, isDirectory: true)
+        let sustainedSeconds = Double(env["DRUM_PRESENTATION_SECONDS"] ?? "0") ?? -1
+        try #require(sustainedSeconds == 0 || (30...600).contains(sustainedSeconds),
+                     "Presentation stages must run for 30...600 seconds")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try String(ProcessInfo.processInfo.processIdentifier).write(
             to: directory.appendingPathComponent("ready"), atomically: true, encoding: .utf8)
@@ -34,18 +37,25 @@ struct TerminalPerformanceTests {
         let repetitions = Int(env["DRUM_BENCHMARK_REPETITIONS"] ?? "1") ?? 1
         for repetition in 0..<repetitions {
             for mode in repetition.isMultiple(of: 2) ? modes : Array(modes.reversed()) {
-                results += try await run(mode: mode)
+                results += try await run(mode: mode, sustainedSeconds: sustainedSeconds)
             }
         }
         let report = Report(os: ProcessInfo.processInfo.operatingSystemVersionString,
-                            scale: NSScreen.main?.backingScaleFactor ?? 1, stages: results)
+                            scale: NSScreen.main?.backingScaleFactor ?? 1,
+                            resizeMethod: (sustainedSeconds > 0 ? "repeated batches of " : "") +
+                                "90 programmatic window resizes with live-resize policy enabled", stages: results)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         try encoder.encode(report).write(to: directory.appendingPathComponent("measurements.json"))
+        if sustainedSeconds > 0 {
+            let workload = PerformanceRecorder.PresentationWorkload(runID: UUID(),
+                requestedStageSeconds: sustainedSeconds, stages: results)
+            try encoder.encode(workload).write(to: directory.appendingPathComponent("presentation-workload.json"))
+        }
         print("Drum performance report: \(directory.path)/measurements.json")
     }
 
-    private func run(mode: String) async throws -> [PerformanceRecorder.Stage] {
+    private func run(mode: String, sustainedSeconds: Double) async throws -> [PerformanceRecorder.Stage] {
         let domain = "com.welshofer.Drum.Benchmark.\(UUID().uuidString)"
         let defaults = try #require(UserDefaults(suiteName: domain))
         defer { defaults.removePersistentDomain(forName: domain) }
@@ -69,6 +79,7 @@ struct TerminalPerformanceTests {
         window.setContentSize(size)
         window.makeKeyAndOrderFront(nil)
         let recorder = PerformanceRecorder()
+        recorder.recordsPresentationGeometry = sustainedSeconds > 0
         defer {
             recorder.stopClock()
             view.timingObserver = nil
@@ -85,6 +96,7 @@ struct TerminalPerformanceTests {
         window.makeFirstResponder(view)
         view.timingObserver = recorder
         recorder.startClock(window: window)
+        recorder.wobbleEnabled = state.crt.isWobbling
         view.startProcess(executable: "/bin/sh", args: ["-c", "stty -echo -icanon min 1 time 0; printf '\\033[?25l'; exec /bin/cat"],
                           environment: ["TERM=xterm-256color", "LANG=en_US.UTF-8", "PATH=/usr/bin:/bin"])
         let history = (0..<240).map { "Row \($0): abcdefghijklmnopqrstuvwxyz 0123456789 ── ✓\r\n" }.joined()
@@ -101,13 +113,14 @@ struct TerminalPerformanceTests {
             let interval = Self.signposter.beginInterval("Benchmark stage", "\(mode, privacy: .public) / \(workload, privacy: .public)")
             let start = CACurrentMediaTime()
             let cpu = PerformanceRecorder.cpuSeconds
+            repeat {
             switch workload {
             case "idle":
                 try await Task.sleep(for: .milliseconds(800))
             case "typing":
                 for _ in 0..<48 {
                     let before = recorder.paintCount
-                    recorder.inputStarted = CACurrentMediaTime()
+                    recorder.markInput()
                     view.insertText("x", replacementRange: NSRange(location: NSNotFound, length: 0))
                     let deadline = ContinuousClock.now.advanced(by: .seconds(1))
                     while recorder.paintCount == before, ContinuousClock.now < deadline {
@@ -131,6 +144,7 @@ struct TerminalPerformanceTests {
                     try await Task.sleep(for: .milliseconds(16))
                 }
             default:
+                recorder.wobbleEnabled = false // Production suspends wobble while resizing.
                 view.viewWillStartLiveResize()
                 for frame in 0..<90 {
                     let phase = Double(frame % 60) / 30
@@ -140,11 +154,14 @@ struct TerminalPerformanceTests {
                 }
                 view.viewDidEndLiveResize()
                 window.setContentSize(size)
+                recorder.wobbleEnabled = state.crt.isWobbling
             }
+            } while CACurrentMediaTime() - start < sustainedSeconds
             try await Task.sleep(for: .milliseconds(80))
             let wall = CACurrentMediaTime() - start
             recorder.stage?.wallSeconds = wall
             recorder.stage?.processCPUPercent = (PerformanceRecorder.cpuSeconds - cpu) / wall * 100
+            recorder.recordGeometry(force: true)
             results.append(try #require(recorder.stage))
             Self.signposter.endInterval("Benchmark stage", interval)
             recorder.stage = nil
@@ -158,8 +175,7 @@ struct TerminalPerformanceTests {
         let scale: CGFloat
         let stagePixels = [2560, 720]
         let paintEndpoint = "native: AppKit viewWillDraw; CRT: bitmap publication; neither is screen presentation"
-        let resizeMethod = "90 programmatic window resizes with live-resize policy enabled"
+        let resizeMethod: String
         let stages: [PerformanceRecorder.Stage]
     }
 }
-

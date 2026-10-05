@@ -19,6 +19,32 @@ final class PerformanceRecorder: NSObject, TerminalTimingObserver {
         var captureArea: [Double] = []
         var terminalResizeMs: [Double] = []
         var mainThreadTickIntervalsMs: [Double] = []
+        var inputDispatchUptimeSeconds: [Double] = []
+        var geometry: [Geometry] = []
+    }
+
+    /// Window/content pixels and physical display-mode pixels are separate.
+    /// These are attribution metadata, never proof that a frame was presented.
+    struct Geometry: Codable, Equatable {
+        var uptimeSeconds: Double
+        let windowNumber: Int
+        let displayID: UInt32
+        let contentPoints: [Double]
+        let backingPixels: [Double]
+        let displayModePixels: [Int]
+        let backingScale: Double
+        let maximumFramesPerSecond: Int
+        let visible: Bool
+        let wobbleEnabled: Bool
+    }
+
+    struct PresentationWorkload: Encodable {
+        let schemaVersion = 1
+        let runID: UUID
+        let requestedStageSeconds: Double
+        let clock = "mach-absolute-seconds"
+        let presentationStatus = "unverified"
+        let stages: [Stage]
     }
 
     var stage: Stage?
@@ -27,8 +53,12 @@ final class PerformanceRecorder: NSObject, TerminalTimingObserver {
     private(set) var paintCount = 0
     private var link: CADisplayLink?
     private var lastTick: Double?
+    private weak var window: NSWindow?
+    var wobbleEnabled = false
+    var recordsPresentationGeometry = false
 
     func startClock(window: NSWindow) {
+        self.window = window
         let link = window.displayLink(target: self, selector: #selector(tick))
         link.preferredFrameRateRange = CAFrameRateRange(minimum: 60, maximum: 60, preferred: 60)
         link.add(to: .main, forMode: .common)
@@ -43,6 +73,34 @@ final class PerformanceRecorder: NSObject, TerminalTimingObserver {
         lastTick = nil
         inputStarted = nil
         pendingOutput = nil
+        recordGeometry()
+    }
+
+    func markInput() {
+        inputStarted = CACurrentMediaTime()
+        if recordsPresentationGeometry { stage?.inputDispatchUptimeSeconds.append(inputStarted!) }
+    }
+
+    func recordGeometry(force: Bool = false) {
+        guard recordsPresentationGeometry, let window, let content = window.contentView, let screen = window.screen,
+              let display = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber else { return }
+        let pixels = content.convertToBacking(content.bounds).size
+        let mode = CGDisplayCopyDisplayMode(display.uint32Value)
+        let sample = Geometry(uptimeSeconds: CACurrentMediaTime(), windowNumber: window.windowNumber,
+                              displayID: display.uint32Value,
+                              contentPoints: [content.bounds.width, content.bounds.height],
+                              backingPixels: [pixels.width, pixels.height],
+                              displayModePixels: [mode?.pixelWidth ?? 0, mode?.pixelHeight ?? 0],
+                              backingScale: window.backingScaleFactor,
+                              maximumFramesPerSecond: screen.maximumFramesPerSecond,
+                              visible: window.isVisible && window.occlusionState.contains(.visible),
+                              wobbleEnabled: wobbleEnabled)
+        if var prior = stage?.geometry.last {
+            let elapsed = sample.uptimeSeconds - prior.uptimeSeconds
+            prior.uptimeSeconds = sample.uptimeSeconds
+            if !force, prior == sample, elapsed < 0.2 { return }
+        }
+        stage?.geometry.append(sample)
     }
 
     func receivedOutput(start: TimeInterval, end: TimeInterval) {
@@ -79,6 +137,7 @@ final class PerformanceRecorder: NSObject, TerminalTimingObserver {
         let now = CACurrentMediaTime()
         if let lastTick { stage?.mainThreadTickIntervalsMs.append((now - lastTick) * 1000) }
         lastTick = now
+        recordGeometry()
     }
 
     static var cpuSeconds: Double {

@@ -80,6 +80,15 @@ func xctrace(_ arguments: [String]) throws {
     guard process.terminationStatus == 0 else { throw Failure(message: "xctrace \(arguments[0]) failed.") }
 }
 
+func artifacts(_ arguments: [String]) throws {
+    let process = Process()
+    process.executableURL = repo.appendingPathComponent("scripts/benchmark-artifacts.swift")
+    process.arguments = arguments
+    try process.run()
+    process.waitUntilExit()
+    guard process.terminationStatus == 0 else { throw Failure(message: "Benchmark artifact validation failed.") }
+}
+
 func profile() throws {
     let files = FileManager.default
     if let contents = try? files.contentsOfDirectory(atPath: output.path), !contents.isEmpty {
@@ -89,6 +98,11 @@ func profile() throws {
     var environment = ProcessInfo.processInfo.environment
     environment["DRUM_BENCHMARK_WAIT"] = "1"
     environment["DRUM_BENCHMARK_REPETITIONS"] = "1"
+    let presentation = environment["DRUM_PROFILE_PRESENTATION"] == "1"
+    let seconds = Int(environment["DRUM_PRESENTATION_SECONDS"] ?? "30") ?? 0
+    guard !presentation || (30...600).contains(seconds) else {
+        throw Failure(message: "DRUM_PRESENTATION_SECONDS must be 30...600.")
+    }
 
     let name = "com.welshofer.Drum.profile.\(UUID().uuidString)"
     var token: Int32 = 0, flag: Int32 = 0
@@ -102,25 +116,43 @@ func profile() throws {
         children.forEach { $0.stop() }
     }
 
-    let runner = try Child([repo.appendingPathComponent("scripts/benchmark-performance.sh").path, output.path],
-                           log: output.appendingPathComponent("runner.log"), environment: environment)
+    let runnerArguments: [String]
+    if presentation {
+        try artifacts(["start", output.path, "--modes", "crt", "--repetitions", "1"])
+        environment["TEST_RUNNER_DRUM_BENCHMARK_OUTPUT"] = output.path
+        environment["TEST_RUNNER_DRUM_BENCHMARK_WAIT"] = "1"
+        environment["TEST_RUNNER_DRUM_BENCHMARK_MODES"] = "crt"
+        environment["TEST_RUNNER_DRUM_BENCHMARK_REPETITIONS"] = "1"
+        environment["TEST_RUNNER_DRUM_PRESENTATION_SECONDS"] = String(seconds)
+        runnerArguments = ["xcodebuild", "-project", repo.appendingPathComponent("Drum.xcodeproj").path,
+            "-scheme", "Drum", "-configuration", "Release", "-destination", "platform=macOS,arch=arm64",
+            "-derivedDataPath", environment["DRUM_PROFILE_DERIVED_DATA"] ?? output.appendingPathComponent("DerivedData").path,
+            "-skipPackagePluginValidation", "-disableAutomaticPackageResolution", "-onlyUsePackageVersionsFromResolvedFile",
+            "ENABLE_TESTABILITY=YES", "ONLY_ACTIVE_ARCH=YES", "-only-testing:DrumTests/TerminalPerformanceTests", "test"]
+    } else {
+        runnerArguments = [repo.appendingPathComponent("scripts/benchmark-performance.sh").path, output.path]
+    }
+    let runner = try Child(runnerArguments,
+                           log: output.appendingPathComponent(presentation ? "build-test.log" : "runner.log"), environment: environment)
     children.append(runner)
     print("Building isolated benchmark; output: \(output.path)")
     let ready = output.appendingPathComponent("ready")
-    try wait(for: { files.fileExists(atPath: ready.path) }, while: runner, seconds: 300)
+    try wait(for: { files.fileExists(atPath: ready.path) }, while: runner, seconds: 900)
     let pid = try String(contentsOf: ready, encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)
-    let tracePath = output.appendingPathComponent("swiftui.trace").path
-    let trace = try Child(["xcrun", "xctrace", "record", "--template", "SwiftUI", "--instrument", "os_signpost",
-                           "--attach", pid, "--time-limit", "40s", "--notify-tracing-started", name,
+    let tracePath = output.appendingPathComponent(presentation ? "metal.trace" : "swiftui.trace").path
+    let traceSeconds = presentation ? seconds * 5 + 45 : 40
+    let trace = try Child(["xcrun", "xctrace", "record", "--template", presentation ? "Metal System Trace" : "SwiftUI", "--instrument", "os_signpost",
+                           "--attach", pid, "--time-limit", "\(traceSeconds)s", "--notify-tracing-started", name,
                            "--no-prompt", "--output", tracePath],
                           log: output.appendingPathComponent("trace.log"), environment: environment)
     children.append(trace)
     try wait(for: { notify_check(token, &flag); return flag != 0 }, while: trace, seconds: 90)
     files.createFile(atPath: output.appendingPathComponent("start").path, contents: nil)
     print("Recording-start notification received; releasing workloads.")
-    guard try runner.wait(seconds: 240) == 0, try trace.wait(seconds: 240) == 0 else {
+    guard try runner.wait(seconds: Double(traceSeconds + 120)) == 0, try trace.wait(seconds: 120) == 0 else {
         throw Failure(message: "Benchmark or trace failed; inspect runner.log and trace.log.")
     }
+    if presentation { try artifacts(["finish", output.path]) }
 
     let traceLog = try String(contentsOf: output.appendingPathComponent("trace.log"), encoding: .utf8)
     for line in traceLog.split(separator: "\n") where line.contains("[Warning]") { print(line) }
@@ -132,7 +164,9 @@ func profile() throws {
         environment.detach()
     }
     try document.xmlData(options: .nodePrettyPrint).write(to: toc)
-    for schema in ["os-signpost", "hitches", "time-profile"] {
+    // Presentation tracks vary by OS/device. Preserve the local TOC for review;
+    // never rename GPU completion, signposts or display-link callbacks as presents.
+    for schema in presentation ? ["os-signpost"] : ["os-signpost", "hitches", "time-profile"] {
         try xctrace(["export", "--input", tracePath,
                      "--xpath", "/trace-toc/run[@number=\"1\"]/data/table[@schema=\"\(schema)\"]",
                      "--output", output.appendingPathComponent("\(schema).xml").path])

@@ -139,10 +139,12 @@ func checksum(_ url: URL) throws -> String { hex(SHA256.hash(data: try Data(cont
 func sourceDigest() throws -> String {
     var files = ["project.yml"]
     for folder in ["Drum", "DrumTests", "Drum.xcodeproj", "scripts"] {
-        let root = repo.appendingPathComponent(folder)
+        // File enumeration resolves /tmp to /private/tmp on macOS. Use the
+        // same canonical prefix when deriving relative names for provenance.
+        let root = repo.appendingPathComponent(folder).resolvingSymlinksInPath()
         guard let walk = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isRegularFileKey]) else { continue }
         for case let url as URL in walk {
-            let relative = folder + "/" + url.path.dropFirst(root.path.count + 1)
+            let relative = folder + "/" + url.resolvingSymlinksInPath().path.dropFirst(root.path.count + 1)
             let parts = relative.split(separator: "/")
             guard try url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile == true,
                   !parts.contains("xcuserdata"), parts.last != ".DS_Store" else { continue }
@@ -185,8 +187,10 @@ func selectedModes(_ value: String) throws -> [String] {
 func sanitizedReport(_ raw: JSON) throws -> JSON {
     let stagePixels = JSON.array([.int(2560), .int(720)])
     let scale = try number(raw["scale"])
+    let actualResizeMethod = try raw["resizeMethod"].string
     try require(try raw["stagePixels"] == stagePixels && raw["paintEndpoint"].string == endpoint
-                && raw["resizeMethod"].string == resizeMethod && scale.number! > 0, "Unexpected benchmark contract.")
+                && [resizeMethod, "repeated batches of " + resizeMethod].contains(actualResizeMethod ?? "")
+                && scale.number! > 0, "Unexpected benchmark contract.")
     guard let stages = try raw["stages"].array, !stages.isEmpty else { throw Failure(message: "No workload samples.") }
     let clean = try stages.map { stage -> JSON in
         let mode = try stage["mode"], workload = try stage["workload"]
@@ -203,7 +207,7 @@ func sanitizedReport(_ raw: JSON) throws -> JSON {
     return .object([
         "os": try text(raw["os"], matching: #"Version [0-9.]+ \(Build [A-Za-z0-9]+\)"#),
         "scale": scale, "stagePixels": stagePixels, "paintEndpoint": .string(endpoint),
-        "resizeMethod": .string(resizeMethod), "stages": .array(clean),
+        "resizeMethod": .string(actualResizeMethod!), "stages": .array(clean),
     ])
 }
 

@@ -1,0 +1,12 @@
+{
+  "blockers" : [
+    "physical-2560x720-target-panel-not-measured",
+    "no-validated-compositor-or-device-present-track"
+  ],
+  "schemaVersion" : 1,
+  "stages" : [
+
+  ],
+  "status" : "blocked",
+  "workloadSHA256" : "197415a0bb9b92c77e595b67ccf3ee7d41a936c924780c074ddb5b414f3847ee"
+}
