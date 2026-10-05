@@ -1,10 +1,87 @@
 import AppKit
 import QuartzCore
+import SwiftUI
+import SwiftTerm
 import Testing
 @testable import Drum
 
 @Suite(.serialized) @MainActor
 struct TerminalRenderingTests {
+    @Test(arguments: ["A", "界", "e\u{301}"])
+    func blockCursorSnapshotsMatchNativeAndRevealTextWhenOff(character: String) async throws {
+        let view = DrumTerminalView(frame: CGRect(x: 0, y: 0, width: 480, height: 240))
+        TerminalTheme(font: .monospacedSystemFont(ofSize: 14, weight: .regular),
+                      phosphor: .p3Amber).apply(to: view, previous: nil)
+        view.hasFocus = true
+        view.feed(text: "\u{1B}[2 q\u{1B}[1;1H\(character)\u{1B}[1;1H")
+        try await Task.sleep(for: .milliseconds(50))
+        let mirror = TerminalMirror()
+        mirror.updateCaret(from: view)
+        var caret = try #require(mirror.caret)
+        let block = try #require(caret.blockImage)
+        let native = try #require(view.subviews.first { $0.frame == view.caretFrame && $0 is any CALayerDelegate })
+        let layer = try #require(native.layer)
+        let scale = NSScreen.main?.backingScaleFactor ?? 1
+        let context = try #require(CGContext(data: nil, width: block.width, height: block.height,
+                                            bitsPerComponent: 8, bytesPerRow: 0,
+                                            space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
+        context.scaleBy(x: scale, y: scale)
+        // An unattached AppKit layer has no compositor-populated contents.
+        // Snapshot the native drawing entry point directly, independently of
+        // both the mirror's bitmap and SwiftUI's image presentation.
+        let nativeDrawing = try #require(native as? any CALayerDelegate)
+        nativeDrawing.draw?(layer, in: context)
+        let expected = try #require(context.makeImage())
+        #expect(CapturePixels.matches(block, expected, tolerance: 1), "Block must use native glyph layout")
+        #expect(caret.rect.width == view.caretFrame.width)
+        if character == "界" {
+            #expect(caret.rect.width > view.getOptimalFrameSize().width / CGFloat(view.getTerminal().cols) * 1.5)
+        }
+
+        // The terminal bitmap contains the text without the layer-backed caret.
+        let base = try #require(TerminalBitmapStore().capture(view, scale: scale, liveResize: false))
+        caret.rect.origin = .zero
+        let cell = try #require(base.cropping(to: CGRect(x: 0, y: 0, width: block.width, height: block.height)))
+        let on = try cursorSnapshot(caret, base: cell, scale: scale)
+        #expect(CapturePixels.matches(on, expected, tolerance: 1))
+        caret.on = false
+        let off = try cursorSnapshot(caret, base: cell, scale: scale)
+        #expect(CapturePixels.matches(off, cell, tolerance: 1), "Blink-off must reveal the original character")
+        #expect(pixels(on) != pixels(off))
+        let onPixels = pixels(on)
+        let darkPixels = stride(from: 0, to: onPixels.count, by: 4).filter {
+            onPixels[$0] < 40 && onPixels[$0 + 1] < 40 && onPixels[$0 + 2] < 40 && onPixels[$0 + 3] > 250
+        }
+        #expect(!darkPixels.isEmpty, "The focused block must contain contrasting glyph ink")
+    }
+
+    @Test func blockGlyphDoesNotChangeBarUnderlineOrUnfocusedStyles() async throws {
+        let view = DrumTerminalView(frame: CGRect(x: 0, y: 0, width: 480, height: 240))
+        view.feed(text: "A\u{1B}[1;1H")
+        try await Task.sleep(for: .milliseconds(50))
+        let mirror = TerminalMirror()
+        for style in [CursorStyle.steadyBar, .steadyUnderline, .steadyBlock] {
+            for focused in [true, false] {
+                view.hasFocus = focused
+                view.cursorStyleChanged(source: view.getTerminal(), newStyle: style)
+                mirror.updateCaret(from: view)
+                let caret = try #require(mirror.caret)
+                #expect(caret.style == style)
+                #expect(caret.focused == focused)
+                #expect((caret.blockImage != nil) == (focused && style == .steadyBlock))
+            }
+        }
+    }
+
+    private func cursorSnapshot(_ caret: TerminalMirror.Caret, base: CGImage, scale: CGFloat) throws -> CGImage {
+        let content = Image(decorative: base, scale: scale)
+            .overlay(alignment: .topLeading) { CaretOverlay(caret: caret, phosphor: .p3Amber) }
+        let renderer = ImageRenderer(content: content)
+        renderer.scale = scale
+        return try #require(renderer.cgImage)
+    }
+
     @Test func realTerminalPartialCaptureMatchesFullCapture() throws {
         let view = DrumTerminalView(frame: CGRect(x: 0, y: 0, width: 1280, height: 360))
         view.font = .monospacedSystemFont(ofSize: 14, weight: .regular)

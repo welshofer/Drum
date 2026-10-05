@@ -16,7 +16,13 @@ struct CaretOverlay: View {
                 switch caret.style {
                 case .blinkBlock, .steadyBlock:
                     if caret.focused {
-                        Rectangle().fill(color).frame(width: r.width, height: r.height)
+                        if let block = caret.blockImage {
+                            Image(decorative: block, scale: 1)
+                                .resizable().interpolation(.none)
+                                .frame(width: r.width, height: r.height)
+                        } else {
+                            Rectangle().fill(color).frame(width: r.width, height: r.height)
+                        }
                     } else {
                         Rectangle().strokeBorder(color, lineWidth: 1.5).frame(width: r.width, height: r.height)
                     }

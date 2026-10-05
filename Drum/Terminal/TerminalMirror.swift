@@ -16,6 +16,9 @@ final class TerminalMirror {
         var focused: Bool
         var blinks: Bool
         var on = true
+        /// SwiftTerm's own block and contrasting glyph, including font fallback
+        /// and wide/combined characters. Immutable so blinking needs no capture.
+        var blockImage: CGImage?
     }
 
     private(set) var image: CGImage?
@@ -90,10 +93,30 @@ final class TerminalMirror {
                                  width: frame.width, height: frame.height)
             let blinking = view.hasFocus && view.cursorBlinks
             next = Caret(rect: flipped, style: view.cursorStyle, focused: view.hasFocus,
-                         blinks: view.cursorBlinks, on: blinking ? caret?.on ?? true : true)
+                         blinks: view.cursorBlinks, on: blinking ? caret?.on ?? true : true,
+                         blockImage: blockImage(from: view, frame: frame))
         }
         if caret != next { caret = next }
         updateBlink()
+    }
+
+    private func blockImage(from view: DrumTerminalView, frame: CGRect) -> CGImage? {
+        guard view.hasFocus, view.cursorStyle == .blinkBlock || view.cursorStyle == .steadyBlock,
+              let nativeCaret = view.subviews.first(where: {
+                  $0.frame == frame && $0 is any CALayerDelegate
+              }), let layer = nativeCaret.layer,
+              let renderer = nativeCaret as? any CALayerDelegate else { return nil }
+        let scale = view.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 1
+        guard let context = CGContext(data: nil, width: Int(ceil(frame.width * scale)),
+                                      height: Int(ceil(frame.height * scale)), bitsPerComponent: 8,
+                                      bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        context.scaleBy(x: scale, y: scale)
+        // The native caret is the layer-backed child at the public caretFrame.
+        // Invoke its drawing delegate directly: layer opacity belongs to native
+        // blinking, whereas the mirror owns its independent on/off phase.
+        renderer.draw?(layer, in: context)
+        return context.makeImage()
     }
 
     func start(view: DrumTerminalView) {
