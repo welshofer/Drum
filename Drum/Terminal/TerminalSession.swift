@@ -193,7 +193,7 @@ extension TerminalSession: @MainActor LocalProcessTerminalViewDelegate {
         restart?.cancel()
         restart = nil
         guard !isShuttingDown else { return }
-        let status = exitCode.map { "status \($0)" } ?? "signal"
+        let status = TerminalWaitStatus.describe(exitCode)
         let now = Date()
         restarts = restarts.filter { now.timeIntervalSince($0) < Self.restartWindow } + [now]
         guard restarts.count <= Self.maxRestarts else {
