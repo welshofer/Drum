@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		03F8E6BFE2377843B9115571 /* TerminalPointerMap.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35DEAEBE9BFBD71A5144BDF /* TerminalPointerMap.swift */; };
+		0471A39F306F7FF901357058 /* AppearanceProfileDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D5AE7F7AB056A56B02F1D1 /* AppearanceProfileDocument.swift */; };
 		0688C4FFB74219A1164B2B27 /* CapturePixels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78AB83158C4E0C5D1EBC2C96 /* CapturePixels.swift */; };
 		06A9FC95B4E3A34B678AEA3A /* CRTEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDDCCF99C41855DDB1C3C04A /* CRTEffect.swift */; };
 		08C706A246F806E29641B1F2 /* DrumTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F06DF22B4EBE6B9DB5555F6 /* DrumTerminalView.swift */; };
@@ -18,23 +19,31 @@
 		2AAA7DE13D3D23E3712C3D4C /* TerminalAccessibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04E7EA6CF58C1E685891ADE3 /* TerminalAccessibilityTests.swift */; };
 		2C971B3CDE213588DF521F62 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 747DF943371BBD3E7CCFC748 /* AppState.swift */; };
 		2E2F245B973819EC449A4620 /* TerminalBitmapStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19F68692303E291295286F84 /* TerminalBitmapStore.swift */; };
+		352BBFBD09C874ACD6C1CF87 /* AppearanceProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE2F3126A8BBCD9C50526515 /* AppearanceProfileTests.swift */; };
 		36317E8C8031546F5A5961C1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 25D82A4A12C293B40B404FD3 /* Assets.xcassets */; };
 		379A40F5C42986DDF2B950ED /* TerminalLinkPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4B3B74E379E7C05CCEF8503 /* TerminalLinkPolicy.swift */; };
 		446C0F63D4A976932B39CE1A /* CRTSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */; };
+		4D00087BA854DB0BCE364A5C /* TerminalColourMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A52090DA9E29A1851FB4745E /* TerminalColourMode.swift */; };
 		51257DA75B8EE3FAE5000AB0 /* SoundSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6472B824B16A45704FAFFBB7 /* SoundSettingsView.swift */; };
 		537A0F7A2FB64D7646E1F880 /* SoundSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AA686926331863EB06E336 /* SoundSettings.swift */; };
+		54AA9E66998490AECD331CF9 /* TerminalColourTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A981E2FCBB072F07D05A34F2 /* TerminalColourTests.swift */; };
 		568B16BD86F01A53CF6104F6 /* TerminalPointerMapTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A329FA32AD28C370488A54C /* TerminalPointerMapTests.swift */; };
 		5C496ED8AEC10DFE41340582 /* GlowOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97FACE56781368683A16578A /* GlowOverlay.swift */; };
 		5CF456B050321D25EAA0DD77 /* TerminalTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB727BA4B95527ACB94E8A6A /* TerminalTheme.swift */; };
+		5DC4D0F7369097AB74FE2EB6 /* AppState+Profiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4819DAC56ABF9E4CAFE2149F /* AppState+Profiles.swift */; };
 		5FE30B17EBFC511ED7B1ECF0 /* TerminalMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FB24532029BB0647127F80 /* TerminalMirror.swift */; };
 		64EA5DC06DBC1FF2B8B60727 /* TerminalPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABFC936C58B25505D8F3EC29 /* TerminalPerformanceTests.swift */; };
 		64F15C0A9B1D9F523A91BD80 /* TerminalCompositionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F668B35FDED190F0F662443 /* TerminalCompositionTests.swift */; };
 		669CCA1F8BF66A47453A8BF1 /* PerformanceRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94CDB6AEA3ED1D91E8F8915 /* PerformanceRecorder.swift */; };
 		70654D79A9DB50C8DF163D1A /* TerminalWorkingDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 466C956081493536089493E0 /* TerminalWorkingDirectory.swift */; };
+		712E659C2D85A8E2E707A733 /* TerminalZoomTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DDF1C1CAFE2B0D97D3F4332 /* TerminalZoomTests.swift */; };
 		73046398286848B78A81A230 /* Phosphor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74F1102829627292C86D5A8 /* Phosphor.swift */; };
 		7C837ACB447D00F1E88E6E99 /* TerminalWaitStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1747C39D59B261C0000920A6 /* TerminalWaitStatusTests.swift */; };
+		7D7FA10D35648AF2DA5A9082 /* AppearanceProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C9E7AC853E40D7E1680BC9 /* AppearanceProfile.swift */; };
+		7DDBF9D6F211FE26C0A9B6EB /* TerminalView+Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BAC71681E2F48662EC68EA4 /* TerminalView+Appearance.swift */; };
 		82DBD2066DCB5D6CD4C44C2E /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F44209C7A12A5E2F6F974DE /* RootView.swift */; };
 		836B74AD7280BB37E6CDC2B0 /* TerminalClipboardPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44AEBF8A595BB98DF3453745 /* TerminalClipboardPolicyTests.swift */; };
+		8C486D4FDBC7FEA96DCB213B /* AppearanceProfilesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6467724708E4C263B955A6A7 /* AppearanceProfilesView.swift */; };
 		8D1E247201E9C2A21F5F9510 /* TerminalBitmapStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B014EED89B83BF5298D62150 /* TerminalBitmapStoreTests.swift */; };
 		8D4B0D8FC326433846DF22A5 /* TerminalSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97DB553DC0E154BE11A02DF7 /* TerminalSettingsView.swift */; };
 		97E7906EADBDA4B06D19BDEC /* TerminalLinkPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97D4E98D375B2622DC52060B /* TerminalLinkPolicyTests.swift */; };
@@ -45,6 +54,7 @@
 		AED29E1B3EA91753AE55DD0F /* AccessibleTerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EF6F957A46F4FC4C5C71ABA /* AccessibleTerminalView.swift */; };
 		B2897CE7B0196DDF55B8FB06 /* CRTSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */; };
 		B4151D451F9F2AACABF6B826 /* CRT.metal in Sources */ = {isa = PBXBuildFile; fileRef = E4CA29FC8047D53A3AE400D6 /* CRT.metal */; };
+		B647C55ABDF3BD562CD73C9D /* ProfileValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB6388C81B42EB5A956B2E3 /* ProfileValidation.swift */; };
 		BD677F6C1E849E541A0F67B0 /* TerminalDisplayClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8944107738B5D9CC9D0C141 /* TerminalDisplayClock.swift */; };
 		C7DB08944A9C87C572D25BD5 /* TerminalDisplayClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74C52B521CCE5F50AB072CBB /* TerminalDisplayClockTests.swift */; };
 		C84F3FF14B01E9E009A2A2FF /* TerminalWaitStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05D5E0319E19308C036532B9 /* TerminalWaitStatus.swift */; };
@@ -86,11 +96,14 @@
 		44AEBF8A595BB98DF3453745 /* TerminalClipboardPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalClipboardPolicyTests.swift; sourceTree = "<group>"; };
 		44B043D74DF45B0F38B4DBE6 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Drum/Resources/Fonts; sourceTree = SOURCE_ROOT; };
 		466C956081493536089493E0 /* TerminalWorkingDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalWorkingDirectory.swift; sourceTree = "<group>"; };
+		4819DAC56ABF9E4CAFE2149F /* AppState+Profiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppState+Profiles.swift"; sourceTree = "<group>"; };
+		4BAC71681E2F48662EC68EA4 /* TerminalView+Appearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TerminalView+Appearance.swift"; sourceTree = "<group>"; };
 		4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTSettingsTests.swift; sourceTree = "<group>"; };
 		4F9318F68A3E30A8C403C0E4 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
 		51AA686926331863EB06E336 /* SoundSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundSettings.swift; sourceTree = "<group>"; };
 		5D708C981AE7BC5A6E4DA308 /* CaretOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaretOverlay.swift; sourceTree = "<group>"; };
 		603F1F5A4AE5F61C0616C348 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		6467724708E4C263B955A6A7 /* AppearanceProfilesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceProfilesView.swift; sourceTree = "<group>"; };
 		6472B824B16A45704FAFFBB7 /* SoundSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundSettingsView.swift; sourceTree = "<group>"; };
 		65745C7122D59DC4E912004B /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6660E4857C7768B8B9B5087C /* TerminalRenderingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalRenderingTests.swift; sourceTree = "<group>"; };
@@ -99,6 +112,7 @@
 		74C52B521CCE5F50AB072CBB /* TerminalDisplayClockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalDisplayClockTests.swift; sourceTree = "<group>"; };
 		78AB83158C4E0C5D1EBC2C96 /* CapturePixels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePixels.swift; sourceTree = "<group>"; };
 		7A329FA32AD28C370488A54C /* TerminalPointerMapTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalPointerMapTests.swift; sourceTree = "<group>"; };
+		7DDF1C1CAFE2B0D97D3F4332 /* TerminalZoomTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalZoomTests.swift; sourceTree = "<group>"; };
 		7F668B35FDED190F0F662443 /* TerminalCompositionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalCompositionTests.swift; sourceTree = "<group>"; };
 		887F477326D6B440E24544FD /* DrumApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumApp.swift; sourceTree = "<group>"; };
 		89C45E5949E719ACE37A77CD /* TerminalClipboardPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalClipboardPolicy.swift; sourceTree = "<group>"; };
@@ -108,8 +122,10 @@
 		97FACE56781368683A16578A /* GlowOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlowOverlay.swift; sourceTree = "<group>"; };
 		9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTSettings.swift; sourceTree = "<group>"; };
 		9D65ED5466F06CB5F39D77B8 /* TerminalSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSessionTests.swift; sourceTree = "<group>"; };
+		A52090DA9E29A1851FB4745E /* TerminalColourMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalColourMode.swift; sourceTree = "<group>"; };
 		A74F1102829627292C86D5A8 /* Phosphor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phosphor.swift; sourceTree = "<group>"; };
 		A8944107738B5D9CC9D0C141 /* TerminalDisplayClock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalDisplayClock.swift; sourceTree = "<group>"; };
+		A981E2FCBB072F07D05A34F2 /* TerminalColourTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalColourTests.swift; sourceTree = "<group>"; };
 		ABFC936C58B25505D8F3EC29 /* TerminalPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalPerformanceTests.swift; sourceTree = "<group>"; };
 		B014EED89B83BF5298D62150 /* TerminalBitmapStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalBitmapStoreTests.swift; sourceTree = "<group>"; };
 		B2AC3FB75F0CD8C85278CC9B /* TerminalTimingObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTimingObserver.swift; sourceTree = "<group>"; };
@@ -118,9 +134,13 @@
 		BB48E4A9F1A05F3CF70E0239 /* DrumBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumBundle.swift; sourceTree = "<group>"; };
 		BB727BA4B95527ACB94E8A6A /* TerminalTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalTheme.swift; sourceTree = "<group>"; };
 		BDDCCF99C41855DDB1C3C04A /* CRTEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTEffect.swift; sourceTree = "<group>"; };
+		BE2F3126A8BBCD9C50526515 /* AppearanceProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceProfileTests.swift; sourceTree = "<group>"; };
+		CAB6388C81B42EB5A956B2E3 /* ProfileValidation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileValidation.swift; sourceTree = "<group>"; };
 		CAC14DB92F7536C885C7FF80 /* TerminalAudioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalAudioTests.swift; sourceTree = "<group>"; };
+		D7C9E7AC853E40D7E1680BC9 /* AppearanceProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceProfile.swift; sourceTree = "<group>"; };
 		DB1C43E7C928ED4D70DA96E9 /* TerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalView.swift; sourceTree = "<group>"; };
 		E4CA29FC8047D53A3AE400D6 /* CRT.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = CRT.metal; sourceTree = "<group>"; };
+		E7D5AE7F7AB056A56B02F1D1 /* AppearanceProfileDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceProfileDocument.swift; sourceTree = "<group>"; };
 		E94CDB6AEA3ED1D91E8F8915 /* PerformanceRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceRecorder.swift; sourceTree = "<group>"; };
 		ECFF325C9146CFD21D30096A /* TerminalAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalAudio.swift; sourceTree = "<group>"; };
 		EFF6B158ADD605F81D92383B /* RootReducedMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootReducedMotionTests.swift; sourceTree = "<group>"; };
@@ -150,6 +170,7 @@
 				9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */,
 				A74F1102829627292C86D5A8 /* Phosphor.swift */,
 				31ACC088B79255497356FE35 /* PowerOnTransition.swift */,
+				A52090DA9E29A1851FB4745E /* TerminalColourMode.swift */,
 			);
 			path = CRT;
 			sourceTree = "<group>";
@@ -192,6 +213,7 @@
 				BB727BA4B95527ACB94E8A6A /* TerminalTheme.swift */,
 				B2AC3FB75F0CD8C85278CC9B /* TerminalTimingObserver.swift */,
 				DB1C43E7C928ED4D70DA96E9 /* TerminalView.swift */,
+				4BAC71681E2F48662EC68EA4 /* TerminalView+Appearance.swift */,
 				05D5E0319E19308C036532B9 /* TerminalWaitStatus.swift */,
 				466C956081493536089493E0 /* TerminalWorkingDirectory.swift */,
 			);
@@ -212,6 +234,11 @@
 		ABCC7444728F544214B8F645 /* Settings */ = {
 			isa = PBXGroup;
 			children = (
+				D7C9E7AC853E40D7E1680BC9 /* AppearanceProfile.swift */,
+				E7D5AE7F7AB056A56B02F1D1 /* AppearanceProfileDocument.swift */,
+				6467724708E4C263B955A6A7 /* AppearanceProfilesView.swift */,
+				4819DAC56ABF9E4CAFE2149F /* AppState+Profiles.swift */,
+				CAB6388C81B42EB5A956B2E3 /* ProfileValidation.swift */,
 				65745C7122D59DC4E912004B /* SettingsView.swift */,
 				6472B824B16A45704FAFFBB7 /* SoundSettingsView.swift */,
 				97DB553DC0E154BE11A02DF7 /* TerminalSettingsView.swift */,
@@ -222,6 +249,7 @@
 		C12E228BF6CA79D46F99D7F1 /* DrumTests */ = {
 			isa = PBXGroup;
 			children = (
+				BE2F3126A8BBCD9C50526515 /* AppearanceProfileTests.swift */,
 				78AB83158C4E0C5D1EBC2C96 /* CapturePixels.swift */,
 				4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */,
 				E94CDB6AEA3ED1D91E8F8915 /* PerformanceRecorder.swift */,
@@ -230,6 +258,7 @@
 				CAC14DB92F7536C885C7FF80 /* TerminalAudioTests.swift */,
 				B014EED89B83BF5298D62150 /* TerminalBitmapStoreTests.swift */,
 				44AEBF8A595BB98DF3453745 /* TerminalClipboardPolicyTests.swift */,
+				A981E2FCBB072F07D05A34F2 /* TerminalColourTests.swift */,
 				7F668B35FDED190F0F662443 /* TerminalCompositionTests.swift */,
 				74C52B521CCE5F50AB072CBB /* TerminalDisplayClockTests.swift */,
 				97D4E98D375B2622DC52060B /* TerminalLinkPolicyTests.swift */,
@@ -239,6 +268,7 @@
 				9D65ED5466F06CB5F39D77B8 /* TerminalSessionTests.swift */,
 				304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */,
 				1747C39D59B261C0000920A6 /* TerminalWaitStatusTests.swift */,
+				7DDF1C1CAFE2B0D97D3F4332 /* TerminalZoomTests.swift */,
 			);
 			path = DrumTests;
 			sourceTree = "<group>";
@@ -375,6 +405,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				352BBFBD09C874ACD6C1CF87 /* AppearanceProfileTests.swift in Sources */,
 				446C0F63D4A976932B39CE1A /* CRTSettingsTests.swift in Sources */,
 				0688C4FFB74219A1164B2B27 /* CapturePixels.swift in Sources */,
 				669CCA1F8BF66A47453A8BF1 /* PerformanceRecorder.swift in Sources */,
@@ -383,6 +414,7 @@
 				206356300CC5209CA8252CBE /* TerminalAudioTests.swift in Sources */,
 				8D1E247201E9C2A21F5F9510 /* TerminalBitmapStoreTests.swift in Sources */,
 				836B74AD7280BB37E6CDC2B0 /* TerminalClipboardPolicyTests.swift in Sources */,
+				54AA9E66998490AECD331CF9 /* TerminalColourTests.swift in Sources */,
 				64F15C0A9B1D9F523A91BD80 /* TerminalCompositionTests.swift in Sources */,
 				C7DB08944A9C87C572D25BD5 /* TerminalDisplayClockTests.swift in Sources */,
 				97E7906EADBDA4B06D19BDEC /* TerminalLinkPolicyTests.swift in Sources */,
@@ -392,6 +424,7 @@
 				D6A16ED76E38947E4AC3E921 /* TerminalSessionTests.swift in Sources */,
 				D1F44AC2CF9BCEE2F2A66483 /* TerminalThemeTests.swift in Sources */,
 				7C837ACB447D00F1E88E6E99 /* TerminalWaitStatusTests.swift in Sources */,
+				712E659C2D85A8E2E707A733 /* TerminalZoomTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -400,7 +433,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				AED29E1B3EA91753AE55DD0F /* AccessibleTerminalView.swift in Sources */,
+				5DC4D0F7369097AB74FE2EB6 /* AppState+Profiles.swift in Sources */,
 				2C971B3CDE213588DF521F62 /* AppState.swift in Sources */,
+				7D7FA10D35648AF2DA5A9082 /* AppearanceProfile.swift in Sources */,
+				0471A39F306F7FF901357058 /* AppearanceProfileDocument.swift in Sources */,
+				8C486D4FDBC7FEA96DCB213B /* AppearanceProfilesView.swift in Sources */,
 				B4151D451F9F2AACABF6B826 /* CRT.metal in Sources */,
 				06A9FC95B4E3A34B678AEA3A /* CRTEffect.swift in Sources */,
 				B2897CE7B0196DDF55B8FB06 /* CRTSettings.swift in Sources */,
@@ -411,6 +448,7 @@
 				5C496ED8AEC10DFE41340582 /* GlowOverlay.swift in Sources */,
 				73046398286848B78A81A230 /* Phosphor.swift in Sources */,
 				22D0C6DEA485D4BB681C3433 /* PowerOnTransition.swift in Sources */,
+				B647C55ABDF3BD562CD73C9D /* ProfileValidation.swift in Sources */,
 				82DBD2066DCB5D6CD4C44C2E /* RootView.swift in Sources */,
 				9A6FB943B167EAFAC0AB1203 /* SettingsView.swift in Sources */,
 				A207CCB3E2457F5B43BF1A8C /* SoundPlayback.swift in Sources */,
@@ -421,6 +459,7 @@
 				DB5E21381B0B13C3F0509602 /* TerminalAudio.swift in Sources */,
 				2E2F245B973819EC449A4620 /* TerminalBitmapStore.swift in Sources */,
 				C8947602B8DCF75E52C8EBED /* TerminalClipboardPolicy.swift in Sources */,
+				4D00087BA854DB0BCE364A5C /* TerminalColourMode.swift in Sources */,
 				BD677F6C1E849E541A0F67B0 /* TerminalDisplayClock.swift in Sources */,
 				379A40F5C42986DDF2B950ED /* TerminalLinkPolicy.swift in Sources */,
 				5FE30B17EBFC511ED7B1ECF0 /* TerminalMirror.swift in Sources */,
@@ -429,6 +468,7 @@
 				8D4B0D8FC326433846DF22A5 /* TerminalSettingsView.swift in Sources */,
 				5CF456B050321D25EAA0DD77 /* TerminalTheme.swift in Sources */,
 				D379F7D72436E9ABBC2EC661 /* TerminalTimingObserver.swift in Sources */,
+				7DDBF9D6F211FE26C0A9B6EB /* TerminalView+Appearance.swift in Sources */,
 				29C931A58EFC16687F38F9B9 /* TerminalView.swift in Sources */,
 				C84F3FF14B01E9E009A2A2FF /* TerminalWaitStatus.swift in Sources */,
 				70654D79A9DB50C8DF163D1A /* TerminalWorkingDirectory.swift in Sources */,

@@ -5,6 +5,7 @@ struct SettingsView: View {
     var body: some View {
         TabView {
             Tab("Appearance", systemImage: "display") { AppearanceSettingsView() }
+            Tab("Profiles", systemImage: "rectangle.stack") { AppearanceProfilesView() }
             Tab("Sound", systemImage: "speaker.wave.2") { SoundSettingsView() }
             Tab("Terminal", systemImage: "terminal") { TerminalSettingsView() }
         }
@@ -19,6 +20,11 @@ private struct AppearanceSettingsView: View {
         @Bindable var state = state
         Form {
             Section("Phosphor") {
+                Picker("Colour mode", selection: $state.crt.colourMode) {
+                    ForEach(TerminalColourMode.allCases) { mode in
+                        Text(mode.title).tag(mode)
+                    }
+                }
                 Picker("Preset", selection: Binding(
                     get: { state.preset },
                     set: { state.select($0) })) {
@@ -44,7 +50,7 @@ private struct AppearanceSettingsView: View {
                 Text("Tube")
             } footer: {
                 if !state.crt.enabled {
-                    Text("Bloom and tube effects resume when CRT is on. Font and phosphor colour remain active.")
+                    Text("Bloom and tube effects resume when CRT is on. Font, phosphor colour, and colour mode remain active.")
                 }
             }
 
@@ -78,8 +84,10 @@ struct CRTSlidersView: View {
         LabeledSlider("Bezel radius", value: $crt.bezelCornerRadius, in: 0...120, format: "%.0f pt")
         Button("Reset tube to defaults") {
             let phosphor = crt.phosphor
+            let mode = crt.colourMode
             crt = CRTSettings()
             crt.phosphor = phosphor
+            crt.colourMode = mode
         }
     }
 }

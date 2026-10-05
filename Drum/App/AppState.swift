@@ -45,6 +45,7 @@ final class AppState {
     var preset: PhosphorPreset { didSet { store.save(preset, for: .preset) } }
     var font: TerminalFontChoice { didSet { store.save(font, for: .font) } }
     var fontSize: Double { didSet { store.save(fontSize, for: .fontSize) } }
+    private(set) var userProfiles: [AppearanceProfile] { didSet { store.save(userProfiles, for: .profiles) } }
 
     var sound: SoundSettings {
         didSet {
@@ -68,6 +69,10 @@ final class AppState {
         self.audio = audio
         let store = SettingsStore(defaults: defaults)
         self.store = store
+        var seen = Set<String>()
+        userProfiles = (store.load([AppearanceProfile].self, for: .profiles) ?? [])
+            .filter { UUID(uuidString: $0.id) != nil && (try? ProfileValidation.name($0.name)) != nil && seen.insert($0.id).inserted }
+            .prefix(AppearanceProfile.maximumCount).map { $0 }
         sound = store.load(SoundSettings.self, for: .sound) ?? SoundSettings()
         let appearance = store.loadAppearance()
         crt = appearance.crt
@@ -106,6 +111,25 @@ final class AppState {
         fontSize = font.defaultSize
     }
 
+    func zoomFont(by points: Double) {
+        guard points.isFinite else { return }
+        fontSize = min(max(font.normalizedSize(fontSize) + points, 8), 48)
+    }
+
+    func resetFontZoom() {
+        fontSize = font.defaultSize
+    }
+
+    func addUserProfile(_ profile: AppearanceProfile) throws -> AppearanceProfile {
+        guard userProfiles.count < AppearanceProfile.maximumCount else { throw ProfileError.tooMany }
+        userProfiles.append(profile)
+        return profile
+    }
+
+    func removeAppearance(id: String) {
+        userProfiles.removeAll { $0.id == id }
+    }
+
     // MARK: Power
 
     func powerOn() {
@@ -137,7 +161,7 @@ final class AppState {
 struct SettingsStore {
     /// Keep this key stable when adding fields (CRTSettings supplies defaults).
     /// Tuning changes need a selective migration, preserving colour and edits.
-    enum Key: String { case crt = "crt.v3", preset, font, fontSize, sound = "sound.v1" }
+    enum Key: String { case crt = "crt.v3", preset, font, fontSize, sound = "sound.v1", profiles = "profiles.v1" }
 
     let defaults: UserDefaults
 

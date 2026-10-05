@@ -59,13 +59,12 @@ struct TerminalTheme: Equatable {
         }
     }
 
-    /// Font changes rebuild metrics and resize (SwiftTerm soft-resets modes and
-    /// clears selection). Mode-only colour changes install a palette without
-    /// touching the font or that resize path.
+    /// Rebuild font metrics without SwiftTerm's font-resize soft reset. Font
+    /// geometry changes still clear selection. Colour-only changes retain it.
     @MainActor
     func apply(to view: SwiftTerm.TerminalView, previous: TerminalTheme?) {
         if previous?.font != font {
-            view.font = font
+            view.setAppearanceFont(font)
         }
         if previous?.phosphor != phosphor {
             view.nativeForegroundColor = foreground

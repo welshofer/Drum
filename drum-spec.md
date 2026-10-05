@@ -10,12 +10,13 @@ Current product specification, reconciled 2026-10-05. Native macOS 26 terminal a
 
 - A real terminal emulator: PTY running the user's login shell, full VT100/xterm, resize, copy/paste and scrollback, provided by SwiftTerm.
 - CRT curvature, sync wobble, bloom, scanlines, aperture grille, vignette and power-on flyback.
-- Phosphor presets (amber, green, white and custom colour), live visual controls and bundled bitmap-era fonts.
+- Phosphor presets (amber, green, white and custom colour), optional colour-preserving CRT, live visual controls and bundled bitmap-era fonts.
+- Complete factory/user appearance profiles with versioned JSON import/export, plus View-menu font zoom and reset.
 - One ordinary resizable window with a standard title bar; the user can maximise it on the desired display. No display pinning, borderless mode or screen picker.
 - Direct native terminal rendering when CRT is disabled.
 - Optional boot tone, parsed terminal bell, key clicks, flyback whine and hum, each with volume and finite preview controls. All sounds default off; see [sound behavior and fidelity](docs/sound.md).
 
-**Out (v1):** tabs, split panes, profiles, ligatures and GPU-side true persistence. True persistence remains a conditional future phase (§5.1), not a commitment to implement it now.
+**Out (v1):** tabs, split panes, ligatures and GPU-side true persistence. True persistence remains a conditional future phase (§5.1), not a commitment to implement it now.
 
 ## 2. Architecture
 
@@ -44,7 +45,9 @@ The native input view exposes one read-only accessibility text surface in both r
 
 **Fonts:** Glass TTY VT220 and IBM VGA 8×16 are bundled with their licenses. Preserve [CREDITS.md](CREDITS.md) and the adjacent license files. Register fonts through the bundle; keep a usable monospace fallback. Default font sizes and names live in AppState and TerminalTheme.
 
-**Colours:** foreground follows the phosphor; background is black. ANSI colours map to phosphor brightness steps. The CRT mask also converts arbitrary input colours, including true-colour escapes, into the selected phosphor. Clamp colour components before integer palette conversion. Theme colour changes should not reassign the font and reset terminal state.
+**Colours:** foreground follows the phosphor; background is black. Monochrome remains the default: ANSI colours map to phosphor brightness steps, and the CRT mask converts arbitrary input colours, including true-colour escapes, into the selected phosphor. Preserve Colours uses SwiftTerm's ANSI hues and retains RGB through bloom and mask. Both modes keep scanlines, grille, vignette, brightness and curvature. Clamp colour components before integer palette conversion. Colour-only changes must preserve selection and terminal state.
+
+**Font zoom:** View → Increase/Decrease/Reset Font Size uses ⌘+/⌘−/⌘0, stays within 8–48 pt, and persists the current size. Reset uses the selected face's recommended size. Font changes resize the existing terminal and PTY without DECSTR; geometry changes may reflow text and clear selection. The pinned SwiftTerm adapter is documented in `TerminalView+Appearance.swift` and covered by live-process/mode tests.
 
 ## 3. Window
 
@@ -57,10 +60,10 @@ Read `@Environment(\.displayScale)` at render time and pass the current scale in
 [CRT.metal](Drum/CRT/CRT.metal) is the maintained shader source; use it instead of the archived starter code. The corresponding Swift arguments live in [CRTEffect.swift](Drum/CRT/CRTEffect.swift) and [PowerOnTransition.swift](Drum/CRT/PowerOnTransition.swift).
 
 - Barrel maps output position to source position. It curves axes separately so a wide tube can look more cylindrical; keep curvature small enough for useful input targeting.
-- Bloom samples two rings, tints luminance and adds it to the text. Normal bloom uses 33 samples including the base; live resize temporarily uses 17. A zero-strength bloom bypasses its effect. Keep `maxSampleOffset` at least the sampling radius.
-- Mask applies scanlines at a two-device-pixel period, aperture grille, vignette and brightness. Current scanlines use device-row sampling; the archived cosine example produced incorrect pixel-centred samples. The mask produces monochrome phosphor output from every input colour.
+- Bloom samples two rings and adds glow to the text. Monochrome tints the sampled luminance; Preserve Colours adds sampled RGB. Normal bloom uses 33 samples including the base; live resize temporarily uses 17. A zero-strength bloom bypasses its effect. Keep `maxSampleOffset` at least the sampling radius.
+- Mask applies scanlines at a two-device-pixel period, aperture grille, vignette and brightness. Current scanlines use device-row sampling; the archived cosine example produced incorrect pixel-centred samples. The default mask produces monochrome phosphor output; Preserve Colours retains the input RGB.
 - Flyback produces the line/dot and fade used by power transitions.
-- Barrel, mask and flyback accept `.boundingRect` as `float4 bounds`, with `bounds.zw` providing size. Bloom receives radius, strength and tint, without bounds. Match argument types and order at both sides of each SwiftUI call.
+- Barrel, mask and flyback accept `.boundingRect` as `float4 bounds`, with `bounds.zw` providing size. Bloom receives radius, strength, tint and colour mode, without bounds; mask also receives colour mode after its phosphor argument. Match argument types and order at both sides of each SwiftUI call.
 
 Keep current defaults in CRTSettings and Phosphor. The original tuning ranges and formulas are preserved in the historical archive, but they are not instructions to reset existing settings. Wide-panel tuning uses less horizontal curvature; verify readability at the real size rather than copying old constants. Wrap time before narrowing to Float so the wobble retains sub-frame precision.
 
@@ -90,7 +93,9 @@ Ordinary quit uses cancel → power-off → terminate again because `.terminateL
 
 ## 7. Settings
 
-Settings are live, with no Apply button. Appearance contains phosphor preset/custom colour, bloom, brightness, curvature, wobble, scanline, grille, vignette and bezel controls, plus CRT/animation toggles and font/size. Disabling animation stops continuous wobble; necessary input-driven drawing still occurs. Backing scale and transient resize quality come from runtime state, not a user slider.
+Appearance settings are live. Appearance contains colour mode, phosphor preset/custom colour, bloom, brightness, curvature, wobble, scanline, grille, vignette and bezel controls, plus CRT/animation toggles and font/size. Disabling animation stops continuous wobble; necessary input-driven drawing still occurs. Backing scale and transient resize quality come from runtime state, not a user slider.
+
+Profiles provides Vintage Amber, Green Screen, Cool White and Daily Driver factory appearances, plus named user profiles. Apply Profile explicitly replaces appearance settings and keeps the current shell and sound settings. Save Current Appearance creates a separate user profile; factory profiles cannot be removed. JSON interchange uses `drum.appearance` version 1, excludes runtime scale, sound and shell settings, rejects invalid tuning/names/unsupported versions, and falls back to system monospace for unknown font IDs. Files are limited to 64 KB and storage to 64 user profiles. Import adds a profile without applying it or overwriting existing records. The OS file exporter handles destination/overwrite selection.
 
 The motion toggle is labelled **Sync wobble** and makes no presentation-FPS promise. CRT-off disables effect-only bloom/tube controls with an explanation; font and phosphor colour remain usable and stored tuning survives the mode switch.
 

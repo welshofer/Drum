@@ -17,6 +17,16 @@ struct DrumApp: App {
         .windowResizability(.contentMinSize)
         .commands {
             CommandGroup(replacing: .newItem) {}
+            CommandGroup(after: .toolbar) {
+                Button("Increase Font Size") { delegate.state.zoomFont(by: 1) }
+                    .keyboardShortcut("+", modifiers: .command)
+                    .disabled(delegate.state.fontSize >= 48)
+                Button("Decrease Font Size") { delegate.state.zoomFont(by: -1) }
+                    .keyboardShortcut("-", modifiers: .command)
+                    .disabled(delegate.state.fontSize <= 8)
+                Button("Reset Font Size") { delegate.state.resetFontZoom() }
+                    .keyboardShortcut("0", modifiers: .command)
+            }
             CommandMenu("Tube") {
                 Button("Power Cycle") { delegate.state.cyclePower() }
                     .keyboardShortcut("r", modifiers: .command)
