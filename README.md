@@ -4,6 +4,8 @@
 
 A terminal for macOS with a fondness for glowing phosphors, curved glass, and the sound of old hardware.
 
+![Drum running btop with green phosphor CRT effects](docs/images/terminal.png)
+
 Drum pays homage to **Cathode**, the old macOS terminal app from Secret Geometry that is no longer available. Cathode made a terminal feel like a piece of living, slightly temperamental hardware. Drum isn't as cool as Cathode, but it's a start.
 
 Cathode's original description put it beautifully:

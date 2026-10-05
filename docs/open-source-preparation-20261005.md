@@ -20,10 +20,10 @@ visibility change, release upload, or notarization was performed.
 - Portable documentation links, including pinned upstream links in place of
   local SwiftTerm checkout paths. Historical raw evidence remains local-path
   text where appropriate; old findings and acceptance status are unchanged.
-- Three original supplied settings screenshots: Appearance, Profiles and Sound.
-  The terminal screenshot was not added because it shows local usernames,
-  process paths and a private LAN address. The second Sound image was omitted
-  as redundant. No screenshot pixels were edited or generated.
+- Four original supplied screenshots: the terminal screenshot as the README's
+  lead image, as requested by the owner, plus Appearance, Profiles and Sound.
+  The second Sound image was omitted as redundant. No screenshot pixels were
+  edited or generated.
 
 ## Verification
 
@@ -51,8 +51,10 @@ Logs stay local at `/tmp/drum-publication-debug-build.log` and
 In both Debug and Release app bundles, byte comparisons confirmed `LICENSE`,
 `CREDITS.md`, `THIRD_PARTY_NOTICES.md`, and the two font license files match their
 source files. The reproduced SwiftTerm notice also matches its exact pinned
-upstream license byte-for-byte. 142 rendered local Markdown/HTML link and asset
-targets in the affected/linked documents exist. Git diff checks pass.
+upstream license byte-for-byte. After adding the terminal screenshot, 143 rendered
+local Markdown/HTML link and asset targets in the affected/linked documents
+exist. A byte comparison confirms the terminal image matches the supplied PNG
+exactly. Git diff checks pass.
 
 No executable Swift or Metal source changed. The full functional regression
 suite was not rerun for these documentation/resource changes; its preceding
