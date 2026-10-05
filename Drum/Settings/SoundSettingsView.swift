@@ -47,15 +47,26 @@ private struct SoundSettingsRow: View {
     @Binding var option: SoundOption
     @Environment(AppState.self) private var state
 
+    private var isPreviewing: Bool { state.audio.previewingSound == sound }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Toggle(sound.title, isOn: $option.enabled)
                 Spacer()
-                Button("Preview", systemImage: "speaker.wave.2") { state.audio.preview(sound) }
+                if isPreviewing {
+                    Text("Playing")
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                }
+                Button(isPreviewing ? "Stop" : "Preview",
+                       systemImage: isPreviewing ? "stop.fill" : "speaker.wave.2") {
+                    if isPreviewing { state.audio.stopPreview() } else { state.audio.preview(sound) }
+                }
                     .labelStyle(.iconOnly)
-                    .accessibilityLabel("Preview \(sound.title.lowercased())")
-                    .help("Preview \(sound.title.lowercased())")
+                    .accessibilityLabel("\(isPreviewing ? "Stop preview of" : "Preview") \(sound.title.lowercased())")
+                    .accessibilityValue(isPreviewing ? "Playing" : "Stopped")
+                    .help("\(isPreviewing ? "Stop preview of" : "Preview") \(sound.title.lowercased())")
             }
             HStack {
                 Slider(value: $option.volume, in: 0...1) { Text("Volume") }

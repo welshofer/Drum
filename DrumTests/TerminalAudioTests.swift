@@ -63,17 +63,80 @@ struct TerminalAudioTests {
         audio.setActive(true)
         audio.setPoweredOn(true)
         audio.preview(.hum)
+        #expect(audio.previewingSound == .hum)
         #expect(preview.events.count == 1)
         #expect(preview.events.first?.looping == false)
         #expect(playback.events.isEmpty)
         audio.setActive(false)
+        #expect(audio.previewingSound == nil)
         #expect(preview.live.isEmpty)
         audio.setActive(true)
         audio.preview(.bell)
+        #expect(audio.previewingSound == .bell)
         try await Task.sleep(for: .milliseconds(450))
+        #expect(audio.previewingSound == nil)
         #expect(preview.live.isEmpty)
         audio.ringBell()
         #expect(playback.events.isEmpty)
+    }
+
+    @Test func replacingPreviewCancelsEarlierCompletionAndAmbientPreviewFinishes() async throws {
+        let preview = RecordingPlayback()
+        let audio = TerminalAudio(playback: RecordingPlayback(), previewPlayback: preview)
+        audio.setActive(true)
+        audio.preview(.bell)
+        try await Task.sleep(for: .milliseconds(100))
+        audio.preview(.hum)
+        #expect(audio.previewingSound == .hum)
+        #expect(preview.live == [.hum])
+        try await Task.sleep(for: .milliseconds(400))
+        #expect(audio.previewingSound == .hum, "Cancelled bell cleanup must not stop its replacement")
+        #expect(preview.live == [.hum])
+        try await Task.sleep(for: .milliseconds(800))
+        #expect(audio.previewingSound == nil)
+        #expect(preview.live.isEmpty)
+    }
+
+    @Test func previewStateClearsOnStopPowerOffAndSettingsChanges() {
+        let preview = RecordingPlayback()
+        let audio = TerminalAudio(playback: RecordingPlayback(), previewPlayback: preview)
+        audio.preview(.bell)
+        #expect(audio.previewingSound == nil, "Inactive previews must not appear to play")
+        audio.setActive(true)
+        audio.setPoweredOn(true)
+        audio.preview(.hum)
+        audio.stopPreview() // The Sound tab's onDisappear and Stop button share this operation.
+        #expect(audio.previewingSound == nil)
+        #expect(preview.live.isEmpty)
+        audio.preview(.hum)
+        audio.setPoweredOn(false)
+        #expect(audio.previewingSound == nil)
+        #expect(preview.live.isEmpty)
+        audio.setPoweredOn(true)
+        audio.preview(.flyback)
+        audio.configure(SoundSettings())
+        #expect(audio.previewingSound == nil)
+        #expect(preview.live.isEmpty)
+    }
+
+    @Test(arguments: [false, true]) func failedPreviewClearsStateAndPartialPlayback(failDuringPlay: Bool) {
+        let preview = RecordingPlayback()
+        let audio = TerminalAudio(playback: RecordingPlayback(), previewPlayback: preview)
+        audio.setActive(true)
+        audio.preview(.hum)
+        #expect(audio.previewingSound == .hum)
+        preview.failPreparation = !failDuringPlay
+        preview.failPlayback = failDuringPlay
+        audio.preview(.bell)
+        #expect(audio.previewingSound == nil)
+        #expect(preview.live.isEmpty)
+        #expect(audio.errorMessage != nil)
+        preview.failPreparation = false
+        preview.failPlayback = false
+        audio.preview(.bell)
+        #expect(audio.previewingSound == .bell)
+        #expect(audio.errorMessage == nil)
+        audio.stopPreview()
     }
 
     @Test func audioFailureLeavesTerminalUsable() {
@@ -157,13 +220,15 @@ private final class RecordingPlayback: SoundPlayback {
     var events: [Event] = []
     var live: Set<TerminalSound> = []
     var failPreparation = false
+    var failPlayback = false
     func prepare(_ sound: TerminalSound, settings: SoundSettings) throws {
         if failPreparation { throw CocoaError(.fileReadUnknown) }
         prepared.append(sound)
     }
-    func play(_ sound: TerminalSound, volume: Float, looping: Bool) {
+    func play(_ sound: TerminalSound, volume: Float, looping: Bool) throws {
         events.append(Event(sound: sound, looping: looping))
         live.insert(sound)
+        if failPlayback { throw CocoaError(.fileReadUnknown) }
     }
     func setVolume(_ volume: Float, for sound: TerminalSound) {}
     func stop(_ sound: TerminalSound) { live.remove(sound) }

@@ -11,6 +11,7 @@ protocol TerminalSoundEvents: AnyObject {
 @MainActor @Observable
 final class TerminalAudio: TerminalSoundEvents {
     private(set) var errorMessage: String?
+    private(set) var previewingSound: TerminalSound?
     @ObservationIgnored private let playback: any SoundPlayback
     @ObservationIgnored private let previewPlayback: any SoundPlayback
     @ObservationIgnored private var previewTask: Task<Void, Never>?
@@ -86,12 +87,14 @@ final class TerminalAudio: TerminalSoundEvents {
             try previewPlayback.prepare(sound, settings: settings)
             try previewPlayback.play(sound, volume: settings.gain(for: sound), looping: false)
             errorMessage = nil
+            previewingSound = sound
             previewTask = Task { [weak self] in
                 try? await Task.sleep(for: .milliseconds(sound.isAmbient ? 1100 : 350))
                 guard !Task.isCancelled else { return }
                 self?.stopPreview()
             }
         } catch {
+            stopPreview()
             errorMessage = "Could not play the sound preview. Try again."
         }
     }
@@ -99,6 +102,7 @@ final class TerminalAudio: TerminalSoundEvents {
     func stopPreview() {
         previewTask?.cancel()
         previewTask = nil
+        previewingSound = nil
         previewPlayback.stopAll()
     }
 }
