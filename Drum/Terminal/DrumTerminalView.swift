@@ -5,7 +5,7 @@ import os
 
 /// SwiftTerm owns input, parsing, and glyph-safe dirty rectangles. Forward
 /// those invalidations to the mirror, including selection and text blinking.
-final class DrumTerminalView: LocalProcessTerminalView {
+final class DrumTerminalView: AccessibleTerminalView {
     private static let signposter = OSSignposter(subsystem: "com.welshofer.Drum", category: "Rendering")
     weak var session: TerminalSession?
     var keyClicksEnabled = false {
