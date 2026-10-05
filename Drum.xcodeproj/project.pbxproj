@@ -27,13 +27,16 @@
 		669CCA1F8BF66A47453A8BF1 /* PerformanceRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94CDB6AEA3ED1D91E8F8915 /* PerformanceRecorder.swift */; };
 		73046398286848B78A81A230 /* Phosphor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74F1102829627292C86D5A8 /* Phosphor.swift */; };
 		82DBD2066DCB5D6CD4C44C2E /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F44209C7A12A5E2F6F974DE /* RootView.swift */; };
+		836B74AD7280BB37E6CDC2B0 /* TerminalClipboardPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44AEBF8A595BB98DF3453745 /* TerminalClipboardPolicyTests.swift */; };
 		8D1E247201E9C2A21F5F9510 /* TerminalBitmapStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B014EED89B83BF5298D62150 /* TerminalBitmapStoreTests.swift */; };
+		8D4B0D8FC326433846DF22A5 /* TerminalSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97DB553DC0E154BE11A02DF7 /* TerminalSettingsView.swift */; };
 		9A6FB943B167EAFAC0AB1203 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65745C7122D59DC4E912004B /* SettingsView.swift */; };
 		A207CCB3E2457F5B43BF1A8C /* SoundPlayback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9788CBA72793A2909790C7DD /* SoundPlayback.swift */; };
 		A65A11D567B2AA6168CCD036 /* DrumBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB48E4A9F1A05F3CF70E0239 /* DrumBundle.swift */; };
 		B2897CE7B0196DDF55B8FB06 /* CRTSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */; };
 		B4151D451F9F2AACABF6B826 /* CRT.metal in Sources */ = {isa = PBXBuildFile; fileRef = E4CA29FC8047D53A3AE400D6 /* CRT.metal */; };
 		BD677F6C1E849E541A0F67B0 /* TerminalDisplayClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8944107738B5D9CC9D0C141 /* TerminalDisplayClock.swift */; };
+		C8947602B8DCF75E52C8EBED /* TerminalClipboardPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89C45E5949E719ACE37A77CD /* TerminalClipboardPolicy.swift */; };
 		D1F44AC2CF9BCEE2F2A66483 /* TerminalThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */; };
 		D379F7D72436E9ABBC2EC661 /* TerminalTimingObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2AC3FB75F0CD8C85278CC9B /* TerminalTimingObserver.swift */; };
 		DB5E21381B0B13C3F0509602 /* TerminalAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECFF325C9146CFD21D30096A /* TerminalAudio.swift */; };
@@ -61,6 +64,7 @@
 		2F06DF22B4EBE6B9DB5555F6 /* DrumTerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumTerminalView.swift; sourceTree = "<group>"; };
 		304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalThemeTests.swift; sourceTree = "<group>"; };
 		31ACC088B79255497356FE35 /* PowerOnTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerOnTransition.swift; sourceTree = "<group>"; };
+		44AEBF8A595BB98DF3453745 /* TerminalClipboardPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalClipboardPolicyTests.swift; sourceTree = "<group>"; };
 		44B043D74DF45B0F38B4DBE6 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Drum/Resources/Fonts; sourceTree = SOURCE_ROOT; };
 		4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTSettingsTests.swift; sourceTree = "<group>"; };
 		4F9318F68A3E30A8C403C0E4 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
@@ -74,7 +78,9 @@
 		747DF943371BBD3E7CCFC748 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		78AB83158C4E0C5D1EBC2C96 /* CapturePixels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePixels.swift; sourceTree = "<group>"; };
 		887F477326D6B440E24544FD /* DrumApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrumApp.swift; sourceTree = "<group>"; };
+		89C45E5949E719ACE37A77CD /* TerminalClipboardPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalClipboardPolicy.swift; sourceTree = "<group>"; };
 		9788CBA72793A2909790C7DD /* SoundPlayback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundPlayback.swift; sourceTree = "<group>"; };
+		97DB553DC0E154BE11A02DF7 /* TerminalSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSettingsView.swift; sourceTree = "<group>"; };
 		97FACE56781368683A16578A /* GlowOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlowOverlay.swift; sourceTree = "<group>"; };
 		9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTSettings.swift; sourceTree = "<group>"; };
 		A74F1102829627292C86D5A8 /* Phosphor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phosphor.swift; sourceTree = "<group>"; };
@@ -147,6 +153,7 @@
 				2F06DF22B4EBE6B9DB5555F6 /* DrumTerminalView.swift */,
 				97FACE56781368683A16578A /* GlowOverlay.swift */,
 				19F68692303E291295286F84 /* TerminalBitmapStore.swift */,
+				89C45E5949E719ACE37A77CD /* TerminalClipboardPolicy.swift */,
 				A8944107738B5D9CC9D0C141 /* TerminalDisplayClock.swift */,
 				F3FB24532029BB0647127F80 /* TerminalMirror.swift */,
 				4F9318F68A3E30A8C403C0E4 /* TerminalSession.swift */,
@@ -173,6 +180,7 @@
 			children = (
 				65745C7122D59DC4E912004B /* SettingsView.swift */,
 				6472B824B16A45704FAFFBB7 /* SoundSettingsView.swift */,
+				97DB553DC0E154BE11A02DF7 /* TerminalSettingsView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -185,6 +193,7 @@
 				E94CDB6AEA3ED1D91E8F8915 /* PerformanceRecorder.swift */,
 				CAC14DB92F7536C885C7FF80 /* TerminalAudioTests.swift */,
 				B014EED89B83BF5298D62150 /* TerminalBitmapStoreTests.swift */,
+				44AEBF8A595BB98DF3453745 /* TerminalClipboardPolicyTests.swift */,
 				ABFC936C58B25505D8F3EC29 /* TerminalPerformanceTests.swift */,
 				6660E4857C7768B8B9B5087C /* TerminalRenderingTests.swift */,
 				304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */,
@@ -329,6 +338,7 @@
 				669CCA1F8BF66A47453A8BF1 /* PerformanceRecorder.swift in Sources */,
 				206356300CC5209CA8252CBE /* TerminalAudioTests.swift in Sources */,
 				8D1E247201E9C2A21F5F9510 /* TerminalBitmapStoreTests.swift in Sources */,
+				836B74AD7280BB37E6CDC2B0 /* TerminalClipboardPolicyTests.swift in Sources */,
 				64EA5DC06DBC1FF2B8B60727 /* TerminalPerformanceTests.swift in Sources */,
 				1B8F8BAD4458A646030159DF /* TerminalRenderingTests.swift in Sources */,
 				D1F44AC2CF9BCEE2F2A66483 /* TerminalThemeTests.swift in Sources */,
@@ -358,9 +368,11 @@
 				DD146257B9293C924466D1BC /* SoundWaveform.swift in Sources */,
 				DB5E21381B0B13C3F0509602 /* TerminalAudio.swift in Sources */,
 				2E2F245B973819EC449A4620 /* TerminalBitmapStore.swift in Sources */,
+				C8947602B8DCF75E52C8EBED /* TerminalClipboardPolicy.swift in Sources */,
 				BD677F6C1E849E541A0F67B0 /* TerminalDisplayClock.swift in Sources */,
 				5FE30B17EBFC511ED7B1ECF0 /* TerminalMirror.swift in Sources */,
 				FB2662B190BA6931C84A0F5C /* TerminalSession.swift in Sources */,
+				8D4B0D8FC326433846DF22A5 /* TerminalSettingsView.swift in Sources */,
 				5CF456B050321D25EAA0DD77 /* TerminalTheme.swift in Sources */,
 				D379F7D72436E9ABBC2EC661 /* TerminalTimingObserver.swift in Sources */,
 				29C931A58EFC16687F38F9B9 /* TerminalView.swift in Sources */,

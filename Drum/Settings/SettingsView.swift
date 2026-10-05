@@ -6,6 +6,7 @@ struct SettingsView: View {
         TabView {
             Tab("Appearance", systemImage: "display") { AppearanceSettingsView() }
             Tab("Sound", systemImage: "speaker.wave.2") { SoundSettingsView() }
+            Tab("Terminal", systemImage: "terminal") { TerminalSettingsView() }
         }
         .frame(width: 500, height: 660)
     }

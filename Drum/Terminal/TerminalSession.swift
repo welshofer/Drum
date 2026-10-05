@@ -31,7 +31,7 @@ final class TerminalSession {
     @ObservationIgnored private var cleanup: Task<Void, Never>?
     @ObservationIgnored private var restarts: [Date] = []
 
-    init() {
+    init(defaults: UserDefaults = .standard) {
         view = DrumTerminalView(frame: NSRect(x: 0, y: 0, width: 800, height: 300))
         view.session = self
         view.processDelegate = self
@@ -40,6 +40,7 @@ final class TerminalSession {
         // Without this SwiftTerm never calls `rangeChanged`, and nothing
         // downstream (mirror refresh on output, glow) would ever fire.
         view.notifyUpdateChanges = true
+        TerminalClipboardPolicy.install(on: view.getTerminal(), defaults: defaults)
     }
 
     // MARK: Shell
