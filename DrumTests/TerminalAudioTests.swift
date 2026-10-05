@@ -95,6 +95,34 @@ struct TerminalAudioTests {
         try await Task.sleep(for: .milliseconds(800))
         #expect(audio.previewingSound == nil)
         #expect(preview.live.isEmpty)
+        #expect(preview.finished == [.hum], "Ambient completion must come from voice state, not the watchdog")
+    }
+
+    @Test(arguments: [TerminalSound.keyClick, .boot, .bell])
+    func previewClearsWhenVoiceFinishesBeforeWatchdog(sound: TerminalSound) async throws {
+        let preview = RecordingPlayback()
+        let audio = TerminalAudio(playback: RecordingPlayback(), previewPlayback: preview)
+        audio.setActive(true)
+        audio.preview(sound)
+        #expect(audio.previewingSound == sound)
+        // Actual sample lengths are 3, 125 and 250 ms. Every check occurs
+        // before the previous 350 ms cleanup, so that implementation fails.
+        try await Task.sleep(for: .seconds(RecordingPlayback.duration(for: sound) + 0.05))
+        #expect(preview.finished == [sound])
+        #expect(audio.previewingSound == nil)
+        #expect(preview.live.isEmpty)
+    }
+
+    @Test func stalledPreviewStillHasFiniteWatchdog() async throws {
+        let preview = RecordingPlayback()
+        preview.stalled = true
+        let audio = TerminalAudio(playback: RecordingPlayback(), previewPlayback: preview)
+        audio.setActive(true)
+        audio.preview(.keyClick)
+        try await Task.sleep(for: .milliseconds(450))
+        #expect(audio.previewingSound == nil)
+        #expect(preview.live.isEmpty)
+        #expect(preview.finished.isEmpty)
     }
 
     @Test func previewStateClearsOnStopPowerOffAndSettingsChanges() {
@@ -219,6 +247,9 @@ private final class RecordingPlayback: SoundPlayback {
     var prepared: [TerminalSound] = []
     var events: [Event] = []
     var live: Set<TerminalSound> = []
+    var finished: Set<TerminalSound> = []
+    var stalled = false
+    private var finishesAt: [TerminalSound: ContinuousClock.Instant] = [:]
     var failPreparation = false
     var failPlayback = false
     func prepare(_ sound: TerminalSound, settings: SoundSettings) throws {
@@ -228,11 +259,36 @@ private final class RecordingPlayback: SoundPlayback {
     func play(_ sound: TerminalSound, volume: Float, looping: Bool) throws {
         events.append(Event(sound: sound, looping: looping))
         live.insert(sound)
+        if !looping {
+            finishesAt[sound] = ContinuousClock().now.advanced(by: .seconds(Self.duration(for: sound)))
+        }
         if failPlayback { throw CocoaError(.fileReadUnknown) }
     }
+    static func duration(for sound: TerminalSound) -> Double {
+        switch sound {
+        case .keyClick: 0.003
+        case .boot: 0.125
+        case .bell: 0.25
+        case .hum, .flyback: 1
+        }
+    }
+    func remainingPlaybackTime(for sound: TerminalSound) -> TimeInterval? {
+        guard live.contains(sound) else { return nil }
+        if stalled { return 1 }
+        guard let end = finishesAt[sound] else { return 1 }
+        let remaining = ContinuousClock().now.duration(to: end)
+        if remaining <= .zero {
+            live.remove(sound)
+            finished.insert(sound)
+            finishesAt.removeValue(forKey: sound)
+            return nil
+        }
+        let parts = remaining.components
+        return Double(parts.seconds) + Double(parts.attoseconds) / 1e18
+    }
     func setVolume(_ volume: Float, for sound: TerminalSound) {}
-    func stop(_ sound: TerminalSound) { live.remove(sound) }
-    func stopAll() { live.removeAll() }
+    func stop(_ sound: TerminalSound) { live.remove(sound); finishesAt.removeValue(forKey: sound) }
+    func stopAll() { live.removeAll(); finishesAt.removeAll() }
 }
 
 @MainActor

@@ -88,8 +88,17 @@ final class TerminalAudio: TerminalSoundEvents {
             try previewPlayback.play(sound, volume: settings.gain(for: sound), looping: false)
             errorMessage = nil
             previewingSound = sound
-            previewTask = Task { [weak self] in
-                try? await Task.sleep(for: .milliseconds(sound.isAmbient ? 1100 : 350))
+            let clock = ContinuousClock()
+            let deadline = clock.now.advanced(by: .milliseconds(sound.isAmbient ? 1100 : 350))
+            previewTask = Task { [weak self, previewPlayback] in
+                while !Task.isCancelled,
+                      let remaining = previewPlayback.remainingPlaybackTime(for: sound), clock.now < deadline {
+                    // Sleep to the backend's expected finish, then check actual
+                    // voice state. A minimum delay avoids spinning at its tail;
+                    // the deadline still bounds failed/stalled playback.
+                    let delay = min(Duration.seconds(max(0.01, remaining)), clock.now.duration(to: deadline))
+                    try? await Task.sleep(for: delay)
+                }
                 guard !Task.isCancelled else { return }
                 self?.stopPreview()
             }

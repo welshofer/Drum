@@ -4,6 +4,8 @@ import AVFAudio
 protocol SoundPlayback: AnyObject {
     func prepare(_ sound: TerminalSound, settings: SoundSettings) throws
     func play(_ sound: TerminalSound, volume: Float, looping: Bool) throws
+    /// Nil when no voice is playing; otherwise its estimated time to completion.
+    func remainingPlaybackTime(for sound: TerminalSound) -> TimeInterval?
     func setVolume(_ volume: Float, for sound: TerminalSound)
     func stop(_ sound: TerminalSound)
     func stopAll()
@@ -50,6 +52,10 @@ final class NativeSoundPlayback: SoundPlayback {
 
     func setVolume(_ volume: Float, for sound: TerminalSound) {
         for player in players[sound] ?? [] { player.setVolume(volume, fadeDuration: 0.08) }
+    }
+
+    func remainingPlaybackTime(for sound: TerminalSound) -> TimeInterval? {
+        players[sound]?.filter(\.isPlaying).map { max(0, $0.duration - $0.currentTime) }.max()
     }
 
     func stop(_ sound: TerminalSound) {
