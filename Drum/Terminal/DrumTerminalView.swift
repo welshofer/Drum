@@ -92,6 +92,16 @@ final class DrumTerminalView: AccessibleTerminalView {
         session?.mirror.markDirty(invalidRect)
     }
 
+    override func setMarkedText(_ string: Any, selectedRange: NSRange, replacementRange: NSRange) {
+        super.setMarkedText(string, selectedRange: selectedRange, replacementRange: replacementRange)
+        session?.mirror.markDirty()
+    }
+
+    override func unmarkText() {
+        super.unmarkText()
+        session?.mirror.markDirty()
+    }
+
     override func setFrameSize(_ newSize: NSSize) {
         guard newSize != frame.size else { return }
         let observer = timingObserver
