@@ -81,3 +81,18 @@ does not override that code's terms. SwiftTerm itself permits an open-source
 Drum, retaining its
 [pinned MIT notices](https://github.com/migueldeicaza/SwiftTerm/blob/5d14406844143538cd8f8851d2d8a67c1fe443e5/LICENSE).
 The bundled fonts keep their separate [credits/licenses](/Users/welshofer/Developer/Drum/CREDITS.md:7).
+
+## Burn-down — 20261005
+
+After this comparison, the user's “go!” authorized quick font zoom, complete
+appearance profiles with JSON interchange, and colour-preserving CRT. All three
+are implemented locally in `9d42220` and `76bb1a5`; the v1 specification now
+includes profiles. Debug and Release each passed the full regression run with
+88 reported tests / 19 suites, retaining the two opt-in skips. Independent
+review approved the implementation. The AppIntents tooling warning remains open.
+
+[The execution record](retro-features-burndown-20261005.md) contains item IDs,
+exact commits, source proof, routing/isolation, cycle counts, check commands,
+and acceptance limits. Native file-dialog and shortcut interaction acceptance
+remains manual; computer-use inspection stopped while the user was actively
+using Drum. The remaining ideas in this original comparison are still deferred.
