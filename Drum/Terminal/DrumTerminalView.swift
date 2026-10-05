@@ -16,6 +16,16 @@ final class DrumTerminalView: LocalProcessTerminalView {
     weak var timingObserver: (any TerminalTimingObserver)?
     private(set) var cursorShown = true
     private(set) var cursorStyle: CursorStyle = .blinkBlock
+    var pointerMap: TerminalPointerMap?
+
+    /// SwiftTerm's press, drag, hover, wheel and stationary modifier-hover
+    /// paths all convert a window point here. View-to-view geometry and rect
+    /// conversions retain AppKit's ordinary coordinate system.
+    override func convert(_ point: NSPoint, from view: NSView?) -> NSPoint {
+        let local = super.convert(point, from: view)
+        guard view == nil, session?.mirror.isEnabled != false, let pointerMap else { return local }
+        return pointerMap.sourcePoint(local, terminalSize: bounds.size)
+    }
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()

@@ -34,15 +34,16 @@ struct CRTStage: View {
     }
 
     var body: some View {
-        ZStack {
-            if state.crt.enabled {
-                TimelineView(.animation(minimumInterval: 1 / 60, paused: !needsAnimation)) { context in
+        TimelineView(.animation(minimumInterval: 1 / 60, paused: !needsAnimation)) { context in
+            let time = settings.isWobbling ? context.date.timeIntervalSinceReferenceDate : 0
+            ZStack {
+                if state.crt.enabled {
                     PictureStage(date: context.date)
-                        .crt(settings, time: settings.isWobbling ? context.date.timeIntervalSinceReferenceDate : 0,
+                        .crt(settings, time: time,
                              liveResize: state.terminal.mirror.isLiveResizing)
                 }
+                InputStage(pointerMap: TerminalPointerMap(settings: settings, time: time))
             }
-            InputStage()
         }
     }
 
@@ -89,10 +90,12 @@ struct PictureStage: View {
 
 /// The same terminal stays mounted and focused in both rendering modes.
 struct InputStage: View {
+    let pointerMap: TerminalPointerMap
     @Environment(AppState.self) private var state
 
     var body: some View {
-        TerminalView(session: state.terminal, theme: TerminalTheme(state: state), crtEnabled: state.crt.enabled)
+        TerminalView(session: state.terminal, theme: TerminalTheme(state: state), crtEnabled: state.crt.enabled,
+                     pointerMap: pointerMap)
             .padding(CRTStage.inset)
     }
 }

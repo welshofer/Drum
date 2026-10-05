@@ -9,6 +9,18 @@ using namespace metal;
 // Barrel distortion (.distortionEffect). Output position -> source position.
 // Out-of-layer samples are transparent = the curved black tube edge.
 // Axes curved separately; a wide tube is a cylinder more than a sphere.
+// Integer noise is shared with TerminalPointerMap. fract(sin()*largeValue)
+// magnifies CPU/GPU rounding enough to target a different terminal column.
+float syncNoise(float row, float time)
+{
+    uint n = uint(clamp(floor(row), 0.0, 65535.0))
+        ^ (uint(floor(max(time, 0.0) * 60.0)) * 747796405u) ^ 2891336453u;
+    n ^= n >> 16; n *= 2246822519u;
+    n ^= n >> 13; n *= 3266489917u;
+    n ^= n >> 16;
+    return float(n >> 8) / 16777216.0;
+}
+
 [[stitchable]] float2 crtBarrel(float2 position, float4 bounds,
                                 float strengthX, float strengthY,
                                 float wobble, float time)
@@ -19,7 +31,7 @@ using namespace metal;
     float r2  = dot(c, c);
     c.x *= 1.0 + strengthX * r2;
     c.y *= 1.0 + strengthY * r2;
-    float n = fract(sin(dot(float2(uv.y * 173.0, time), float2(12.9898, 78.233))) * 43758.5453);
+    float n = syncNoise(position.y, time);
     c.x += wobble * (0.6 * sin(time * 1.7 + uv.y * 9.0) + 0.4 * (n - 0.5));
     uv = (c + 1.0) * 0.5;
     return uv * size;

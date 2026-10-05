@@ -15,11 +15,13 @@ struct TerminalView: NSViewRepresentable {
     let session: TerminalSession
     let theme: TerminalTheme
     let crtEnabled: Bool
+    var pointerMap: TerminalPointerMap? = nil
 
     func makeNSView(context: Context) -> TerminalHostView {
         let host = TerminalHostView()
         host.setCRTEnabled(crtEnabled, session: session)
         host.attach(session.view)
+        session.view.pointerMap = pointerMap
         theme.apply(to: session.view, previous: session.appliedTheme)
         session.appliedTheme = theme
         return host
@@ -28,6 +30,7 @@ struct TerminalView: NSViewRepresentable {
     func updateNSView(_ host: TerminalHostView, context: Context) {
         host.setCRTEnabled(crtEnabled, session: session)
         host.attach(session.view)
+        session.view.pointerMap = pointerMap
         if session.appliedTheme != theme {
             theme.apply(to: session.view, previous: session.appliedTheme)
             session.appliedTheme = theme
