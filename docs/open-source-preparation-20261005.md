@@ -1,9 +1,9 @@
 # Open-source preparation — 2026-10-05
 
 The project owner selected MIT for Drum's original code and documentation.
-Preparation is local; the GitHub repository remains private. The default branch
-is `main`, and this work is on `codex/burndown/drum-20261005`. No remote push,
-visibility change, release upload, or notarization was performed.
+The preparation below was completed locally while the GitHub repository was
+private, on `codex/burndown/drum-20261005`, with `main` as the default branch.
+Publication followed the owner's explicit authorization; see the record below.
 
 ## Prepared
 
@@ -71,11 +71,33 @@ Gitleaks was unavailable. This is a limited pattern scan, not a comprehensive
 secret audit or proof that arbitrary credentials cannot exist.
 
 GitHub metadata confirmed `PRIVATE` visibility and no detected project license
-before this preparation. The private-vulnerability-reporting API returned 404,
-so availability is unconfirmed; `SECURITY.md` provides a fallback without
+before this preparation. The private-vulnerability-reporting API initially
+returned 404. After publication, private reporting was enabled and verified;
+`SECURITY.md` now links to the security page and retains a fallback without
 inventing an email address or exposing details in a public issue.
 
 Source publication is separate from distributing a signed binary. Developer ID,
 notarization, physical-display, presentation, IME/VoiceOver and other manual
 acceptance gates retain their existing status. See [distribution preparation](distribution.md)
 and [the current specification](../drum-spec.md).
+
+## Publication — 2026-10-05
+
+The owner authorized publication with “Let's go. Make it so!” after the
+readiness review. A fresh fetch confirmed remote `main` was an ancestor of the
+prepared source. Local `main` was advanced without changing file contents, and
+the prepared source at `19d39712face2d88e6206c27e202e0dda47dae7b` was pushed as a
+normal fast-forward. No history rewrite or force push was used.
+
+[The GitHub repository](https://github.com/welshofer/Drum) was then changed to
+public. Authenticated and anonymous metadata confirmed public visibility,
+default branch `main`, and recognized MIT licensing. Anonymous reads confirmed
+the published README and LICENSE match the local files byte-for-byte; all four
+screenshot URLs returned HTTP 200. Private vulnerability reporting was enabled
+and its API returned `enabled: true`.
+
+The readiness review also repeated the limited credential-pattern scan across
+all 67 locally available revisions and found no matches for the checked formats
+or credential-named files. Gitleaks remained unavailable. The existing build,
+test, and manual-acceptance limits above still apply. Untracked `audit/` files
+remain local. No binary release upload or notarization was performed.
