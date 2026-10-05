@@ -28,14 +28,22 @@ private struct AppearanceSettingsView: View {
                 }
                 ColorPicker("Custom colour", selection: $state.customColor, supportsOpacity: false)
                 LabeledSlider("Bloom radius", value: $state.crt.phosphor.bloomRadius, in: 0...8, format: "%.1f pt")
+                    .disabled(!state.crt.enabled)
                 LabeledSlider("Bloom strength", value: $state.crt.phosphor.bloomStrength, in: 0...2, format: "%.2f")
+                    .disabled(!state.crt.enabled)
             }
 
             Section("Tube") {
                 Toggle("CRT effect", isOn: $state.crt.enabled)
                 Toggle("Sync wobble", isOn: $state.crt.animated)
+                    .disabled(!state.crt.enabled)
                     .help("Adds subtle motion to the CRT picture. Cursor blinking, terminal updates, and power transitions are separate. Reduce Motion pauses wobble.")
                 CRTSlidersView(crt: $state.crt)
+                    .disabled(!state.crt.enabled)
+            } footer: {
+                if !state.crt.enabled {
+                    Text("Bloom and tube effects resume when CRT is on. Font and phosphor colour remain active.")
+                }
             }
 
             Section("Font") {
