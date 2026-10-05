@@ -4,7 +4,7 @@ using namespace metal;
 
 // Barrel, mask and flyback receive `.boundingRect` as float4 (x, y, w, h);
 // use bounds.zw for size. Match each SwiftUI call's argument types and order.
-// Bloom receives radius, strength and tint, without a bounds argument.
+// Bloom receives radius, strength, tint and colour mode, without bounds.
 
 // Barrel distortion (.distortionEffect). Output position -> source position.
 // Out-of-layer samples are transparent = the curved black tube edge.
@@ -37,11 +37,23 @@ float syncNoise(float row, float time)
     return uv * size;
 }
 
+// Shared by both sampling qualities. Monochrome retains its original arithmetic;
+// colour mode adds neighbouring RGB light without recolouring it to the phosphor.
+half4 bloomOutput(half4 base, half4 acc, float strength, half4 tint, float preserveColours)
+{
+    if (preserveColours > 0.5) {
+        half4 result = base + acc * half(strength);
+        return half4(result.rgb, saturate(result.a));
+    }
+    half lum = dot(acc.rgb, half3(0.299h, 0.587h, 0.114h));
+    return base + tint * lum * half(strength);
+}
+
 // Two rings of phosphor glow. A compile-time tap count keeps both variants
 // free of per-pixel quality branches; the normal 33-sample appearance is intact.
 template<int taps>
 half4 bloom(float2 position, SwiftUI::Layer layer,
-            float radius, float strength, half4 tint)
+            float radius, float strength, half4 tint, float preserveColours)
 {
     half4 base = layer.sample(position);
     half4 acc  = half4(0.0);
@@ -52,21 +64,20 @@ half4 bloom(float2 position, SwiftUI::Layer layer,
         acc += layer.sample(position + off * 0.5) * 0.5h;
     }
     acc /= half(taps) * 1.5h;
-    half lum = dot(acc.rgb, half3(0.299h, 0.587h, 0.114h));
-    return base + tint * lum * half(strength);
+    return bloomOutput(base, acc, strength, tint, preserveColours);
 }
 
 [[stitchable]] half4 crtBloom(float2 position, SwiftUI::Layer layer,
-                              float radius, float strength, half4 tint)
+                              float radius, float strength, half4 tint, float preserveColours)
 {
-    return bloom<16>(position, layer, radius, strength, tint);
+    return bloom<16>(position, layer, radius, strength, tint, preserveColours);
 }
 
 // Live resize uses 17 samples, returning to full quality as soon as the drag ends.
 [[stitchable]] half4 crtBloomFast(float2 position, SwiftUI::Layer layer,
-                                  float radius, float strength, half4 tint)
+                                  float radius, float strength, half4 tint, float preserveColours)
 {
-    return bloom<8>(position, layer, radius, strength, tint);
+    return bloom<8>(position, layer, radius, strength, tint, preserveColours);
 }
 
 // Monochrome tube: scanlines + aperture grille + vignette + brightness gain,
@@ -78,7 +89,7 @@ half4 bloom(float2 position, SwiftUI::Layer layer,
 [[stitchable]] half4 crtMask(float2 position, half4 color, float4 bounds,
                              float scale, float lineStrength,
                              float grilleStrength, float vignette,
-                             float brightness, half4 phosphor)
+                             float brightness, half4 phosphor, float preserveColours)
 {
     float2 size = bounds.zw;
 
@@ -96,6 +107,10 @@ half4 bloom(float2 position, SwiftUI::Layer layer,
     float2 uv = position / size;
     float2 d  = uv * (1.0 - uv);
     half v    = half(pow(clamp(d.x * d.y * 16.0, 0.0, 1.0), vignette));
+
+    if (preserveColours > 0.5) {
+        return half4(color.rgb * l * grille * v * half(brightness), color.a);
+    }
 
     const half3 w = half3(0.299h, 0.587h, 0.114h);
     half lum  = dot(color.rgb, w) / max(dot(phosphor.rgb, w), 0.05h);

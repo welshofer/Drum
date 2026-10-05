@@ -12,7 +12,8 @@ struct CRTEffect: ViewModifier {
         let function = liveResize ? DrumBundle.shaders.crtBloomFast : DrumBundle.shaders.crtBloom
         return function(.float(settings.phosphor.bloomRadius),
                         .float(settings.phosphor.bloomStrength),
-                        .color(settings.phosphor.swiftUIColor))
+                        .color(settings.phosphor.swiftUIColor),
+                        .float(settings.colourMode == .preserveColours ? 1 : 0))
     }
 
     /// The wobble's sine runs at 1.7 rad/s. `time` is wrapped at a whole
@@ -36,7 +37,8 @@ struct CRTEffect: ViewModifier {
                     .float(settings.grille),
                     .float(settings.vignette),
                     .float(settings.brightness),
-                    .color(settings.phosphor.swiftUIColor)),
+                    .color(settings.phosphor.swiftUIColor),
+                    .float(settings.colourMode == .preserveColours ? 1 : 0)),
                 isEnabled: settings.enabled)
             .distortionEffect(
                 DrumBundle.shaders.crtBarrel(

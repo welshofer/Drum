@@ -7,6 +7,7 @@ import Foundation
 /// uniform never wipes a user's tuning.
 struct CRTSettings: Codable, Sendable, Equatable {
     var enabled = true
+    var colourMode: TerminalColourMode = .monochrome
     var phosphor: Phosphor = .p3Amber
     var barrelX: Float = 0.02
     var barrelY: Float = 0.02
@@ -71,7 +72,7 @@ struct CRTSettings: Codable, Sendable, Equatable {
     init() {}
 
     private enum CodingKeys: String, CodingKey {
-        case enabled, phosphor, barrelX, barrelY, wobble, scanlines, grille, vignette
+        case enabled, colourMode, phosphor, barrelX, barrelY, wobble, scanlines, grille, vignette
         case brightness, scale, animated, bezelCornerRadius
     }
 
@@ -84,6 +85,7 @@ struct CRTSettings: Codable, Sendable, Equatable {
             try c.decodeIfPresent(Double.self, forKey: key) ?? fallback
         }
         enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? d.enabled
+        colourMode = (try? c.decode(TerminalColourMode.self, forKey: .colourMode)) ?? d.colourMode
         phosphor = try c.decodeIfPresent(Phosphor.self, forKey: .phosphor) ?? d.phosphor
         barrelX = Float(try number(.barrelX, default: Double(d.barrelX)))
         barrelY = Float(try number(.barrelY, default: Double(d.barrelY)))
