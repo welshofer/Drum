@@ -84,7 +84,7 @@ True persistence remains optional only if the existing effect looks flat on the 
 
 At launch and on ⌘R, play the 700 ms flyback/reveal; on ordinary quit, play the 300 ms reverse transition. [PowerOnTransition.swift](Drum/CRT/PowerOnTransition.swift) supplies the transition. Power cycling preserves the terminal session.
 
-With system Reduce Motion requested, pause continuous wobble and use a restrained 150 ms power fade without flyback or vertical scaling. This rendering policy is transient and preserves saved artistic settings; necessary terminal updates continue. Automated policy checks pass, while a recorded live system-preference change exercise remains open.
+With system Reduce Motion requested, pause continuous wobble and use a restrained 150 ms power fade without flyback or vertical scaling. This rendering policy is transient and preserves saved artistic settings; necessary terminal updates continue. [Hosted RootView checks](docs/reduced-motion-followup-20261005.md) verify live injected policy changes and the current uninjected OS value while preserving the PTY, selection and saved settings. A recorded actual system-preference change and visual transition exercise remains open.
 
 Ordinary quit uses cancel → power-off → terminate again because `.terminateLater` stalled the main-actor task in the tested configuration. System logout/restart/shutdown is answered immediately so the animation does not cancel the system operation.
 

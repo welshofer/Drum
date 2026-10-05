@@ -58,6 +58,7 @@
 		E7A4FC89F8A02BB076128F25 /* DrumApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887F477326D6B440E24544FD /* DrumApp.swift */; };
 		EB352D7D4EA5D20673951529 /* Fonts in Resources */ = {isa = PBXBuildFile; fileRef = 44B043D74DF45B0F38B4DBE6 /* Fonts */; };
 		EF62DC3AB9D50B9FDF767F16 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 2992DF22287357EF56926EBA /* SwiftTerm */; };
+		F25ADF42CA427EE53100F63B /* RootReducedMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFF6B158ADD605F81D92383B /* RootReducedMotionTests.swift */; };
 		FB2662B190BA6931C84A0F5C /* TerminalSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F9318F68A3E30A8C403C0E4 /* TerminalSession.swift */; };
 /* End PBXBuildFile section */
 
@@ -122,6 +123,7 @@
 		E4CA29FC8047D53A3AE400D6 /* CRT.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = CRT.metal; sourceTree = "<group>"; };
 		E94CDB6AEA3ED1D91E8F8915 /* PerformanceRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceRecorder.swift; sourceTree = "<group>"; };
 		ECFF325C9146CFD21D30096A /* TerminalAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalAudio.swift; sourceTree = "<group>"; };
+		EFF6B158ADD605F81D92383B /* RootReducedMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootReducedMotionTests.swift; sourceTree = "<group>"; };
 		F3EE1228978E7BFF6FA73793 /* DrumTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DrumTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3FB24532029BB0647127F80 /* TerminalMirror.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalMirror.swift; sourceTree = "<group>"; };
 		F4ACC02F4A1DAD76D1A8CF6C /* SoundWaveform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundWaveform.swift; sourceTree = "<group>"; };
@@ -223,6 +225,7 @@
 				78AB83158C4E0C5D1EBC2C96 /* CapturePixels.swift */,
 				4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */,
 				E94CDB6AEA3ED1D91E8F8915 /* PerformanceRecorder.swift */,
+				EFF6B158ADD605F81D92383B /* RootReducedMotionTests.swift */,
 				04E7EA6CF58C1E685891ADE3 /* TerminalAccessibilityTests.swift */,
 				CAC14DB92F7536C885C7FF80 /* TerminalAudioTests.swift */,
 				B014EED89B83BF5298D62150 /* TerminalBitmapStoreTests.swift */,
@@ -375,6 +378,7 @@
 				446C0F63D4A976932B39CE1A /* CRTSettingsTests.swift in Sources */,
 				0688C4FFB74219A1164B2B27 /* CapturePixels.swift in Sources */,
 				669CCA1F8BF66A47453A8BF1 /* PerformanceRecorder.swift in Sources */,
+				F25ADF42CA427EE53100F63B /* RootReducedMotionTests.swift in Sources */,
 				2AAA7DE13D3D23E3712C3D4C /* TerminalAccessibilityTests.swift in Sources */,
 				206356300CC5209CA8252CBE /* TerminalAudioTests.swift in Sources */,
 				8D1E247201E9C2A21F5F9510 /* TerminalBitmapStoreTests.swift in Sources */,

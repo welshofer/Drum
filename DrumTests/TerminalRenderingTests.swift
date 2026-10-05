@@ -290,19 +290,17 @@ struct TerminalRenderingTests {
         let view = session.view
         // Exercise the real invisible input host without launching a shell.
         view.session = nil
-        let window = NSWindow(contentRect: CGRect(x: 100, y: 100, width: 480, height: 240),
-                              styleMask: [.titled, .resizable], backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
+        let window = visibleMirrorWindow()
         let host = TerminalHostView(frame: CGRect(x: 0, y: 0, width: 480, height: 240))
         host.attach(view)
         window.contentView = host
-        window.orderFront(nil)
+        window.makeKeyAndOrderFront(nil)
         view.session = session
         session.mirror.start(view: view)
         defer {
             session.mirror.stop()
             view.session = nil
-            window.orderOut(nil)
+            window.close()
         }
         view.feed(text: "First line\r\nSecond line")
         try await Task.sleep(for: .milliseconds(250))
@@ -345,9 +343,7 @@ struct TerminalRenderingTests {
         let session = TerminalSession()
         let view = session.view
         view.session = nil
-        let window = NSWindow(contentRect: CGRect(x: 120, y: 120, width: 480, height: 240),
-                              styleMask: [.titled, .resizable], backing: .buffered, defer: false)
-        window.isReleasedWhenClosed = false
+        let window = visibleMirrorWindow()
         let host = TerminalHostView(frame: CGRect(x: 0, y: 0, width: 480, height: 240))
         host.attach(view)
         window.contentView = host
@@ -358,7 +354,7 @@ struct TerminalRenderingTests {
         defer {
             session.mirror.stop()
             view.session = nil
-            window.orderOut(nil)
+            window.close()
         }
         view.feed(text: "A selection that survives rendering changes")
         let captured = try await waitUntil { session.mirror.image != nil }
@@ -398,6 +394,24 @@ struct TerminalRenderingTests {
         // The Generic RGB reference takes an extra 8-bit color conversion;
         // its rounding may differ from direct sRGB capture by one channel value.
         #expect(CapturePixels.matches(image, try #require(rep.cgImage), tolerance: 1))
+    }
+
+    /// These checks require a real visible window. Ordinary inactive windows
+    /// can remain occluded by the desktop; keep only this test-owned panel above
+    /// normal windows, without mocking visibility or changing user preferences.
+    private func visibleMirrorWindow() -> NSPanel {
+        let window = NSPanel(contentRect: CGRect(x: 100, y: 100, width: 480, height: 240),
+                             styleMask: [.titled, .resizable, .nonactivatingPanel], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
+        window.becomesKeyOnlyIfNeeded = false
+        window.hidesOnDeactivate = false
+        window.level = .floating
+        if let screen = NSScreen.main?.visibleFrame {
+            window.setFrameOrigin(CGPoint(x: screen.maxX - window.frame.width - 24,
+                                          y: screen.maxY - window.frame.height - 24))
+        }
+        NSApp.activate()
+        return window
     }
 
     @Test func liveResizePolicyIsTemporaryAndRestoresAnimation() {

@@ -131,3 +131,41 @@ xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Debug -destinatio
 xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Release -destination 'platform=macOS,arch=arm64' -derivedDataPath /tmp/drum-burndown-build-use1-followup -skipPackagePluginValidation -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile ONLY_ACTIVE_ARCH=YES ENABLE_TESTABILITY=YES test
 git diff --check
 ```
+
+## Integration verification
+
+Worker commit `0d6487d` was integrated as `088b349`; `xcodegen generate`
+registered the new test in the generated project. The first combined Debug
+run passed the hosted motion cases but failed four initial/resumed capture
+assertions in two pre-existing `TerminalRenderingTests` cases. Those same
+assertions also failed on the reverted baseline before this item was added.
+The failed logs are preserved; the cause was not inferred from missing images.
+
+One focused integration reconciliation gives those two test-owned fixtures
+real nonactivating floating `NSPanel` windows at the screen's top-right and
+closes them at teardown. All original idle, visibility hide/show, resize,
+selection, terminal-identity and strict pixel assertions remain. Visibility
+and key-window state are not mocked; production code and user preferences
+are unchanged. This makes the test's visible-window precondition attainable,
+without proving normal-window behavior under every desktop occlusion state.
+
+The combined tree then passed **76 reported tests in 16 suites** in Debug
+(21.942 seconds) and Release (16.294 seconds), with the two opt-in workloads
+skipped. Debug retained one AppIntents metadata warning; Release retained two
+(app and test targets). The zero-warning gate remains open. Independent
+read-only review approved the original tests/docs and the focused fixture
+change; actual model identities are unavailable.
+
+Root commands from `/Users/welshofer/Developer/Drum`:
+
+```sh
+xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Debug -destination 'platform=macOS,arch=arm64' -skipPackagePluginValidation -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile test
+xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Release -destination 'platform=macOS,arch=arm64' -skipPackagePluginValidation -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile ENABLE_TESTABILITY=YES test
+```
+
+Logs: `/tmp/drum-followup-combined-debug.log` (initial exit 65),
+`/tmp/drum-followup-focused-debug.log` and
+`/tmp/drum-followup-focused-release.log` (both exit 0). The fixture repair
+belongs to this necessary integration check; the exhausted PERF-3 experiment
+stays reverted. Actual system preference toggling and visible transition
+acceptance remain open as described above.
