@@ -69,3 +69,33 @@ The full identifier list remains in local `inventory.json`; only selected schema
 Apple documents [`MTLDrawable.presentedTime`](https://developer.apple.com/documentation/metal/mtldrawable/presentedtime) as an onscreen presentation time, with zero indicating an unpresented/dropped drawable. That API definition does **not** establish equivalent semantics for any of these Instruments tables. In particular, a present request, GPU command completion, vsync or similarly named schema is insufficient evidence of an attributed onscreen frame.
 
 PERF-1 remains **blocked**: the failed fixture does not establish visible default-shader/wobble rendering, this short recording lacks sustained workload coverage, actual presentation semantics/attribution are unvalidated, and the physical 2560×720 target panel is absent. There is no FPS or input-to-present percentile claim. The concrete next experiment is a validated visible fixture plus targeted row/schema inspection and independent endpoint/clock attribution before committing to another large sustained capture. Raw traces/TOC should remain local throughout.
+
+## Execution-limit deviation and integration checks
+
+The worker used **six** source implement/verify cycles, exceeding the stated
+three-cycle limit by three. Only one UI recording occurred, but that does not
+reduce the source-cycle count. This was an orchestration error, not a compliant
+bounded implementation loop. No further worker source or recording attempts
+were authorized after the count was reconciled.
+
+| Cycle | Revision and actual result |
+| --- | --- |
+| 1 | Initial helper/preflight passed; recorded probe failed visibility/paint assertions, runner 65/helper 1. |
+| 2 | Inventory mode with incompatible Foundation write options; recovery crashed, 133. |
+| 3 | Corrected writer; typecheck and recovered inventory passed, 0. |
+| 4 | Bounded cleanup/self-test with expected normal status 143; self-test failed, 1. |
+| 5 | Explicit graceful TERM trap and diagnostic; actual status 137 at 2.101665167 seconds, self-test failed, 1. |
+| 6 | Spawn signal mask/dispositions corrected; strict typecheck and TERM/KILL self-test passed, 0. |
+
+The final diagnostic commit `d1a8e96` was independently reviewed and integrated
+as `3b58c44`. Root re-verified the unchanged final helper with:
+
+```sh
+xcrun swiftc -swift-version 6 -strict-concurrency=complete -typecheck -warnings-as-errors scripts/presentation-probe.swift
+scripts/presentation-probe.swift --cleanup-self-test /tmp/drum-followup-probe-cleanup-root-20261005
+```
+
+Both exited **0**; `/tmp/drum-followup-probe-cleanup-root.log` records the
+graceful 73 and escalated 137 statuses. No application source changed, no
+second recording occurred, and independently reviewed diagnostic correctness
+does not close PERF-1's blocked presentation acceptance.

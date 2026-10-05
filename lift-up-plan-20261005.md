@@ -1588,3 +1588,165 @@ Earlier focused Debug/Release runs passed as each wave grew: 35 reported tests f
 **USE-1 / USE-3 / FUNC-3:** Live system Reduce Motion toggling, spoken VoiceOver and actual input-source candidate-popup commit/cancel exercises are explicitly deferred manual acceptance. Automated policy and own-process AX/input/composition checks supply narrower evidence. VoiceOver was disabled and AX process trust false; own-process queries still succeeded. User preferences, permissions and input sources were not changed. A before-adapter probe exposed `AXUnknown`, no value and only a scrollbar; the adapter now exposes exactly one terminal `AXTextArea`. Blank-column caret nine returns `{9,0}`, wrapped Unicode caret returns `{12,0}`, and following-line offsets are 10/13 in both opacity modes. During the worker's final cycle, two full runs failed existing visibility fixtures while new AX cases passed; unchanged retries passed both configurations. Test-host activation requests were accepted but samples stayed inactive, so no causal activation claim is made. Test-owned floating placement stabilized the separate composition fixture. These desktop-dependent checks do not prove behavior under real occlusion. See [AX evidence](/Users/welshofer/Developer/Drum/docs/accessibility-20261005.md) and [composition evidence](/Users/welshofer/Developer/Drum/docs/input-method-20261005.md).
 
 No required work is silently pending: the table explicitly distinguishes implemented local behavior, prepared scope with incomplete acceptance, and the reverted blocked experiment. Original specification §8 gates, including a recorded ten-minute normal-use session, real target-panel legibility/input/presentation and screenshot acceptance, remain open. A future pass should start from these exact blockers rather than treating this local burn-down as release approval.
+
+## Burn-down — 20261005 (follow-up)
+
+The user's **keep going** authorized a fresh follow-up from `1e030a3`.
+The original plan and first-run report above are preserved unchanged, including
+their failed experiments. This pass addressed four concrete remaining items:
+PERF-3 fixture/storage release, USE-1 hosted runtime verification, STAB-3
+installed-tool comparisons and PERF-1 short trace inventory. The destination
+remains local branch `codex/burndown/drum-20261005`; no push, PR, merge,
+notarization or deployment was performed. A fresh fetch still resolves
+`origin/main` to `c432b25`, with no remote commits missing from this checkout.
+Unrelated untracked `audit/` is preserved.
+
+The later questions about open-sourcing and cool-retro-term were handled during
+this pass. SwiftTerm's pinned MIT terms permit open-sourcing Drum with its
+notices retained; the font licenses remain separate and no root project license
+was selected. The [source comparison](/Users/welshofer/Developer/Drum/docs/cool-retro-term-comparison-20261005.md)
+proposes a future feature order. None of those new ideas was silently added to
+the execution queue or implemented.
+
+### Isolation and provenance
+
+Worktrees were created sequentially before worker assignment. Source write sets
+were isolated; test-host/trace windows were serialized with explicit handoffs.
+After repeated capture failures, remaining runtime checks were completed
+serially. Workers could perform read-only reviews without launching UI.
+
+| Worker | Requested routing; actual identity unavailable | Assigned absolute checkout |
+| --- | --- | --- |
+| `/root/cursor` | `gpt-6-astra`, high | `/tmp/drum-burndown-perf-3-followup-20261005` |
+| `/root/appearance` | `gpt-6.1-sol`, high | `/tmp/drum-burndown-use-1-followup-20261005` |
+| `/root/sound_preview` | `gpt-6.1-sol`, medium | `/tmp/drum-burndown-stab-3-followup-20261005`, then `/tmp/drum-burndown-perf-1-followup-20261005` |
+| Root | Inherited/unknown | `/Users/welshofer/Developer/Drum` integration and focused test reconciliation |
+
+The previous `review_wave1` agent was unavailable: its follow-up returned an
+agent-thread-limit error. Existing reviewers were reused. Distinct roles and
+requested IDs do not establish cross-model independence; actual runtime model
+identities could not be verified.
+
+### Outcomes and checks
+
+Overall status remains **12 implemented locally, 9 partial, 1 blocked** across
+the original 22 items. This follow-up adds verification and diagnostic tooling,
+with no additional production feature accepted. Untouched item statuses and
+commits remain as recorded in the preceding table.
+
+| Item | Current outcome | Local commits/checks and remaining requirement |
+| --- | --- | --- |
+| PERF-3 | Blocked; new experiment also reverted | Worker exhausted three cycles. Root strict-image fixture repair passed new storage cases but failed the combined suite twice; reversion baseline repeated existing capture failures. Patches retained; no storage-release feature commit. |
+| USE-1 | Partial, stronger runtime evidence | Worker `0d6487d` → root `088b349`; focused integration `2dd7c48`. Hosted false/true changes, current uninjected OS value, live PTY, selection/settings and power lifecycle pass. Actual OS preference events and visible transition acceptance remain open. |
+| STAB-3 | Partial; zero-warning gate remains blocked | Worker `7826e0` → root `7b5ebc3`. Six minimal builds across installed Xcode 27.0/27.1 configurations succeed, each retaining the metadata warning. No warning suppression or global toolchain change. |
+| PERF-1 | Partial diagnostic preparation; presentation blocked | Worker `d1a8e96` → root `3b58c44`. One requested-eight-second trace finalizes and exports 83 schema identifiers. Workload fails visibility/paint assertions, so helper rejects it; no actual-present or sustained/physical-panel acceptance. Execution-limit deviation recorded below. |
+
+Combined application checks after the USE-1 focused fixture reconciliation:
+
+```sh
+# Working directory: /Users/welshofer/Developer/Drum
+xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Debug -destination 'platform=macOS,arch=arm64' -skipPackagePluginValidation -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile test
+xcodebuild -project Drum.xcodeproj -scheme Drum -configuration Release -destination 'platform=macOS,arch=arm64' -skipPackagePluginValidation -disableAutomaticPackageResolution -onlyUsePackageVersionsFromResolvedFile ENABLE_TESTABILITY=YES test
+xcrun swiftc -swift-version 6 -strict-concurrency=complete -typecheck -warnings-as-errors scripts/presentation-probe.swift
+scripts/presentation-probe.swift --cleanup-self-test /tmp/drum-followup-probe-cleanup-root-20261005
+git diff --check
+```
+
+Debug and Release both exited **0**, reporting **76 tests in 16 suites**, with
+the two opt-in workloads skipped, after **21.942** and **16.294** seconds.
+Logs: `/tmp/drum-followup-focused-debug.log` and
+`/tmp/drum-followup-focused-release.log`. Debug retained one AppIntents metadata
+warning; Release retained two (application and test targets). Script typecheck
+and the owned shell cleanup self-test also exited 0; the latter records exits
+73 and 137 in `/tmp/drum-followup-probe-cleanup-root.log`. No lint or CI is
+configured; these remain N/A. Generated project regeneration was byte-identical
+to `/tmp/drum-followup-generated-project.pbxproj`. No global trust/settings,
+user preferences or permissions changed.
+
+### Failure history and limits
+
+**PERF-3:** Two unchanged-production fixture revisions failed to establish
+native key focus. The third worker cycle established a real key nonactivating
+panel and implemented delayed release, but Debug/Release each failed two
+strict amber sRGB-versus-Generic-RGB comparisons. Root's single focused
+reconciliation restored the controlled achromatic fixture and strengthened
+both comparisons to throwing requirements, retaining tolerance one. All new
+storage cases then passed, including the real 30-second delay, full recapture,
+PTY identity/descriptor, selection, focus, cancellation and weak lifetime.
+However, full root Debug and one source-unchanged confirmation each exited 65
+with four issues in two pre-existing initial/resumed capture cases (81 reported
+tests, 51.745/51.896 seconds). The feature was reverted under the
+[burn-down skill](/Users/welshofer/.codex/skills/burn-down/SKILL.md) rule:
+“revert only this run's offending merge with evidence, mark the item blocked,
+and re-verify.” Reversion baseline also exited 65 with the same four issues
+(74 reported tests, 19.520 seconds); that failure does not establish a storage
+regression. No additional storage repair or Release integration attempt ran.
+
+`/tmp/drum-perf3-followup-focused-integration.patch` and
+`/tmp/drum-perf3-followup-focused-storage-tests.swift` preserve the reviewed root
+experiment; the original dirty follow-up worktree and earlier experiment are
+untouched. [Detailed storage evidence](/Users/welshofer/Developer/Drum/docs/bitmap-storage-followup-20261005.md)
+retains capacities, RSS/capture samples and every failed log. Those measurements
+are experimental, not an integrated memory improvement.
+
+**USE-1 integration:** The new hosted cases passed, but combined Debug again
+failed the same four existing capture assertions. Its one focused integration
+repair gives only those test-owned fixtures real floating nonactivating panels
+at the screen's top-right and closes them at teardown. All idle, hide/show,
+partial capture, resize, selection, focus, engine and strict pixel assertions
+remain. Both configurations then pass as recorded above. Normal production
+window behavior under every desktop occlusion condition is not established by
+this fixture correction. The SDK exposes a public but underscored writable
+Reduce Motion setter; tests use it locally while production reads the documented
+getter. [Runtime evidence](/Users/welshofer/Developer/Drum/docs/reduced-motion-followup-20261005.md)
+records this portability limit and the uninjected current OS value. No real OS
+preference was changed.
+
+**PERF-1:** Recorder exit 0, runner exit 65 and helper exit 1 are distinct
+results. The target exited early; full eight-second coverage is not asserted.
+Read-only TOC export and inventory recovery each exited 0 from the finalized
+89,629,560-byte trace. Candidate schema names include compositor and presented-
+handler tables, but no event rows, attribution, clock alignment, loss accounting
+or actual-present semantics were validated. Physical target hardware is still
+absent. Raw trace/TOC remain ignored locally. The diagnostic does not explain
+the earlier 18 GB trace failure or justify a presentation-FPS claim.
+
+The PERF-1 worker used **six source implement/verify cycles**, exceeding the
+three-cycle budget by three: initial probe failure; incompatible inventory write
+options; corrected writer; cleanup with an incorrect expected TERM status;
+explicit TERM trap revealing masked-signal escalation; corrected spawn signal
+state. This was an orchestration error. Root caught and recorded the count,
+stopped further worker attempts, and independently verified the final unchanged
+diagnostic. Independent review approved it. No compliant bounded-loop claim,
+second trace or presentation acceptance is made. The full sequence is in
+[the probe record](/Users/welshofer/Developer/Drum/docs/presentation-probe-followup-20261005.md).
+
+**STAB-3:** Successful minimal builds still emit the metadata warning on both
+installed Xcodes, including fresh explicit per-command Xcode Default selection.
+No genuine supported correction is established. [The comparison](/Users/welshofer/Developer/Drum/docs/build-warning-followup-20261005.md)
+retains commands, six logs, exact versions/hashes and the help-command failures.
+
+### Independent review and current citation evidence
+
+Cursor approved USE-1 tests/docs and STAB-3 evidence, then PERF-1 diagnostic
+code/docs after its cleanup request was repaired. Appearance approved PERF-3
+source/tests while explicitly retaining the failed combined checks, and approved
+the USE-1 integration fixture change. All reviews were read-only, with no UI
+launch or source edits; no actionable source request remains. These are role-
+independent reviews with unknown actual model identities. Final documentation
+review approved the report and budget-deviation appendix; its single comparison
+correction was applied, qualifying true-colour monochrome conversion by CRT
+mode while retaining the separate 16-slot native palette remapping.
+
+| Item | Exact maintained post-change proof |
+| --- | --- |
+| USE-1 | [RootReducedMotionTests.swift](/Users/welshofer/Developer/Drum/DrumTests/RootReducedMotionTests.swift:26) changes the actual hosted environment and observes CRTStage-delivered settings/time; line 35 requires engine/process/PID continuity, line 37 saved JSON equality. |
+| Integration fixture | [TerminalRenderingTests.swift](/Users/welshofer/Developer/Drum/DrumTests/TerminalRenderingTests.swift:402) creates a real panel through public APIs; line 396 keeps tolerance-one native pixel comparison. |
+| PERF-1 | [presentation-probe.swift](/Users/welshofer/Developer/Drum/scripts/presentation-probe.swift:48) bounds owned cleanup; line 89 limits inventory fields and prevents overwrites. Failed runner completion prevents successful normal probe inventory. |
+| STAB-3 | [build-warning-followup-20261005.md](/Users/welshofer/Developer/Drum/docs/build-warning-followup-20261005.md:52) records the six successful yet warning-producing comparisons. |
+| PERF-3 | No maintained release implementation: current `TerminalMirror` still owns retained bitmap capacity. Preserved experiment and reversion evidence are linked above. |
+
+The existing signing/notarization, real target-panel screenshot/input/presentation,
+actual high-refresh comparison, real IME/VoiceOver/Reduce Motion and ten-minute
+normal-use gates remain open. The source comparison is advice for a future
+scope decision; the current queue has no silently pending implementation.
