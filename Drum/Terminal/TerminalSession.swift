@@ -35,10 +35,15 @@ final class TerminalSession {
 
     @ObservationIgnored private var cleanup: Task<Void, Never>?
     @ObservationIgnored private var restarts: [Date] = []
+    @ObservationIgnored private var restart: Task<Void, Never>?
+    private(set) var isShuttingDown = false
+    @ObservationIgnored private let restartDelay: Duration
 
     init(defaults: UserDefaults = .standard,
+         restartDelay: Duration = .milliseconds(600),
          launch: @escaping @MainActor (DrumTerminalView, String) -> Void = TerminalSession.launchShell) {
         self.launch = launch
+        self.restartDelay = restartDelay
         view = DrumTerminalView(frame: NSRect(x: 0, y: 0, width: 800, height: 300))
         view.session = self
         view.processDelegate = self
@@ -75,7 +80,7 @@ final class TerminalSession {
     }
 
     func startIfNeeded() {
-        guard !isRunning, launchError == nil else { return }
+        guard !isShuttingDown, !isRunning, launchError == nil else { return }
         launch(view, NSHomeDirectory())
         isRunning = view.process.running
         if isRunning {
@@ -89,7 +94,7 @@ final class TerminalSession {
     }
 
     func retryLaunch() {
-        guard canRetryLaunch else { return }
+        guard !isShuttingDown, canRetryLaunch else { return }
         launchError = nil
         startIfNeeded()
     }
@@ -102,6 +107,22 @@ final class TerminalSession {
                           execName: "-" + (shell as NSString).lastPathComponent,
                           currentDirectory: directory)
     }
+
+    /// Application quit owns cancellation and termination; a host rebuild or
+    /// cosmetic power cycle must never shut down the long-lived shell.
+    func shutdown() {
+        guard !isShuttingDown else { return }
+        isShuttingDown = true
+        restart?.cancel()
+        restart = nil
+        cleanup?.cancel()
+        cleanup = nil
+        mirror.stop()
+        view.terminate()
+        isRunning = false
+    }
+
+    isolated deinit { restart?.cancel(); cleanup?.cancel() }
 
     // MARK: Change tracking (glow)
 
@@ -157,6 +178,9 @@ extension TerminalSession: @MainActor LocalProcessTerminalViewDelegate {
     /// one, unless it keeps dying, in which case stop and say that instead.
     func processTerminated(source: SwiftTerm.TerminalView, exitCode: Int32?) {
         isRunning = false
+        restart?.cancel()
+        restart = nil
+        guard !isShuttingDown else { return }
         let status = exitCode.map { "status \($0)" } ?? "signal"
         let now = Date()
         restarts = restarts.filter { now.timeIntervalSince($0) < Self.restartWindow } + [now]
@@ -165,9 +189,12 @@ extension TerminalSession: @MainActor LocalProcessTerminalViewDelegate {
             return
         }
         view.feed(text: "\r\n\u{1B}[2m[shell exited (\(status))] restarting…\u{1B}[0m\r\n")
-        Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(600))
-            self?.startIfNeeded()
+        let delay = restartDelay
+        restart = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: delay)
+            guard !Task.isCancelled, let self, !isShuttingDown else { return }
+            restart = nil
+            startIfNeeded()
         }
     }
 }

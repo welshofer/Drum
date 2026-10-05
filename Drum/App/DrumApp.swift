@@ -54,6 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        state.terminal.shutdown()
         state.audio.setPoweredOn(false)
     }
 
@@ -69,6 +70,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// A quit that comes from loginwindow (log out, restart, shut down) is
     /// answered at once: refusing it even briefly aborts the whole logout.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        state.terminal.shutdown()
         if quitArmed || !state.isPoweredOn || Self.isSystemQuit { return .terminateNow }
         quitArmed = true
         state.powerOff()
