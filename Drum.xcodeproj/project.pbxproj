@@ -25,6 +25,7 @@
 		5FE30B17EBFC511ED7B1ECF0 /* TerminalMirror.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FB24532029BB0647127F80 /* TerminalMirror.swift */; };
 		64EA5DC06DBC1FF2B8B60727 /* TerminalPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABFC936C58B25505D8F3EC29 /* TerminalPerformanceTests.swift */; };
 		669CCA1F8BF66A47453A8BF1 /* PerformanceRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94CDB6AEA3ED1D91E8F8915 /* PerformanceRecorder.swift */; };
+		70654D79A9DB50C8DF163D1A /* TerminalWorkingDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 466C956081493536089493E0 /* TerminalWorkingDirectory.swift */; };
 		73046398286848B78A81A230 /* Phosphor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74F1102829627292C86D5A8 /* Phosphor.swift */; };
 		82DBD2066DCB5D6CD4C44C2E /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F44209C7A12A5E2F6F974DE /* RootView.swift */; };
 		836B74AD7280BB37E6CDC2B0 /* TerminalClipboardPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44AEBF8A595BB98DF3453745 /* TerminalClipboardPolicyTests.swift */; };
@@ -67,6 +68,7 @@
 		31ACC088B79255497356FE35 /* PowerOnTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerOnTransition.swift; sourceTree = "<group>"; };
 		44AEBF8A595BB98DF3453745 /* TerminalClipboardPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalClipboardPolicyTests.swift; sourceTree = "<group>"; };
 		44B043D74DF45B0F38B4DBE6 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Fonts; path = Drum/Resources/Fonts; sourceTree = SOURCE_ROOT; };
+		466C956081493536089493E0 /* TerminalWorkingDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalWorkingDirectory.swift; sourceTree = "<group>"; };
 		4F0959554B3B360303C0CF62 /* CRTSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTSettingsTests.swift; sourceTree = "<group>"; };
 		4F9318F68A3E30A8C403C0E4 /* TerminalSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSession.swift; sourceTree = "<group>"; };
 		51AA686926331863EB06E336 /* SoundSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundSettings.swift; sourceTree = "<group>"; };
@@ -162,6 +164,7 @@
 				BB727BA4B95527ACB94E8A6A /* TerminalTheme.swift */,
 				B2AC3FB75F0CD8C85278CC9B /* TerminalTimingObserver.swift */,
 				DB1C43E7C928ED4D70DA96E9 /* TerminalView.swift */,
+				466C956081493536089493E0 /* TerminalWorkingDirectory.swift */,
 			);
 			path = Terminal;
 			sourceTree = "<group>";
@@ -380,6 +383,7 @@
 				5CF456B050321D25EAA0DD77 /* TerminalTheme.swift in Sources */,
 				D379F7D72436E9ABBC2EC661 /* TerminalTimingObserver.swift in Sources */,
 				29C931A58EFC16687F38F9B9 /* TerminalView.swift in Sources */,
+				70654D79A9DB50C8DF163D1A /* TerminalWorkingDirectory.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

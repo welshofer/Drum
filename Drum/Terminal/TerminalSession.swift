@@ -19,6 +19,13 @@ final class TerminalSession {
     private(set) var isRunning = false
     private(set) var launchError: String?
     private(set) var launchFailures = 0
+    private(set) var reportedDirectory: String?
+    var restartDirectory: String {
+        if let reportedDirectory, TerminalWorkingDirectory.isDirectory(reportedDirectory) {
+            return reportedDirectory
+        }
+        return NSHomeDirectory()
+    }
     static let maxLaunchFailures = 4
     var canRetryLaunch: Bool { launchError != nil && launchFailures < Self.maxLaunchFailures }
     @ObservationIgnored private let launch: @MainActor (DrumTerminalView, String) -> Void
@@ -81,7 +88,7 @@ final class TerminalSession {
 
     func startIfNeeded() {
         guard !isShuttingDown, !isRunning, launchError == nil else { return }
-        launch(view, NSHomeDirectory())
+        launch(view, restartDirectory)
         isRunning = view.process.running
         if isRunning {
             launchFailures = 0
@@ -172,7 +179,9 @@ extension TerminalSession: @MainActor LocalProcessTerminalViewDelegate {
         self.title = title.isEmpty ? "Drum" : title
     }
 
-    func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {}
+    func hostCurrentDirectoryUpdate(source: SwiftTerm.TerminalView, directory: String?) {
+        reportedDirectory = TerminalWorkingDirectory.localPath(directory)
+    }
 
     /// The shell went away (exit, ⌃D). Say so on the tube and start a fresh
     /// one, unless it keeps dying, in which case stop and say that instead.

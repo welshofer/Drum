@@ -4,6 +4,31 @@ import Testing
 
 @Suite(.serialized) @MainActor
 struct TerminalSessionTests {
+    @Test func restartUsesOnlyAnExistingLocalReportedDirectory() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        var launchedAt: String?
+        let session = TerminalSession { _, path in launchedAt = path }
+        session.hostCurrentDirectoryUpdate(source: session.view, directory: directory.absoluteString)
+        #expect(session.restartDirectory == directory.path)
+        session.startIfNeeded()
+        #expect(launchedAt == directory.path)
+        var local = URLComponents(url: directory, resolvingAgainstBaseURL: false)!
+        local.host = ProcessInfo.processInfo.hostName
+        #expect(TerminalWorkingDirectory.localPath(local.string) == directory.path)
+        local.host = "remote.example.invalid"
+        session.hostCurrentDirectoryUpdate(source: session.view, directory: local.string)
+        #expect(session.restartDirectory == NSHomeDirectory())
+        for report in [nil, "https://example.com/tmp", "file:relative", directory.path] as [String?] {
+            session.hostCurrentDirectoryUpdate(source: session.view, directory: report)
+            #expect(session.restartDirectory == NSHomeDirectory())
+        }
+        session.hostCurrentDirectoryUpdate(source: session.view, directory: directory.absoluteString)
+        try FileManager.default.removeItem(at: directory)
+        #expect(session.restartDirectory == NSHomeDirectory())
+    }
+
     @Test func quitCancelsPendingRestartAndRejectsFurtherLaunches() async throws {
         var attempts = 0
         let session = TerminalSession(restartDelay: .milliseconds(20)) { _, _ in attempts += 1 }
