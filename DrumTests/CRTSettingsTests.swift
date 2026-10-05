@@ -3,6 +3,19 @@ import Foundation
 @testable import Drum
 
 struct CRTSettingsTests {
+    @Test func reduceMotionIsTransientAndDoesNotDisableTerminalRendering() {
+        var saved = CRTSettings()
+        saved.wobble = 0.006
+        let reduced = saved.forRendering(scale: 2, liveResize: false, reduceMotion: true)
+        #expect(!reduced.isWobbling)
+        #expect(reduced.enabled && reduced.phosphor == saved.phosphor)
+        #expect(reduced.barrelX == saved.barrelX && reduced.brightness == saved.brightness)
+        #expect(saved.animated && saved.wobble == 0.006)
+        let resumed = saved.forRendering(scale: 1, liveResize: false, reduceMotion: false)
+        #expect(resumed.isWobbling && resumed.wobble == saved.wobble)
+        #expect(resumed.scale == 1 && reduced.scale == 2)
+    }
+
     @Test func defaultsAreTheTunedValues() {
         let s = CRTSettings()
         #expect(s.phosphor == .p3Amber)

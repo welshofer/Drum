@@ -3,13 +3,15 @@ import SwiftUI
 /// Black window → (power transition) → the CRT stage.
 struct RootView: View {
     @Environment(AppState.self) private var state
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         ZStack {
             Color.black
             if state.isPoweredOn {
                 CRTStage()
-                    .transition(PowerOnTransition.asymmetric(tint: state.crt.phosphor.swiftUIColor))
+                    .transition(PowerOnTransition.asymmetric(tint: state.crt.phosphor.swiftUIColor,
+                                                            reduceMotion: reduceMotion))
             }
         }
         .background(Color.black)
@@ -25,12 +27,13 @@ struct RootView: View {
 struct CRTStage: View {
     @Environment(AppState.self) private var state
     @Environment(\.displayScale) private var displayScale
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The persisted settings with the live backing scale: scanline period is
     /// in device pixels, and the window can move between 1× and 2× displays.
     private var settings: CRTSettings {
         state.crt.forRendering(scale: Float(displayScale),
-                               liveResize: state.terminal.mirror.isLiveResizing)
+                               liveResize: state.terminal.mirror.isLiveResizing, reduceMotion: reduceMotion)
     }
 
     var body: some View {

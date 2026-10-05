@@ -7,19 +7,22 @@ import SwiftUI
 /// `PowerOnModifier` turns it into the flyback overlay plus the picture reveal.
 struct PowerOnTransition: Transition {
     var tint: Color
+    var reduceMotion = false
 
     func body(content: Content, phase: TransitionPhase) -> some View {
-        content.modifier(PowerOnModifier(progress: phase.isIdentity ? 1 : 0, tint: tint))
+        content.modifier(PowerOnModifier(progress: phase.isIdentity ? 1 : 0, tint: tint, reduceMotion: reduceMotion))
     }
 
     static let onDuration: TimeInterval = 0.7
     static let offDuration: TimeInterval = 0.3
 
     /// 700 ms on, 300 ms off, per spec §6.
-    static func asymmetric(tint: Color) -> some Transition {
+    static func asymmetric(tint: Color, reduceMotion: Bool = false) -> some Transition {
         AsymmetricTransition(
-            insertion: PowerOnTransition(tint: tint).animation(.easeOut(duration: onDuration)),
-            removal: PowerOnTransition(tint: tint).animation(.easeIn(duration: offDuration)))
+            insertion: PowerOnTransition(tint: tint, reduceMotion: reduceMotion)
+                .animation(.easeOut(duration: reduceMotion ? 0.15 : onDuration)),
+            removal: PowerOnTransition(tint: tint, reduceMotion: reduceMotion)
+                .animation(.easeIn(duration: reduceMotion ? 0.15 : offDuration)))
     }
 }
 
@@ -30,6 +33,7 @@ struct PowerOnTransition: Transition {
 struct PowerOnModifier: ViewModifier, Animatable {
     nonisolated var progress: Double
     nonisolated var tint: Color
+    nonisolated var reduceMotion = false
 
     nonisolated var animatableData: Double {
         get { progress }
@@ -48,15 +52,16 @@ struct PowerOnModifier: ViewModifier, Animatable {
 
     func body(content: Content) -> some View {
         content
-            .scaleEffect(x: 1, y: pictureScaleY, anchor: .center)
-            .opacity(pictureOpacity)
+            .scaleEffect(x: 1, y: reduceMotion ? 1 : pictureScaleY, anchor: .center)
+            .opacity(reduceMotion ? progress : pictureOpacity)
             .overlay {
                 Rectangle()
                     .fill(Color.black)
-                    .colorEffect(DrumBundle.shaders.crtFlyback(.boundingRect, .float(Float(progress)), .color(tint)))
+                    .colorEffect(DrumBundle.shaders.crtFlyback(.boundingRect, .float(Float(progress)), .color(tint)),
+                                 isEnabled: !reduceMotion)
                     .blendMode(.plusLighter)
                     .allowsHitTesting(false)
-                    .opacity(progress < 1 ? 1 : 0)
+                    .opacity(!reduceMotion && progress < 1 ? 1 : 0)
             }
     }
 }

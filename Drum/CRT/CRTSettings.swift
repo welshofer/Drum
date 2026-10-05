@@ -53,10 +53,10 @@ struct CRTSettings: Codable, Sendable, Equatable {
     }
 
     /// Transient rendering policy; never written back to the user's settings.
-    func forRendering(scale: Float, liveResize: Bool) -> Self {
+    func forRendering(scale: Float, liveResize: Bool, reduceMotion: Bool = false) -> Self {
         var result = self
         result.scale = scale
-        if liveResize { result.animated = false }
+        if liveResize || reduceMotion { result.animated = false }
         return result
     }
 
