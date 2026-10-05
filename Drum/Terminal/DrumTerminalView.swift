@@ -82,6 +82,9 @@ final class DrumTerminalView: AccessibleTerminalView {
     }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+    override func requestOpenLink(source: SwiftTerm.TerminalView, link: String, params: [String: String]) {
+        TerminalLinkPolicy.activate(link)
+    }
 
     override var needsDisplay: Bool {
         didSet { if needsDisplay { session?.mirror.markDirty() } }
