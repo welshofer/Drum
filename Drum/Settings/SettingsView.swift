@@ -33,13 +33,15 @@ private struct AppearanceSettingsView: View {
                     .disabled(!state.crt.enabled)
             }
 
-            Section("Tube") {
+            Section {
                 Toggle("CRT effect", isOn: $state.crt.enabled)
                 Toggle("Sync wobble", isOn: $state.crt.animated)
                     .disabled(!state.crt.enabled)
                     .help("Adds subtle motion to the CRT picture. Cursor blinking, terminal updates, and power transitions are separate. Reduce Motion pauses wobble.")
                 CRTSlidersView(crt: $state.crt)
                     .disabled(!state.crt.enabled)
+            } header: {
+                Text("Tube")
             } footer: {
                 if !state.crt.enabled {
                     Text("Bloom and tube effects resume when CRT is on. Font and phosphor colour remain active.")
