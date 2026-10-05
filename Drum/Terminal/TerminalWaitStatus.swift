@@ -6,10 +6,10 @@ import Foundation
 enum TerminalWaitStatus {
     static func describe(_ status: Int32?) -> String {
         guard let status else { return "termination status unavailable" }
-        if status == 0xffff { return "continued" }
         let signal = status & 0x7f
         if signal == 0 { return "exit \((status >> 8) & 0xff)" }
-        if signal == 0x7f { return "stopped by signal \((status >> 8) & 0xff)" }
+        // Stop/continue states are outside this NOTE_EXIT callback's contract.
+        if signal == 0x7f { return "nonterminal wait status" }
         return "signal \(signal)" + (status & 0x80 == 0 ? "" : " (core dumped)")
     }
 }

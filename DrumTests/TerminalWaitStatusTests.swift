@@ -13,6 +13,7 @@ struct TerminalWaitStatusTests {
         #expect(TerminalWaitStatus.describe(signal) == "signal 15")
         #expect(TerminalWaitStatus.describe(nil) == "termination status unavailable")
         #expect(TerminalWaitStatus.describe(0) == "exit 0")
+        #expect(TerminalWaitStatus.describe(0x137f) == "nonterminal wait status")
     }
 
     private func waitStatus(command: String) throws -> Int32 {
