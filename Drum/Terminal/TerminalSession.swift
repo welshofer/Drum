@@ -17,6 +17,11 @@ final class TerminalSession {
 
     private(set) var title = "Drum"
     private(set) var isRunning = false
+    private(set) var launchError: String?
+    private(set) var launchFailures = 0
+    static let maxLaunchFailures = 4
+    var canRetryLaunch: Bool { launchError != nil && launchFailures < Self.maxLaunchFailures }
+    @ObservationIgnored private let launch: @MainActor (DrumTerminalView, String) -> Void
     /// What `TerminalTheme.apply` last applied; lives here, not in the host
     /// view, because the host may be rebuilt while the terminal survives.
     @ObservationIgnored var appliedTheme: TerminalTheme?
@@ -31,7 +36,9 @@ final class TerminalSession {
     @ObservationIgnored private var cleanup: Task<Void, Never>?
     @ObservationIgnored private var restarts: [Date] = []
 
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard,
+         launch: @escaping @MainActor (DrumTerminalView, String) -> Void = TerminalSession.launchShell) {
+        self.launch = launch
         view = DrumTerminalView(frame: NSRect(x: 0, y: 0, width: 800, height: 300))
         view.session = self
         view.processDelegate = self
@@ -68,14 +75,32 @@ final class TerminalSession {
     }
 
     func startIfNeeded() {
-        guard !isRunning else { return }
-        isRunning = true
+        guard !isRunning, launchError == nil else { return }
+        launch(view, NSHomeDirectory())
+        isRunning = view.process.running
+        if isRunning {
+            launchFailures = 0
+        } else {
+            launchFailures += 1
+            launchError = "Unable to start the shell. Check available system resources."
+            let retry = canRetryLaunch ? " Use Tube → Retry Shell (⌘⇧R)." : " Reopen Drum to try again."
+            view.feed(text: "\r\n[shell launch failed.\(retry)]\r\n")
+        }
+    }
+
+    func retryLaunch() {
+        guard canRetryLaunch else { return }
+        launchError = nil
+        startIfNeeded()
+    }
+
+    private static func launchShell(_ view: DrumTerminalView, directory: String) {
         let shell = Self.loginShell
         view.startProcess(executable: shell,
                           args: ["-l"],
                           environment: Self.environment(shell: shell),
                           execName: "-" + (shell as NSString).lastPathComponent,
-                          currentDirectory: NSHomeDirectory())
+                          currentDirectory: directory)
     }
 
     // MARK: Change tracking (glow)

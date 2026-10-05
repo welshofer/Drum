@@ -20,6 +20,9 @@ struct DrumApp: App {
             CommandMenu("Tube") {
                 Button("Power Cycle") { delegate.state.cyclePower() }
                     .keyboardShortcut("r", modifiers: .command)
+                Button("Retry Shell") { delegate.state.terminal.retryLaunch() }
+                    .keyboardShortcut("r", modifiers: [.command, .shift])
+                    .disabled(!delegate.state.terminal.canRetryLaunch)
             }
         }
 

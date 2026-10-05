@@ -39,6 +39,7 @@
 		C8947602B8DCF75E52C8EBED /* TerminalClipboardPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89C45E5949E719ACE37A77CD /* TerminalClipboardPolicy.swift */; };
 		D1F44AC2CF9BCEE2F2A66483 /* TerminalThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */; };
 		D379F7D72436E9ABBC2EC661 /* TerminalTimingObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2AC3FB75F0CD8C85278CC9B /* TerminalTimingObserver.swift */; };
+		D6A16ED76E38947E4AC3E921 /* TerminalSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D65ED5466F06CB5F39D77B8 /* TerminalSessionTests.swift */; };
 		DB5E21381B0B13C3F0509602 /* TerminalAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECFF325C9146CFD21D30096A /* TerminalAudio.swift */; };
 		DD146257B9293C924466D1BC /* SoundWaveform.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4ACC02F4A1DAD76D1A8CF6C /* SoundWaveform.swift */; };
 		E3A7E6237ACE6A13BC88F77D /* CaretOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D708C981AE7BC5A6E4DA308 /* CaretOverlay.swift */; };
@@ -83,6 +84,7 @@
 		97DB553DC0E154BE11A02DF7 /* TerminalSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSettingsView.swift; sourceTree = "<group>"; };
 		97FACE56781368683A16578A /* GlowOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlowOverlay.swift; sourceTree = "<group>"; };
 		9B433C3FB82DEE3ACA21BB37 /* CRTSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRTSettings.swift; sourceTree = "<group>"; };
+		9D65ED5466F06CB5F39D77B8 /* TerminalSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalSessionTests.swift; sourceTree = "<group>"; };
 		A74F1102829627292C86D5A8 /* Phosphor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phosphor.swift; sourceTree = "<group>"; };
 		A8944107738B5D9CC9D0C141 /* TerminalDisplayClock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalDisplayClock.swift; sourceTree = "<group>"; };
 		ABFC936C58B25505D8F3EC29 /* TerminalPerformanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalPerformanceTests.swift; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 				44AEBF8A595BB98DF3453745 /* TerminalClipboardPolicyTests.swift */,
 				ABFC936C58B25505D8F3EC29 /* TerminalPerformanceTests.swift */,
 				6660E4857C7768B8B9B5087C /* TerminalRenderingTests.swift */,
+				9D65ED5466F06CB5F39D77B8 /* TerminalSessionTests.swift */,
 				304C1C0A499182F28B90AD9D /* TerminalThemeTests.swift */,
 			);
 			path = DrumTests;
@@ -341,6 +344,7 @@
 				836B74AD7280BB37E6CDC2B0 /* TerminalClipboardPolicyTests.swift in Sources */,
 				64EA5DC06DBC1FF2B8B60727 /* TerminalPerformanceTests.swift in Sources */,
 				1B8F8BAD4458A646030159DF /* TerminalRenderingTests.swift in Sources */,
+				D6A16ED76E38947E4AC3E921 /* TerminalSessionTests.swift in Sources */,
 				D1F44AC2CF9BCEE2F2A66483 /* TerminalThemeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
